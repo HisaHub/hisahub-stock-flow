@@ -25,16 +25,16 @@ export default {
         },
         secondary: {
           DEFAULT: "#FFBF00", // Vibrant Amber
-          foreground: "#2A2A2A"
+          foreground: "#000080"
         },
-        background: "#F8F9FA", // Off-White
+        background: "#000080",
         charcoal: "#2A2A2A",
         neutral: "#8E9196",
         "off-white": "#F8F9FA",
-        card: "#FFFFFF",
+        card: "#1d2140", // Slightly lighter navy for 'card'
         accent: "#FFBF00",
         "nav-bg": "#00002A",
-        "glass-bg": "rgba(255,255,255,0.18)",
+        "glass-bg": "rgba(255,255,255,0.14)",
       },
       fontFamily: {
         sans: ['Poppins', 'sans-serif'],

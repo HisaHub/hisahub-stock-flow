@@ -5,18 +5,19 @@
 
 @layer base {
   body {
-    @apply bg-background text-charcoal font-sans;
+    @apply bg-primary text-secondary font-sans;
   }
   html {
     font-family: 'Poppins', sans-serif;
-    background: #F8F9FA;
+    background: #000080; /* Deep navy */
   }
 }
 
 .glass-card {
-  @apply bg-white bg-opacity-90 shadow-xl rounded-2xl p-6 border border-neutral/30 backdrop-blur-md;
+  @apply bg-white/10 shadow-xl rounded-2xl p-6 border border-secondary/30 backdrop-blur-md;
 }
 
 .market-mono {
   font-family: 'Roboto Mono', monospace;
 }
+
