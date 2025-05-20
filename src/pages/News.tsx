@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FileText, Newspaper, MessageSquare, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import BottomNav from "../components/BottomNav";
 
 const DUMMY_NEWS = [
   { headline: "Safaricom stocks rally as quarterly results impress", date: "2025-05-18" },
@@ -65,12 +66,14 @@ const News: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
-      <main className="flex-1 w-full max-w-lg mx-auto flex flex-col items-center px-4 py-7">
-        <h2 className="text-3xl font-bold text-secondary mb-5 flex items-center gap-2"><Newspaper size={30} /> News & Community</h2>
+    <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors pb-20">
+      <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col items-center px-4 md:px-8 py-7">
+        <h2 className="text-3xl font-bold text-secondary mb-5 flex items-center gap-2">
+          <Newspaper size={30} /> News & Community
+        </h2>
         <div className="w-full glass-card mb-4 px-1">
           <Tabs defaultValue="news" className="w-full">
-            <TabsList className="bg-charcoal mb-2 gap-2 justify-between">
+            <TabsList className="bg-charcoal mb-2 gap-2 justify-between overflow-x-auto max-w-full">
               <TabsTrigger value="news" className="flex gap-1 items-center"><Newspaper size={18} />NSE Stock News</TabsTrigger>
               <TabsTrigger value="articles" className="flex gap-1 items-center"><FileText size={18} />Articles</TabsTrigger>
               <TabsTrigger value="community" className="flex gap-1 items-center"><MessageSquare size={18} />Community</TabsTrigger>
@@ -79,7 +82,7 @@ const News: React.FC = () => {
             {/* NSE Stock News Tab */}
             <TabsContent value="news" className="space-y-3">
               {DUMMY_NEWS.map((n, idx) => (
-                <div key={idx} className="bg-background p-3 rounded-lg shadow border-l-4 border-secondary/80">
+                <div key={idx} className="bg-background p-3 rounded-lg shadow border-l-4 border-secondary/80 max-w-full overflow-x-auto">
                   <div className="text-sm font-bold text-off-white">{n.headline}</div>
                   <div className="text-xs text-neutral">{n.date}</div>
                 </div>
@@ -159,7 +162,9 @@ const News: React.FC = () => {
           </Tabs>
         </div>
       </main>
+      <BottomNav />
     </div>
   );
 };
 export default News;
+
