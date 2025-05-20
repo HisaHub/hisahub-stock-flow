@@ -1,13 +1,12 @@
-
 import React from "react";
-import { Home, PieChart, LineChart, User, Settings, BookOpen } from "lucide-react";
+import { Home, PieChart, LineChart, User, Settings, BookOpen, Newspaper } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
   { name: "Home", to: "/", icon: <Home size={24} strokeWidth={2.3} /> },
   { name: "Trade", to: "/trade", icon: <LineChart size={24} strokeWidth={2.3} /> },
   { name: "Portfolio", to: "/portfolio", icon: <PieChart size={24} strokeWidth={2.3} /> },
-  { name: "Mock-Stocks", to: "/mock-stocks", icon: <BookOpen size={24} strokeWidth={2.3} /> },
+  { name: "News", to: "/news", icon: <Newspaper size={24} strokeWidth={2.3} /> },
   { name: "Profile", to: "/profile", icon: <User size={24} strokeWidth={2.3} /> },
   { name: "Settings", to: "/settings", icon: <Settings size={24} strokeWidth={2.3} /> },
 ];

@@ -20,11 +20,11 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#131b26", // Deeper navy to match your mockup
+          DEFAULT: "#131b26", // Deep navy
           foreground: "#F8F9FA",
         },
         secondary: {
-          DEFAULT: "#FFBF00",
+          DEFAULT: "#FFC000", // Amber replaces Gold
           foreground: "#131b26",
         },
         background: "#131b26",
@@ -32,7 +32,7 @@ export default {
         neutral: "#8E9196",
         "off-white": "#F8F9FA",
         card: "#1b2230",
-        accent: "#FFBF00",
+        accent: "#FFC000", // Amber
         "nav-bg": "#181f2c",
         "glass-bg": "rgba(255,255,255,0.08)",
       },
@@ -53,4 +53,4 @@ export default {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+} satisfies Config
