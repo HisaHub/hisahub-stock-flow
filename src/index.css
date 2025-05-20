@@ -4,17 +4,19 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-primary text-secondary font-sans;
-  }
   html {
     font-family: 'Poppins', sans-serif;
-    background: #000080; /* Deep navy */
+    background: #131b26; /* Deeper navy per user image */
+  }
+  body {
+    @apply bg-primary text-secondary font-sans;
+    background: #131b26 !important;
+    color: #F8F9FA;
   }
 }
 
 .glass-card {
-  @apply bg-white/10 shadow-xl rounded-2xl p-6 border border-secondary/30 backdrop-blur-md;
+  @apply bg-white/5 shadow-xl rounded-2xl p-6 border border-secondary/20 backdrop-blur-[8px];
 }
 
 .market-mono {

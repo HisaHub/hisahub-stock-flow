@@ -14,27 +14,27 @@ export default {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1400px"
+        "2xl": "1400px",
       }
     },
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#000080", // Deep Navy Blue
-          foreground: "#F8F9FA"
+          DEFAULT: "#131b26", // Deeper navy to match your mockup
+          foreground: "#F8F9FA",
         },
         secondary: {
-          DEFAULT: "#FFBF00", // Vibrant Amber
-          foreground: "#000080"
+          DEFAULT: "#FFBF00",
+          foreground: "#131b26",
         },
-        background: "#000080",
+        background: "#131b26",
         charcoal: "#2A2A2A",
         neutral: "#8E9196",
         "off-white": "#F8F9FA",
-        card: "#1d2140", // Slightly lighter navy for 'card'
+        card: "#1b2230",
         accent: "#FFBF00",
-        "nav-bg": "#00002A",
-        "glass-bg": "rgba(255,255,255,0.14)",
+        "nav-bg": "#181f2c",
+        "glass-bg": "rgba(255,255,255,0.08)",
       },
       fontFamily: {
         sans: ['Poppins', 'sans-serif'],
