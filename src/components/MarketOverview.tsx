@@ -1,6 +1,6 @@
 
 import React from "react";
-import { trendingUp, trendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 const mockData = [
   {
@@ -37,12 +37,16 @@ const MarketOverview: React.FC = () => (
               stock.changeDir === "up" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
             }`}
           >
-            {stock.changeDir === "up" ? "+" : "-"}
-            {stock.change}
             {stock.changeDir === "up" ? (
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5" stroke="#059669" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <>
+                +{stock.change}
+                <TrendingUp size={14} strokeWidth={2} className="text-green-700" />
+              </>
             ) : (
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M17 10l-5 5-5-5" stroke="#DC2626" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <>
+                -{stock.change}
+                <TrendingDown size={14} strokeWidth={2} className="text-red-600" />
+              </>
             )}
           </span>
         </div>
