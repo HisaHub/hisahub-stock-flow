@@ -165,44 +165,61 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
           </Button>
         </div>
 
-        {/* Module Tabs */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-b shrink-0">
-          <Tabs value={activeModule} onValueChange={handleModuleChange} className="w-full">
-            <TabsList className="w-full justify-start bg-transparent p-2 md:p-6 gap-1 md:gap-2 overflow-x-auto">
-              <TabsTrigger 
-                value="crm" 
-                className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white whitespace-nowrap"
-              >
-                <TrendingUp size={14} className="md:hidden" />
-                <TrendingUp size={18} className="hidden md:block" />
-                <span className="hidden sm:inline">CRM</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="risk" 
-                className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white whitespace-nowrap"
-              >
-                <Shield size={14} className="md:hidden" />
-                <Shield size={18} className="hidden md:block" />
-                <span className="hidden sm:inline">Risk</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="finance" 
-                className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white whitespace-nowrap"
-              >
-                <DollarSign size={14} className="md:hidden" />
-                <DollarSign size={18} className="hidden md:block" />
-                <span className="hidden sm:inline">Finance</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="trading" 
-                className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white whitespace-nowrap"
-              >
-                <GraduationCap size={14} className="md:hidden" />
-                <GraduationCap size={18} className="hidden md:block" />
-                <span className="hidden sm:inline">Trading</span>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+        {/* Navigation Buttons */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-b shrink-0 p-3 md:p-4">
+          <div className="flex gap-2 md:gap-3 justify-center overflow-x-auto">
+            <Button
+              onClick={() => handleModuleChange('crm')}
+              variant={activeModule === 'crm' ? 'default' : 'outline'}
+              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
+                activeModule === 'crm' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'bg-white hover:bg-blue-50 border-blue-200'
+              }`}
+            >
+              <TrendingUp size={16} />
+              <span className="text-sm font-medium">CRM Dashboard</span>
+            </Button>
+            
+            <Button
+              onClick={() => handleModuleChange('risk')}
+              variant={activeModule === 'risk' ? 'default' : 'outline'}
+              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
+                activeModule === 'risk' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'bg-white hover:bg-blue-50 border-blue-200'
+              }`}
+            >
+              <Shield size={16} />
+              <span className="text-sm font-medium">Risk Management</span>
+            </Button>
+            
+            <Button
+              onClick={() => handleModuleChange('finance')}
+              variant={activeModule === 'finance' ? 'default' : 'outline'}
+              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
+                activeModule === 'finance' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'bg-white hover:bg-blue-50 border-blue-200'
+              }`}
+            >
+              <DollarSign size={16} />
+              <span className="text-sm font-medium">Personal Finance</span>
+            </Button>
+            
+            <Button
+              onClick={() => handleModuleChange('trading')}
+              variant={activeModule === 'trading' ? 'default' : 'outline'}
+              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
+                activeModule === 'trading' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'bg-white hover:bg-blue-50 border-blue-200'
+              }`}
+            >
+              <GraduationCap size={16} />
+              <span className="text-sm font-medium">Trading Coach</span>
+            </Button>
+          </div>
         </div>
 
         {/* Main Content */}
