@@ -1,7 +1,7 @@
-
 import React from "react";
 import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
+import HisaAIButton from "../components/HisaAIButton";
 import { Link } from "react-router-dom";
 
 const activeBroker = {
@@ -16,6 +16,7 @@ const stocksInTrade = [
 
 const Index: React.FC = () => (
   <div className="min-h-screen flex flex-col justify-between bg-primary font-sans">
+    <HisaAIButton />
     <main className="flex-1 flex flex-col items-center px-4 py-10 w-full max-w-lg mx-auto">
       <section className="w-full">
         <div className="glass-card flex flex-col items-center text-center mb-5 animate-fade-in">

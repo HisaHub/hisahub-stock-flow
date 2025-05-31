@@ -1,10 +1,11 @@
-
 import React from "react";
 import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
+import HisaAIButton from "../components/HisaAIButton";
 
 const Chatbot: React.FC = () => (
   <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
+    <HisaAIButton />
     <main className="flex-1 flex flex-col items-center px-4 py-10">
       <h2 className="text-3xl font-bold text-secondary mb-7" style={{ fontFamily: "'Poppins',sans-serif" }}>
         Ask Hisa (AI Assistant)

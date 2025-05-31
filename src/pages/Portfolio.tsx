@@ -1,7 +1,7 @@
-
 import React, { useState } from "react";
 import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
+import HisaAIButton from "../components/HisaAIButton";
 import {
   LineChart,
   Line,
@@ -33,6 +33,7 @@ const Portfolio: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
+      <HisaAIButton />
       <main className="flex-1 flex flex-col items-center px-4 py-7 w-full max-w-2xl mx-auto">
         <div className="w-full glass-card flex items-center justify-between mb-4 animate-fade-in">
           {!editing ? (

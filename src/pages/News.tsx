@@ -1,9 +1,9 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FileText, Newspaper, MessageSquare, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNav from "../components/BottomNav";
+import HisaAIButton from "../components/HisaAIButton";
 
 const DUMMY_NEWS = [
   { headline: "Safaricom stocks rally as quarterly results impress", date: "2025-05-18" },
@@ -67,6 +67,7 @@ const News: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors pb-20">
+      <HisaAIButton />
       <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col items-center px-4 md:px-8 py-7">
         <h2 className="text-3xl font-bold text-secondary mb-5 flex items-center gap-2">
           <Newspaper size={30} /> News & Community
@@ -167,4 +168,3 @@ const News: React.FC = () => {
   );
 };
 export default News;
-

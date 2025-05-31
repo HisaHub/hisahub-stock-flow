@@ -1,7 +1,7 @@
-
 import React from "react";
 import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
+import HisaAIButton from "../components/HisaAIButton";
 import { Button } from "@/components/ui/button";
 import {
   LineChart,
@@ -23,6 +23,7 @@ const mockChart = [
 
 const Trade: React.FC = () => (
   <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
+    <HisaAIButton />
     <main className="flex-1 w-full max-w-lg mx-auto flex flex-col items-center px-4 py-7">
       <div className="w-full glass-card flex flex-col gap-3 mb-5 animate-fade-in">
         <div className="text-[1.1rem] font-bold text-off-white">SAFARICOM (SCOM)</div>
