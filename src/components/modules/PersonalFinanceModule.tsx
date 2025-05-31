@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { DollarSign, PiggyBank, TrendingUp, Shield } from 'lucide-react';
+import { Calculator, DollarSign, Target, TrendingUp, CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 const PersonalFinanceModule: React.FC = () => {
   const [income, setIncome] = useState('');
@@ -37,132 +37,152 @@ const PersonalFinanceModule: React.FC = () => {
 
   return (
     <div className="p-3 md:p-6 h-full space-y-4 md:space-y-6">
-      <div>
-        <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">Personal Finance</h2>
-        
-        {/* Budget Planner */}
-        <div className="bg-white p-3 md:p-4 rounded-lg border mb-4 md:mb-6">
-          <h3 className="font-semibold text-gray-700 mb-3 text-sm md:text-base">Budget Planner</h3>
-          <div className="grid grid-cols-1 gap-3">
-            <div>
-              <Label htmlFor="income" className="text-xs md:text-sm">Monthly Income (KES)</Label>
-              <Input
-                id="income"
-                type="number"
-                value={income}
-                onChange={(e) => setIncome(e.target.value)}
-                placeholder="50000"
-                className="text-xs md:text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="expenses" className="text-xs md:text-sm">Monthly Expenses (KES)</Label>
-              <Input
-                id="expenses"
-                type="number"
-                value={expenses}
-                onChange={(e) => setExpenses(e.target.value)}
-                placeholder="35000"
-                className="text-xs md:text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="goal" className="text-xs md:text-sm">Savings Goal (KES)</Label>
-              <Input
-                id="goal"
-                type="number"
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-                placeholder="100000"
-                className="text-xs md:text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="timeline" className="text-xs md:text-sm">Timeline (months)</Label>
-              <Input
-                id="timeline"
-                type="number"
-                value={timeline}
-                onChange={(e) => setTimeline(e.target.value)}
-                placeholder="12"
-                className="text-xs md:text-sm"
-              />
-            </div>
-            <Button onClick={calculateBudget} className="w-full text-xs md:text-sm">
-              Analyze Budget
-            </Button>
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <Calculator className="text-blue-600" size={20} />
+        <h2 className="text-lg md:text-xl font-bold text-gray-800">Personal Finance Coach</h2>
+      </div>
+
+      {/* Budget Planner Form */}
+      <div className="bg-white p-4 rounded-lg border shadow-sm">
+        <h3 className="font-semibold text-gray-700 mb-4">Budget Planner</h3>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="income" className="text-sm font-medium">Monthly Income ($)</Label>
+            <Input
+              id="income"
+              type="number"
+              value={income}
+              onChange={(e) => setIncome(e.target.value)}
+              placeholder="5000"
+              className="mt-1"
+            />
           </div>
+          <div>
+            <Label htmlFor="expenses" className="text-sm font-medium">Monthly Expenses ($)</Label>
+            <Input
+              id="expenses"
+              type="number"
+              value={expenses}
+              onChange={(e) => setExpenses(e.target.value)}
+              placeholder="3500"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="goal" className="text-sm font-medium">Savings Goal ($)</Label>
+            <Input
+              id="goal"
+              type="number"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              placeholder="10000"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="timeline" className="text-sm font-medium">Timeline (months)</Label>
+            <Input
+              id="timeline"
+              type="number"
+              value={timeline}
+              onChange={(e) => setTimeline(e.target.value)}
+              placeholder="12"
+              className="mt-1"
+            />
+          </div>
+          <Button onClick={calculateBudget} className="w-full">
+            Create Budget Plan
+          </Button>
         </div>
+      </div>
 
-        {/* Budget Analysis */}
-        {budgetAnalysis && (
-          <div className={`p-3 md:p-4 rounded-lg border mb-4 md:mb-6 ${
-            budgetAnalysis.feasible ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-          }`}>
-            <h3 className="font-semibold text-gray-700 mb-3 text-sm md:text-base">Budget Analysis</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs md:text-sm">
-                <span>Monthly Surplus:</span>
-                <span className={`font-semibold ${budgetAnalysis.surplus > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  KES {budgetAnalysis.surplus.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between text-xs md:text-sm">
-                <span>Required Savings:</span>
-                <span className="font-semibold">KES {budgetAnalysis.required.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-xs md:text-sm">
-                <span>Goal Achievable:</span>
-                <span className={`font-semibold ${budgetAnalysis.feasible ? 'text-green-600' : 'text-red-600'}`}>
-                  {budgetAnalysis.feasible ? 'Yes' : 'No'}
-                </span>
-              </div>
-              <div className="flex justify-between text-xs md:text-sm">
-                <span>Savings Rate:</span>
-                <span className="font-semibold">{budgetAnalysis.savingsRate.toFixed(1)}%</span>
-              </div>
-            </div>
+      {/* Analysis Results Card */}
+      {budgetAnalysis && (
+        <div className={`p-4 rounded-lg border shadow-sm ${
+          budgetAnalysis.feasible ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-center gap-2 mb-4">
+            {budgetAnalysis.feasible ? (
+              <CheckCircle className="text-green-600" size={20} />
+            ) : (
+              <X className="text-red-600" size={20} />
+            )}
+            <h3 className="font-semibold text-gray-700">Budget Analysis</h3>
           </div>
-        )}
-
-        {/* Financial Health Score */}
-        <div className="bg-white p-3 md:p-4 rounded-lg border mb-4 md:mb-6">
-          <h3 className="font-semibold text-gray-700 mb-3 text-sm md:text-base">Financial Health Score</h3>
           <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span>Emergency Fund</span>
-                <span>75%</span>
-              </div>
-              <Progress value={75} className="h-2" />
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Monthly Surplus/Deficit:</span>
+              <span className={`font-bold ${budgetAnalysis.surplus > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                ${budgetAnalysis.surplus.toLocaleString()}
+              </span>
             </div>
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span>Debt-to-Income</span>
-                <span>65%</span>
-              </div>
-              <Progress value={65} className="h-2" />
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Required Monthly Savings:</span>
+              <span className="font-bold">${budgetAnalysis.required.toLocaleString()}</span>
             </div>
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span>Investment Diversity</span>
-                <span>82%</span>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Goal Feasibility:</span>
+              <span className={`font-bold ${budgetAnalysis.feasible ? 'text-green-600' : 'text-red-600'}`}>
+                {budgetAnalysis.feasible ? 'Achievable' : 'Not Feasible'}
+              </span>
+            </div>
+            <div className="p-3 bg-white rounded-lg border mt-4">
+              <div className="text-sm text-gray-600">
+                {budgetAnalysis.feasible 
+                  ? `Great! You can save $${budgetAnalysis.surplus.toLocaleString()} monthly, which exceeds your target of $${budgetAnalysis.required.toLocaleString()}.`
+                  : `You need an additional $${(budgetAnalysis.required - budgetAnalysis.surplus).toLocaleString()} monthly to reach your goal. Consider reducing expenses or extending timeline.`
+                }
               </div>
-              <Progress value={82} className="h-2" />
             </div>
           </div>
         </div>
+      )}
 
-        {/* Quick Tips */}
-        <div className="bg-blue-50 p-3 md:p-4 rounded-lg border">
-          <h3 className="font-semibold text-gray-700 mb-3 text-sm md:text-base">Financial Tips</h3>
-          <ul className="text-xs md:text-sm space-y-1 md:space-y-2 text-gray-600">
-            <li>• Follow the 50/30/20 rule for budgeting</li>
-            <li>• Build emergency fund (3-6 months expenses)</li>
-            <li>• Start investing early for compound growth</li>
-            <li>• Review and adjust budget monthly</li>
-            <li>• Consider tax-advantaged accounts</li>
-          </ul>
+      {/* Financial Health Score */}
+      <div className="bg-white p-4 rounded-lg border shadow-sm">
+        <h3 className="font-semibold text-gray-700 mb-4">Financial Health Score</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm">Emergency Fund</span>
+            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Building</Badge>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm">Debt-to-Income</span>
+            <Badge variant="secondary" className="bg-green-100 text-green-800">Good</Badge>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm">Investment Diversity</span>
+            <Badge variant="secondary" className="bg-blue-100 text-blue-800">Moderate</Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Tips Section */}
+      <div className="bg-blue-50 p-4 rounded-lg border shadow-sm">
+        <h3 className="font-semibold text-gray-700 mb-4">Financial Tips</h3>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <DollarSign className="text-green-600 mt-0.5" size={16} />
+            <div className="text-sm">
+              <div className="font-medium">50/30/20 Rule</div>
+              <div className="text-gray-600">50% needs, 30% wants, 20% savings and debt repayment</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Target className="text-blue-600 mt-0.5" size={16} />
+            <div className="text-sm">
+              <div className="font-medium">Emergency Fund Priority</div>
+              <div className="text-gray-600">Build 3-6 months of expenses before aggressive investing</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <TrendingUp className="text-purple-600 mt-0.5" size={16} />
+            <div className="text-sm">
+              <div className="font-medium">Compound Interest</div>
+              <div className="text-gray-600">Start investing early to maximize compound growth potential</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

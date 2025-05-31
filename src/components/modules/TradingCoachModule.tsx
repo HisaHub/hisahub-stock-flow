@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { BookOpen, Award, TrendingUp, Target } from 'lucide-react';
+import { BookOpen, Award, GraduationCap, Play, Lock, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
 interface Course {
   id: string;
@@ -12,11 +12,12 @@ interface Course {
   lessons: number;
   duration: string;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  description: string;
 }
 
 const TradingCoachModule: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('courses');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [activeSection, setActiveSection] = useState('courses');
 
   const courses: Course[] = [
     {
@@ -25,15 +26,17 @@ const TradingCoachModule: React.FC = () => {
       progress: 75,
       lessons: 12,
       duration: '4 hours',
-      difficulty: 'Beginner'
+      difficulty: 'Beginner',
+      description: 'Learn fundamental trading concepts, market structure, and basic analysis techniques.'
     },
     {
-      id: '2',
+      id: '2', 
       title: 'Technical Analysis',
       progress: 45,
       lessons: 16,
       duration: '6 hours',
-      difficulty: 'Intermediate'
+      difficulty: 'Intermediate',
+      description: 'Master chart patterns, indicators, and technical analysis tools for better trading decisions.'
     },
     {
       id: '3',
@@ -41,187 +44,226 @@ const TradingCoachModule: React.FC = () => {
       progress: 20,
       lessons: 10,
       duration: '3 hours',
-      difficulty: 'Beginner'
+      difficulty: 'Beginner',
+      description: 'Essential risk management strategies to protect your trading capital.'
     },
     {
       id: '4',
       title: 'Options Trading',
-      progress: 0,
+      progress: 60,
       lessons: 20,
       duration: '8 hours',
-      difficulty: 'Advanced'
+      difficulty: 'Advanced',
+      description: 'Advanced options strategies for experienced traders seeking sophisticated techniques.'
     }
   ];
 
-  const achievements = [
-    { title: 'First Trade', completed: true, description: 'Complete your first trade' },
-    { title: 'Risk Master', completed: true, description: 'Complete risk management course' },
-    { title: 'Technical Analyst', completed: false, description: 'Master technical analysis' },
-    { title: 'Portfolio Builder', completed: false, description: 'Build diversified portfolio' }
+  const tradingTerms = [
+    { term: 'Bull Market', definition: 'A market characterized by rising prices and investor optimism' },
+    { term: 'Bear Market', definition: 'A market characterized by falling prices and investor pessimism' },
+    { term: 'P/E Ratio', definition: 'Price-to-earnings ratio, a valuation metric comparing stock price to earnings' },
+    { term: 'Stop Loss', definition: 'An order to sell a security when it reaches a certain price to limit losses' },
+    { term: 'Volatility', definition: 'A measure of price fluctuation over time, indicating market uncertainty' }
   ];
 
-  const tradingTerms = [
-    { term: 'Bull Market', definition: 'A market characterized by rising prices' },
-    { term: 'Bear Market', definition: 'A market characterized by falling prices' },
-    { term: 'P/E Ratio', definition: 'Price-to-earnings ratio, valuation metric' },
-    { term: 'Stop Loss', definition: 'Order to sell when price drops to certain level' },
-    { term: 'Volatility', definition: 'Measure of price fluctuation over time' }
+  const achievements = [
+    { title: 'First Steps', completed: true, description: 'Complete your first trading lesson' },
+    { title: 'Risk Master', completed: true, description: 'Complete the risk management course' },
+    { title: 'Technical Analyst', completed: false, description: 'Master technical analysis fundamentals' },
+    { title: 'Portfolio Builder', completed: false, description: 'Build a diversified trading portfolio' }
   ];
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Beginner': return 'bg-green-100 text-green-800';
+      case 'Intermediate': return 'bg-yellow-100 text-yellow-800';
+      case 'Advanced': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <div className="p-3 md:p-6 h-full space-y-4 md:space-y-6">
-      <div>
-        <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">Trading Coach</h2>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-1 mb-4">
-            <TabsTrigger value="courses" className="text-xs px-2 py-1">Courses</TabsTrigger>
-            <TabsTrigger value="progress" className="text-xs px-2 py-1">Progress</TabsTrigger>
-            <TabsTrigger value="terms" className="text-xs px-2 py-1">Terms</TabsTrigger>
-            <TabsTrigger value="achievements" className="text-xs px-2 py-1">Awards</TabsTrigger>
-          </TabsList>
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <GraduationCap className="text-blue-600" size={20} />
+        <h2 className="text-lg md:text-xl font-bold text-gray-800">Trading Coach</h2>
+      </div>
 
-          <TabsContent value="courses" className="space-y-3 md:space-y-4">
-            {!selectedCourse ? (
-              <div className="space-y-3">
-                {courses.map((course) => (
-                  <div key={course.id} className="bg-white p-3 md:p-4 rounded-lg border">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-sm md:text-base text-gray-800">{course.title}</h3>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          <span className="text-xs bg-gray-100 px-2 py-1 rounded">{course.difficulty}</span>
-                          <span className="text-xs text-gray-600">{course.lessons} lessons</span>
-                          <span className="text-xs text-gray-600">{course.duration}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span>Progress</span>
-                        <span>{course.progress}%</span>
+      {/* Navigation Tabs */}
+      <div className="flex gap-1 mb-4 bg-gray-100 p-1 rounded-lg">
+        <Button
+          variant={activeSection === 'courses' ? 'default' : 'ghost'}
+          onClick={() => setActiveSection('courses')}
+          size="sm"
+          className="flex-1 text-xs"
+        >
+          Courses
+        </Button>
+        <Button
+          variant={activeSection === 'glossary' ? 'default' : 'ghost'}
+          onClick={() => setActiveSection('glossary')}
+          size="sm"
+          className="flex-1 text-xs"
+        >
+          Glossary
+        </Button>
+        <Button
+          variant={activeSection === 'achievements' ? 'default' : 'ghost'}
+          onClick={() => setActiveSection('achievements')}
+          size="sm"
+          className="flex-1 text-xs"
+        >
+          Awards
+        </Button>
+      </div>
+
+      {/* Courses Section */}
+      {activeSection === 'courses' && (
+        <div className="space-y-4">
+          {!selectedCourse ? (
+            <>
+              {/* Learning Progress Card */}
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <h3 className="font-semibold text-gray-700 mb-4">Your Learning Progress</h3>
+                <div className="space-y-3">
+                  {courses.map((course) => (
+                    <div key={course.id} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">{course.title}</span>
+                        <span className="text-sm font-bold text-blue-600">{course.progress}%</span>
                       </div>
                       <Progress value={course.progress} className="h-2" />
                     </div>
-                    <Button 
-                      size="sm" 
-                      className="w-full text-xs"
+                  ))}
+                </div>
+              </div>
+
+              {/* Course Selection */}
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <h3 className="font-semibold text-gray-700 mb-4">Available Courses</h3>
+                <div className="space-y-2">
+                  {courses.map((course) => (
+                    <Button
+                      key={course.id}
+                      variant="outline"
                       onClick={() => setSelectedCourse(course)}
+                      className="w-full justify-start text-left h-auto p-3"
                     >
-                      {course.progress > 0 ? 'Continue Learning' : 'Start Course'}
+                      <div className="flex items-center gap-3 w-full">
+                        <BookOpen size={16} className="text-blue-600" />
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{course.title}</div>
+                          <div className="text-xs text-gray-600">{course.lessons} lessons • {course.duration}</div>
+                        </div>
+                        <Badge className={`text-xs ${getDifficultyColor(course.difficulty)}`}>
+                          {course.difficulty}
+                        </Badge>
+                      </div>
                     </Button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            ) : (
-              <div className="bg-white p-3 md:p-4 rounded-lg border">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mb-3 text-xs"
-                  onClick={() => setSelectedCourse(null)}
-                >
-                  ← Back to Courses
+            </>
+          ) : (
+            /* Selected Course Detail */
+            <div className="bg-white p-4 rounded-lg border shadow-sm">
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedCourse(null)}
+                size="sm"
+                className="mb-4"
+              >
+                ← Back to Courses
+              </Button>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-lg font-bold text-gray-800">{selectedCourse.title}</h3>
+                    <Badge className={getDifficultyColor(selectedCourse.difficulty)}>
+                      {selectedCourse.difficulty}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">{selectedCourse.description}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Lessons:</span>
+                    <span className="font-bold ml-2">{selectedCourse.lessons}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Duration:</span>
+                    <span className="font-bold ml-2">{selectedCourse.duration}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>Your Progress</span>
+                    <span className="font-bold">{selectedCourse.progress}%</span>
+                  </div>
+                  <Progress value={selectedCourse.progress} className="h-4" />
+                </div>
+
+                <Button className="w-full">
+                  <Play size={16} className="mr-2" />
+                  {selectedCourse.progress > 0 ? 'Continue Learning' : 'Start Course'}
                 </Button>
-                <h3 className="font-semibold text-base md:text-lg text-gray-800 mb-2">{selectedCourse.title}</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-xs md:text-sm">
-                    <span>Difficulty:</span>
-                    <span className="font-semibold">{selectedCourse.difficulty}</span>
-                  </div>
-                  <div className="flex justify-between text-xs md:text-sm">
-                    <span>Lessons:</span>
-                    <span className="font-semibold">{selectedCourse.lessons}</span>
-                  </div>
-                  <div className="flex justify-between text-xs md:text-sm">
-                    <span>Duration:</span>
-                    <span className="font-semibold">{selectedCourse.duration}</span>
-                  </div>
-                  <div className="mb-3">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span>Your Progress</span>
-                      <span>{selectedCourse.progress}%</span>
-                    </div>
-                    <Progress value={selectedCourse.progress} className="h-3" />
-                  </div>
-                  <Button className="w-full text-xs md:text-sm">
-                    {selectedCourse.progress > 0 ? 'Continue Learning' : 'Start Course'}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="progress" className="space-y-3 md:space-y-4">
-            <div className="bg-white p-3 md:p-4 rounded-lg border">
-              <h3 className="font-semibold text-gray-700 mb-3 text-sm md:text-base">Overall Progress</h3>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>Courses Completed</span>
-                    <span>1/4</span>
-                  </div>
-                  <Progress value={25} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>Total Learning Hours</span>
-                    <span>8.5/21</span>
-                  </div>
-                  <Progress value={40} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>Achievements Unlocked</span>
-                    <span>2/4</span>
-                  </div>
-                  <Progress value={50} className="h-2" />
-                </div>
               </div>
             </div>
-          </TabsContent>
+          )}
+        </div>
+      )}
 
-          <TabsContent value="terms" className="space-y-3 md:space-y-4">
-            <div className="bg-white p-3 md:p-4 rounded-lg border">
-              <h3 className="font-semibold text-gray-700 mb-3 text-sm md:text-base">Trading Glossary</h3>
-              <div className="space-y-2">
-                {tradingTerms.map((item, index) => (
-                  <div key={index} className="border-b pb-2 last:border-b-0">
-                    <div className="font-semibold text-xs md:text-sm text-blue-600">{item.term}</div>
-                    <div className="text-xs text-gray-600 break-words">{item.definition}</div>
-                  </div>
-                ))}
+      {/* Trading Terms Glossary */}
+      {activeSection === 'glossary' && (
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <h3 className="font-semibold text-gray-700 mb-4">Trading Terms Glossary</h3>
+          <div className="space-y-4">
+            {tradingTerms.map((item, index) => (
+              <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
+                <div className="font-bold text-sm text-blue-600 mb-1">{item.term}</div>
+                <div className="text-sm text-gray-600">{item.definition}</div>
               </div>
-            </div>
-          </TabsContent>
+            ))}
+          </div>
+        </div>
+      )}
 
-          <TabsContent value="achievements" className="space-y-3 md:space-y-4">
-            <div className="bg-white p-3 md:p-4 rounded-lg border">
-              <h3 className="font-semibold text-gray-700 mb-3 text-sm md:text-base">Achievements</h3>
-              <div className="space-y-3">
-                {achievements.map((achievement, index) => (
-                  <div key={index} className={`p-3 rounded-lg border ${
-                    achievement.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Award 
-                        size={16} 
-                        className={achievement.completed ? 'text-green-600' : 'text-gray-400'} 
-                      />
-                      <span className={`font-semibold text-xs md:text-sm ${
-                        achievement.completed ? 'text-green-800' : 'text-gray-600'
-                      }`}>
-                        {achievement.title}
-                      </span>
+      {/* Achievements Section */}
+      {activeSection === 'achievements' && (
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Award className="text-yellow-600" size={20} />
+            <h3 className="font-semibold text-gray-700">Your Achievements</h3>
+          </div>
+          <div className="space-y-3">
+            {achievements.map((achievement, index) => (
+              <div key={index} className={`p-3 rounded-lg border ${
+                achievement.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+              }`}>
+                <div className="flex items-center gap-3">
+                  {achievement.completed ? (
+                    <CheckCircle className="text-green-600" size={20} />
+                  ) : (
+                    <Lock className="text-gray-400" size={20} />
+                  )}
+                  <div className="flex-1">
+                    <div className={`font-medium text-sm ${
+                      achievement.completed ? 'text-green-800' : 'text-gray-600'
+                    }`}>
+                      {achievement.title}
                     </div>
                     <div className="text-xs text-gray-600">{achievement.description}</div>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
