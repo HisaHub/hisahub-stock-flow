@@ -4,13 +4,20 @@ import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import TradingChart from "../components/trading/TradingChart";
 import StockSummary from "../components/trading/StockSummary";
 import OrderPanel from "../components/trading/OrderPanel";
 import PositionsOrders from "../components/trading/PositionsOrders";
 import AlertsPanel from "../components/trading/AlertsPanel";
 import NewsFeed from "../components/trading/NewsFeed";
-import AIAssistant from "../components/trading/AIAssistant";
+import { ChevronDown } from "lucide-react";
 
 const kenyanStocks = [
   { symbol: "SCOM", name: "Safaricom PLC", price: 22.70, change: 2.3 },
@@ -22,40 +29,69 @@ const kenyanStocks = [
 
 const Trade: React.FC = () => {
   const [selectedStock, setSelectedStock] = useState(kenyanStocks[0]);
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
+
+  const handleStockChange = (stockSymbol: string) => {
+    const stock = kenyanStocks.find(s => s.symbol === stockSymbol);
+    if (stock) {
+      setSelectedStock(stock);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
       <HisaAIButton />
       
-      <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col px-4 py-4">
-        {/* Stock Selector */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-          {kenyanStocks.map((stock) => (
-            <button
-              key={stock.symbol}
-              onClick={() => setSelectedStock(stock)}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                selectedStock.symbol === stock.symbol
-                  ? "bg-secondary text-primary"
-                  : "bg-white/10 text-off-white hover:bg-white/20"
-              }`}
-            >
-              {stock.symbol}
-            </button>
-          ))}
+      <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col px-2 sm:px-4 py-4">
+        {/* Stock Selector Dropdown */}
+        <div className="mb-4">
+          <Select value={selectedStock.symbol} onValueChange={handleStockChange}>
+            <SelectTrigger className="w-full sm:w-80 bg-white/10 border-secondary/20 text-off-white">
+              <SelectValue>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex flex-col items-start">
+                    <span className="font-semibold">{selectedStock.symbol}</span>
+                    <span className="text-xs text-off-white/60">{selectedStock.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono">KES {selectedStock.price.toFixed(2)}</span>
+                    <span className={`text-xs ${selectedStock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {selectedStock.change >= 0 ? '+' : ''}{selectedStock.change.toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-primary border-secondary/20">
+              {kenyanStocks.map((stock) => (
+                <SelectItem key={stock.symbol} value={stock.symbol} className="text-off-white focus:bg-white/10">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex flex-col items-start">
+                      <span className="font-semibold">{stock.symbol}</span>
+                      <span className="text-xs text-off-white/60">{stock.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <span className="font-mono text-sm">KES {stock.price.toFixed(2)}</span>
+                      <span className={`text-xs ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 flex-1">
           {/* Left Column - Chart and Stock Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             <StockSummary stock={selectedStock} />
             <TradingChart symbol={selectedStock.symbol} />
           </div>
 
           {/* Right Column - Trading Panel */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <OrderPanel stock={selectedStock} />
             
             {/* Mobile Tabs for additional content */}
@@ -86,22 +122,6 @@ const Trade: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* AI Assistant Toggle */}
-        <button
-          onClick={() => setShowAIAssistant(!showAIAssistant)}
-          className="fixed bottom-20 right-4 bg-secondary text-primary p-3 rounded-full shadow-lg hover:bg-secondary/90 transition-colors lg:bottom-4"
-        >
-          🤖
-        </button>
-
-        {/* AI Assistant Overlay */}
-        {showAIAssistant && (
-          <AIAssistant 
-            stock={selectedStock} 
-            onClose={() => setShowAIAssistant(false)} 
-          />
-        )}
       </main>
 
       <ChatFAB />

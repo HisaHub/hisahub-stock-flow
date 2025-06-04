@@ -42,8 +42,8 @@ const StockSummary: React.FC<StockSummaryProps> = ({ stock }) => {
   return (
     <div className="glass-card animate-fade-in">
       <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-xl font-bold text-off-white">{stock.name}</h2>
+        <div className="flex-1">
+          <h2 className="text-lg sm:text-xl font-bold text-off-white">{stock.name}</h2>
           <p className="text-off-white/60 text-sm">{stock.symbol}</p>
         </div>
         
@@ -58,34 +58,32 @@ const StockSummary: React.FC<StockSummaryProps> = ({ stock }) => {
       </div>
 
       {/* Price Section */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <span className="text-3xl font-bold text-off-white font-mono">
-            KES {realTimePrice.toFixed(2)}
-          </span>
-          <div className={`flex items-center gap-1 px-2 py-1 rounded text-sm font-medium ${
-            isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-          }`}>
-            {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-            <span>{isPositive ? '+' : ''}{priceChange.toFixed(2)}</span>
-            <span>({isPositive ? '+' : ''}{percentChange}%)</span>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6">
+        <span className="text-2xl sm:text-3xl font-bold text-off-white font-mono">
+          KES {realTimePrice.toFixed(2)}
+        </span>
+        <div className={`flex items-center gap-1 px-2 py-1 rounded text-sm font-medium ${
+          isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+        }`}>
+          {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+          <span>{isPositive ? '+' : ''}{priceChange.toFixed(2)}</span>
+          <span>({isPositive ? '+' : ''}{percentChange}%)</span>
         </div>
       </div>
 
       {/* Key Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="text-center">
           <p className="text-off-white/60 text-xs">Market Cap</p>
-          <p className="text-off-white font-semibold">{marketCap}</p>
+          <p className="text-off-white font-semibold text-sm">{marketCap}</p>
         </div>
         <div className="text-center">
           <p className="text-off-white/60 text-xs">P/E Ratio</p>
-          <p className="text-off-white font-semibold">{peRatio}</p>
+          <p className="text-off-white font-semibold text-sm">{peRatio}</p>
         </div>
         <div className="text-center">
           <p className="text-off-white/60 text-xs">Volume</p>
-          <p className="text-off-white font-semibold">{volume}</p>
+          <p className="text-off-white font-semibold text-sm">{volume}</p>
         </div>
         <div className="text-center">
           <p className="text-off-white/60 text-xs">Day Range</p>

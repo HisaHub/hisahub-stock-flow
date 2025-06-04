@@ -7,8 +7,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  ResponsiveContainer,
-  CandlestickChart
+  ResponsiveContainer
 } from "recharts";
 import { Moon, Sun, TrendingUp, BarChart3 } from "lucide-react";
 
@@ -17,7 +16,6 @@ interface TradingChartProps {
 }
 
 const timeframes = ['1D', '1W', '1M', '3M', '1Y'];
-const chartTypes = ['line', 'candlestick'];
 
 // Mock data generator
 const generateMockData = (days: number) => {
@@ -62,10 +60,10 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
   return (
     <div className="glass-card animate-fade-in">
       {/* Chart Header */}
-      <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
         <h3 className="text-lg font-bold text-off-white">{symbol} Chart</h3>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Theme Toggle */}
           <Button
             size="sm"
@@ -91,7 +89,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
             size="sm"
             variant={showIndicators ? "secondary" : "outline"}
             onClick={() => setShowIndicators(!showIndicators)}
-            className="text-xs"
+            className="text-xs px-2"
           >
             Indicators
           </Button>
@@ -99,14 +97,14 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
       </div>
 
       {/* Timeframe Selector */}
-      <div className="flex gap-1 mb-4 overflow-x-auto">
+      <div className="flex gap-1 mb-4 overflow-x-auto pb-2">
         {timeframes.map((tf) => (
           <Button
             key={tf}
             size="sm"
             variant={selectedTimeframe === tf ? "secondary" : "outline"}
             onClick={() => setSelectedTimeframe(tf)}
-            className="flex-shrink-0 text-xs"
+            className="flex-shrink-0 text-xs px-3"
           >
             {tf}
           </Button>
@@ -114,7 +112,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
       </div>
 
       {/* Chart Container */}
-      <div className="h-80 w-full bg-white/5 rounded-lg p-4">
+      <div className="h-64 sm:h-80 w-full bg-white/5 rounded-lg p-2 sm:p-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
             <XAxis 
@@ -122,6 +120,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
               axisLine={false} 
               tickLine={false} 
               style={{ fontSize: 10, fill: '#8B949E' }} 
+              tick={{ fontSize: 10 }}
             />
             <YAxis 
               hide 
@@ -131,7 +130,8 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
                 backgroundColor: '#21262d', 
                 border: '1px solid #30363d',
                 borderRadius: '6px',
-                color: '#f0f6fc'
+                color: '#f0f6fc',
+                fontSize: '12px'
               }}
             />
             <Line 
@@ -159,7 +159,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
       {/* Chart Controls */}
       <div className="flex justify-between items-center mt-4 text-xs text-off-white/60">
         <span>Real-time data simulation</span>
-        <span>Last updated: {new Date().toLocaleTimeString()}</span>
+        <span className="hidden sm:block">Last updated: {new Date().toLocaleTimeString()}</span>
       </div>
     </div>
   );
