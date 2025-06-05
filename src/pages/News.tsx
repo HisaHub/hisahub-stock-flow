@@ -1,7 +1,15 @@
+
 import React, { useState } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FileText, Newspaper, MessageSquare, Download } from "lucide-react";
+import { FileText, Newspaper, MessageSquare, Download, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
 
@@ -26,7 +34,6 @@ const DUMMY_ARTICLES = [
 
 type CommunityPost = { name: string; content: string; timestamp: number; };
 
-// Dummy data for NSE financials
 const DUMMY_FINANCIALS = [
   { company: "Safaricom PLC", symbol: "SCOM", revenue: "KSh 310B", profit: "KSh 71B" },
   { company: "Equity Group", symbol: "EQTY", revenue: "KSh 130B", profit: "KSh 45B" },
@@ -42,6 +49,7 @@ const News: React.FC = () => {
   ]);
   const [postName, setPostName] = useState("");
   const [postContent, setPostContent] = useState("");
+  const [activeSection, setActiveSection] = useState("news");
 
   const handlePostSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +60,6 @@ const News: React.FC = () => {
     }
   };
 
-  // Download CSV for dummy data
   const downloadCSV = () => {
     const rows = [["Company", "Symbol", "Revenue", "Profit"], ...DUMMY_FINANCIALS.map(d => [d.company, d.symbol, d.revenue, d.profit])];
     const csv = rows.map(r => r.join(",")).join("\n");
@@ -65,106 +72,155 @@ const News: React.FC = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const menuItems = [
+    { id: "news", label: "NSE Stock News", icon: <Newspaper size={18} /> },
+    { id: "articles", label: "Articles", icon: <FileText size={18} /> },
+    { id: "community", label: "Community", icon: <MessageSquare size={18} /> },
+    { id: "financials", label: "Financials", icon: <Download size={18} /> },
+  ];
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "news":
+        return (
+          <div className="space-y-3">
+            {DUMMY_NEWS.map((n, idx) => (
+              <div key={idx} className="bg-background p-3 rounded-lg shadow border-l-4 border-secondary/80">
+                <div className="text-sm font-bold text-off-white">{n.headline}</div>
+                <div className="text-xs text-neutral">{n.date}</div>
+              </div>
+            ))}
+          </div>
+        );
+      case "articles":
+        return (
+          <div className="space-y-4">
+            {DUMMY_ARTICLES.map((a, idx) => (
+              <div key={idx} className="bg-background rounded-lg p-3">
+                <div className="font-bold text-secondary">{a.title}</div>
+                <div className="text-off-white text-xs mt-1">{a.excerpt}</div>
+              </div>
+            ))}
+          </div>
+        );
+      case "community":
+        return (
+          <div>
+            <form onSubmit={handlePostSubmit} className="flex flex-col gap-2 mb-3">
+              <input
+                className="rounded-md p-2 bg-charcoal text-off-white placeholder:text-neutral"
+                placeholder="Your name (optional)"
+                value={postName}
+                maxLength={24}
+                onChange={e => setPostName(e.target.value)}
+              />
+              <textarea
+                className="rounded-md p-2 bg-charcoal text-off-white placeholder:text-neutral resize-none"
+                placeholder="What do you want to share?"
+                value={postContent}
+                required
+                minLength={2}
+                maxLength={160}
+                rows={2}
+                onChange={e => setPostContent(e.target.value)}
+              />
+              <Button type="submit" className="bg-secondary text-primary mt-1 hover:bg-secondary/90 rounded font-bold">Post</Button>
+            </form>
+            <div className="space-y-3">
+              {posts.map((p, idx) => (
+                <div key={idx} className="bg-background p-3 rounded-lg shadow border-l-4 border-secondary/60">
+                  <div className="text-xs text-secondary font-semibold">{p.name || "Anonymous"}</div>
+                  <div className="text-off-white mt-1">{p.content}</div>
+                  <div className="text-[10px] text-neutral mt-1">{new Date(p.timestamp).toLocaleTimeString()}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case "financials":
+        return (
+          <div>
+            <div className="mb-3">
+              <Button onClick={downloadCSV} className="bg-secondary text-primary font-bold rounded hover:bg-secondary/90">
+                <Download size={18} className="mr-2 -ml-1" /> Download NSE Data (.csv)
+              </Button>
+            </div>
+            <div className="bg-background p-2 rounded-lg overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead>
+                  <tr className="text-secondary">
+                    <th className="p-1">Company</th>
+                    <th className="p-1">Symbol</th>
+                    <th className="p-1">Revenue</th>
+                    <th className="p-1">Profit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {DUMMY_FINANCIALS.map((row, i) => (
+                    <tr key={i}>
+                      <td className="p-1">{row.company}</td>
+                      <td className="p-1">{row.symbol}</td>
+                      <td className="p-1">{row.revenue}</td>
+                      <td className="p-1">{row.profit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors pb-20">
       <HisaAIButton />
       <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col items-center px-4 md:px-8 py-7">
-        <h2 className="text-3xl font-bold text-secondary mb-5 flex items-center gap-2">
-          <Newspaper size={30} /> News & Community
-        </h2>
-        <div className="w-full glass-card mb-4 px-1">
-          <Tabs defaultValue="news" className="w-full">
-            <TabsList className="bg-charcoal mb-2 gap-2 justify-between overflow-x-auto max-w-full">
-              <TabsTrigger value="news" className="flex gap-1 items-center"><Newspaper size={18} />NSE Stock News</TabsTrigger>
-              <TabsTrigger value="articles" className="flex gap-1 items-center"><FileText size={18} />Articles</TabsTrigger>
-              <TabsTrigger value="community" className="flex gap-1 items-center"><MessageSquare size={18} />Community</TabsTrigger>
-              <TabsTrigger value="financials" className="flex gap-1 items-center"><Download size={18} />Financials</TabsTrigger>
-            </TabsList>
-            {/* NSE Stock News Tab */}
-            <TabsContent value="news" className="space-y-3">
-              {DUMMY_NEWS.map((n, idx) => (
-                <div key={idx} className="bg-background p-3 rounded-lg shadow border-l-4 border-secondary/80 max-w-full overflow-x-auto">
-                  <div className="text-sm font-bold text-off-white">{n.headline}</div>
-                  <div className="text-xs text-neutral">{n.date}</div>
-                </div>
-              ))}
-            </TabsContent>
-            {/* Articles Tab */}
-            <TabsContent value="articles" className="space-y-4">
-              {DUMMY_ARTICLES.map((a, idx) => (
-                <div key={idx} className="bg-background rounded-lg p-3">
-                  <div className="font-bold text-secondary">{a.title}</div>
-                  <div className="text-off-white text-xs mt-1">{a.excerpt}</div>
-                </div>
-              ))}
-            </TabsContent>
-            {/* Community Tab */}
-            <TabsContent value="community">
-              <form onSubmit={handlePostSubmit} className="flex flex-col gap-2 mb-3">
-                <input
-                  className="rounded-md p-2 bg-charcoal text-off-white placeholder:text-neutral"
-                  placeholder="Your name (optional)"
-                  value={postName}
-                  maxLength={24}
-                  onChange={e => setPostName(e.target.value)}
-                />
-                <textarea
-                  className="rounded-md p-2 bg-charcoal text-off-white placeholder:text-neutral resize-none"
-                  placeholder="What do you want to share?"
-                  value={postContent}
-                  required
-                  minLength={2}
-                  maxLength={160}
-                  rows={2}
-                  onChange={e => setPostContent(e.target.value)}
-                />
-                <Button type="submit" className="bg-secondary text-primary mt-1 hover:bg-secondary/90 rounded font-bold">Post</Button>
-              </form>
-              <div className="space-y-3">
-                {posts.map((p, idx) => (
-                  <div key={idx} className="bg-background p-3 rounded-lg shadow border-l-4 border-secondary/60">
-                    <div className="text-xs text-secondary font-semibold">{p.name || "Anonymous"}</div>
-                    <div className="text-off-white mt-1">{p.content}</div>
-                    <div className="text-[10px] text-neutral mt-1">{new Date(p.timestamp).toLocaleTimeString()}</div>
-                  </div>
+        <div className="w-full flex items-center justify-between mb-5">
+          <h2 className="text-3xl font-bold text-secondary flex items-center gap-2">
+            <Newspaper size={30} /> News & Community
+          </h2>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="bg-white/10 border-secondary/20 text-off-white hover:bg-white/20">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="bg-primary border-secondary/20">
+              <SheetHeader>
+                <SheetTitle className="text-secondary">Navigation</SheetTitle>
+                <SheetDescription className="text-off-white/60">
+                  Choose a section to explore
+                </SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 space-y-2">
+                {menuItems.map((item) => (
+                  <Button
+                    key={item.id}
+                    variant={activeSection === item.id ? "secondary" : "ghost"}
+                    className="w-full justify-start gap-2 text-off-white hover:bg-white/10"
+                    onClick={() => setActiveSection(item.id)}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </Button>
                 ))}
               </div>
-            </TabsContent>
-            {/* Financials Tab */}
-            <TabsContent value="financials">
-              <div className="mb-3">
-                <Button onClick={downloadCSV} className="bg-secondary text-primary font-bold rounded hover:bg-secondary/90">
-                  <Download size={18} className="mr-2 -ml-1" /> Download NSE Data (.csv)
-                </Button>
-              </div>
-              <div className="bg-background p-2 rounded-lg overflow-x-auto">
-                <table className="w-full text-xs text-left">
-                  <thead>
-                    <tr className="text-secondary">
-                      <th className="p-1">Company</th>
-                      <th className="p-1">Symbol</th>
-                      <th className="p-1">Revenue</th>
-                      <th className="p-1">Profit</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {DUMMY_FINANCIALS.map((row, i) => (
-                      <tr key={i}>
-                        <td className="p-1">{row.company}</td>
-                        <td className="p-1">{row.symbol}</td>
-                        <td className="p-1">{row.revenue}</td>
-                        <td className="p-1">{row.profit}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </TabsContent>
-          </Tabs>
+            </SheetContent>
+          </Sheet>
+        </div>
+        
+        <div className="w-full glass-card mb-4 px-1">
+          <div className="p-4">
+            {renderContent()}
+          </div>
         </div>
       </main>
       <BottomNav />
     </div>
   );
 };
+
 export default News;
