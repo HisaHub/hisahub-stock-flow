@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Star, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -8,6 +8,10 @@ interface Stock {
   name: string;
   price: number;
   change: number;
+  marketCap?: string;
+  peRatio?: string;
+  volume?: string;
+  dayRange?: string;
 }
 
 interface StockSummaryProps {
@@ -16,28 +20,9 @@ interface StockSummaryProps {
 
 const StockSummary: React.FC<StockSummaryProps> = ({ stock }) => {
   const [isWatchlisted, setIsWatchlisted] = useState(false);
-  const [realTimePrice, setRealTimePrice] = useState(stock.price);
-  const [priceChange, setPriceChange] = useState(stock.change);
 
-  // Simulate real-time price updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const change = (Math.random() - 0.5) * 0.5;
-      setRealTimePrice(prev => Number((prev + change).toFixed(2)));
-      setPriceChange(prev => Number((prev + change * 0.1).toFixed(2)));
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [stock.symbol]);
-
-  const isPositive = priceChange >= 0;
-  const percentChange = ((priceChange / realTimePrice) * 100).toFixed(2);
-
-  // Mock additional data
-  const marketCap = "KES 1.2T";
-  const peRatio = "15.4";
-  const volume = "2.1M";
-  const dayRange = `${(realTimePrice * 0.98).toFixed(2)} - ${(realTimePrice * 1.02).toFixed(2)}`;
+  const isPositive = stock.change >= 0;
+  const percentChange = stock.change.toFixed(2);
 
   return (
     <div className="glass-card animate-fade-in">
@@ -60,13 +45,12 @@ const StockSummary: React.FC<StockSummaryProps> = ({ stock }) => {
       {/* Price Section */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6">
         <span className="text-2xl sm:text-3xl font-bold text-off-white font-mono">
-          KES {realTimePrice.toFixed(2)}
+          KES {stock.price.toFixed(2)}
         </span>
         <div className={`flex items-center gap-1 px-2 py-1 rounded text-sm font-medium ${
           isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
         }`}>
           {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-          <span>{isPositive ? '+' : ''}{priceChange.toFixed(2)}</span>
           <span>({isPositive ? '+' : ''}{percentChange}%)</span>
         </div>
       </div>
@@ -75,19 +59,19 @@ const StockSummary: React.FC<StockSummaryProps> = ({ stock }) => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="text-center">
           <p className="text-off-white/60 text-xs">Market Cap</p>
-          <p className="text-off-white font-semibold text-sm">{marketCap}</p>
+          <p className="text-off-white font-semibold text-sm">{stock.marketCap || "N/A"}</p>
         </div>
         <div className="text-center">
           <p className="text-off-white/60 text-xs">P/E Ratio</p>
-          <p className="text-off-white font-semibold text-sm">{peRatio}</p>
+          <p className="text-off-white font-semibold text-sm">{stock.peRatio || "N/A"}</p>
         </div>
         <div className="text-center">
           <p className="text-off-white/60 text-xs">Volume</p>
-          <p className="text-off-white font-semibold text-sm">{volume}</p>
+          <p className="text-off-white font-semibold text-sm">{stock.volume || "N/A"}</p>
         </div>
         <div className="text-center">
           <p className="text-off-white/60 text-xs">Day Range</p>
-          <p className="text-off-white font-semibold text-xs">{dayRange}</p>
+          <p className="text-off-white font-semibold text-xs">{stock.dayRange || `${(stock.price * 0.98).toFixed(2)} - ${(stock.price * 1.02).toFixed(2)}`}</p>
         </div>
       </div>
 

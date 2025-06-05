@@ -17,25 +17,26 @@ import OrderPanel from "../components/trading/OrderPanel";
 import PositionsOrders from "../components/trading/PositionsOrders";
 import AlertsPanel from "../components/trading/AlertsPanel";
 import NewsFeed from "../components/trading/NewsFeed";
-import { ChevronDown } from "lucide-react";
-
-const kenyanStocks = [
-  { symbol: "SCOM", name: "Safaricom PLC", price: 22.70, change: 2.3 },
-  { symbol: "EQTY", name: "Equity Group Holdings", price: 45.50, change: -1.2 },
-  { symbol: "KCB", name: "KCB Group", price: 38.25, change: 0.8 },
-  { symbol: "COOP", name: "Co-operative Bank", price: 12.85, change: 1.5 },
-  { symbol: "ABSA", name: "Absa Bank Kenya", price: 8.90, change: -0.5 }
-];
+import { useFinancialData } from "../contexts/FinancialDataContext";
 
 const Trade: React.FC = () => {
-  const [selectedStock, setSelectedStock] = useState(kenyanStocks[0]);
+  const { state } = useFinancialData();
+  const [selectedStock, setSelectedStock] = useState(state.stocks[0]);
 
   const handleStockChange = (stockSymbol: string) => {
-    const stock = kenyanStocks.find(s => s.symbol === stockSymbol);
+    const stock = state.stocks.find(s => s.symbol === stockSymbol);
     if (stock) {
       setSelectedStock(stock);
     }
   };
+
+  // Update selected stock when prices change
+  React.useEffect(() => {
+    const updatedStock = state.stocks.find(s => s.symbol === selectedStock.symbol);
+    if (updatedStock) {
+      setSelectedStock(updatedStock);
+    }
+  }, [state.stocks, selectedStock.symbol]);
 
   return (
     <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
@@ -62,7 +63,7 @@ const Trade: React.FC = () => {
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="bg-primary border-secondary/20">
-              {kenyanStocks.map((stock) => (
+              {state.stocks.map((stock) => (
                 <SelectItem key={stock.symbol} value={stock.symbol} className="text-off-white focus:bg-white/10">
                   <div className="flex items-center justify-between w-full">
                     <div className="flex flex-col items-start">
