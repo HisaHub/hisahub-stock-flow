@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,7 +8,6 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Trade from "./pages/Trade";
 import Portfolio from "./pages/Portfolio";
-import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Chatbot from "./pages/Chatbot";
 import News from "./pages/News";
@@ -25,7 +25,6 @@ const App = () => (
           <Route path="/trade" element={<Trade />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/news" element={<News />} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/chatbot" element={<Chatbot />} />
           <Route path="*" element={<NotFound />} />
