@@ -1,8 +1,8 @@
-
 import React, { useState } from "react";
 import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
+import { useTheme } from "../components/ThemeProvider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,13 +31,9 @@ import {
 } from "lucide-react";
 
 const Settings: React.FC = () => {
-  const [dark, setDark] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
-
-  React.useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
 
   const PersonalInfoSection = () => (
     <div className="space-y-6">
@@ -402,14 +398,14 @@ const Settings: React.FC = () => {
             </h2>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-white/60 text-sm">Theme</span>
+                <span className="text-off-white/60 text-sm">Theme</span>
                 <button
-                  onClick={() => setDark((v) => !v)}
+                  onClick={toggleTheme}
                   className={`transition duration-200 px-3 py-1 rounded text-sm border border-secondary 
-                    ${dark ? "bg-secondary text-primary" : "bg-white/10 text-secondary" }
+                    ${theme === 'dark' ? "bg-secondary text-primary" : "bg-white/10 text-secondary" }
                   `}
                 >
-                  {dark ? "Dark" : "Light"}
+                  {theme === 'dark' ? "Dark" : "Light"}
                 </button>
               </div>
             </div>

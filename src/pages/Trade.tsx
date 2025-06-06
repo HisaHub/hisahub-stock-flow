@@ -17,6 +17,8 @@ import OrderPanel from "../components/trading/OrderPanel";
 import PositionsOrders from "../components/trading/PositionsOrders";
 import AlertsPanel from "../components/trading/AlertsPanel";
 import NewsFeed from "../components/trading/NewsFeed";
+import WatchlistPanel from "../components/trading/WatchlistPanel";
+import ResearchPanel from "../components/trading/ResearchPanel";
 import { useFinancialData } from "../contexts/FinancialDataContext";
 
 const Trade: React.FC = () => {
@@ -98,13 +100,21 @@ const Trade: React.FC = () => {
             {/* Mobile Tabs for additional content */}
             <div className="lg:hidden">
               <Tabs defaultValue="positions" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-white/10">
+                <TabsList className="grid w-full grid-cols-5 bg-white/10 text-xs">
                   <TabsTrigger value="positions" className="text-xs">Positions</TabsTrigger>
+                  <TabsTrigger value="watchlist" className="text-xs">Watch</TabsTrigger>
+                  <TabsTrigger value="research" className="text-xs">Research</TabsTrigger>
                   <TabsTrigger value="alerts" className="text-xs">Alerts</TabsTrigger>
                   <TabsTrigger value="news" className="text-xs">News</TabsTrigger>
                 </TabsList>
                 <TabsContent value="positions" className="mt-4">
                   <PositionsOrders />
+                </TabsContent>
+                <TabsContent value="watchlist" className="mt-4">
+                  <WatchlistPanel />
+                </TabsContent>
+                <TabsContent value="research" className="mt-4">
+                  <ResearchPanel stock={selectedStock} />
                 </TabsContent>
                 <TabsContent value="alerts" className="mt-4">
                   <AlertsPanel stock={selectedStock} />
@@ -118,6 +128,8 @@ const Trade: React.FC = () => {
             {/* Desktop - Show all panels */}
             <div className="hidden lg:block space-y-6">
               <PositionsOrders />
+              <WatchlistPanel />
+              <ResearchPanel stock={selectedStock} />
               <AlertsPanel stock={selectedStock} />
               <NewsFeed stock={selectedStock} />
             </div>

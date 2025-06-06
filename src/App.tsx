@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { FinancialDataProvider } from "./contexts/FinancialDataContext";
+import { ThemeProvider } from "./components/ThemeProvider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Trade from "./pages/Trade";
@@ -27,34 +28,38 @@ const App = () => {
   if (!isAuthenticated) {
     return (
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Auth onLogin={handleLogin} />
-        </TooltipProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Auth onLogin={handleLogin} />
+          </TooltipProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     );
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <FinancialDataProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/trade" element={<Trade />} />
-              <Route path="/portfolio" element={<Portfolio />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/chatbot" element={<Chatbot />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </FinancialDataProvider>
+      <ThemeProvider>
+        <FinancialDataProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/trade" element={<Trade />} />
+                <Route path="/portfolio" element={<Portfolio />} />
+                <Route path="/news" element={<News />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/chatbot" element={<Chatbot />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </FinancialDataProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

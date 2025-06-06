@@ -13,6 +13,44 @@
     background: #131b26 !important;
     color: #F8F9FA;
   }
+
+  /* Light mode styles */
+  html[data-theme="light"] {
+    background: #F8F9FA !important;
+  }
+  
+  html[data-theme="light"] body {
+    background: #F8F9FA !important;
+    color: #131b26;
+  }
+  
+  html[data-theme="light"] .glass-card {
+    @apply bg-white shadow-xl rounded-2xl p-6 border border-gray-200 backdrop-blur-[8px];
+  }
+  
+  html[data-theme="light"] .text-off-white {
+    color: #131b26;
+  }
+  
+  html[data-theme="light"] .text-off-white\/60 {
+    color: rgba(19, 27, 38, 0.6);
+  }
+  
+  html[data-theme="light"] .text-off-white\/80 {
+    color: rgba(19, 27, 38, 0.8);
+  }
+  
+  html[data-theme="light"] .border-white\/10 {
+    border-color: rgba(19, 27, 38, 0.1);
+  }
+  
+  html[data-theme="light"] .bg-white\/5 {
+    background-color: rgba(19, 27, 38, 0.05);
+  }
+  
+  html[data-theme="light"] .bg-white\/10 {
+    background-color: rgba(19, 27, 38, 0.1);
+  }
 }
 
 .glass-card {
@@ -22,4 +60,3 @@
 .market-mono {
   font-family: 'Roboto Mono', monospace;
 }
-
