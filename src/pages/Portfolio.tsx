@@ -35,6 +35,9 @@ const Portfolio: React.FC = () => {
   const holdings = state.holdings;
   const transactions = state.transactions;
 
+  console.log("Portfolio page holdings:", holdings);
+  console.log("Portfolio data:", portfolioData);
+
   // Mock data for sections not yet implemented with real data
   const allocationData = [
     { name: "Banking", value: 17154, color: "#FFBF00" },
@@ -145,7 +148,7 @@ const Portfolio: React.FC = () => {
             return a.symbol.localeCompare(b.symbol);
           })
           .map((holding) => (
-          <div key={holding.symbol} className="glass-card p-4">
+          <div key={holding.id} className="glass-card p-4">
             <div className="flex justify-between items-start mb-2">
               <div>
                 <div className="font-semibold text-off-white text-lg">{holding.symbol}</div>
