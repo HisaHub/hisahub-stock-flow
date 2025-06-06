@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
@@ -23,100 +22,40 @@ import {
   Pie,
   Cell
 } from "recharts";
-
-const portfolioData = {
-  totalValue: 124250.34,
-  dailyChange: 3250.20,
-  dailyChangePercent: 2.6,
-  weeklyChangePercent: 5.8,
-  monthlyChangePercent: 12.4,
-};
-
-const holdings = [
-  { 
-    symbol: "SCOM", 
-    name: "Safaricom PLC", 
-    quantity: 230, 
-    avgPrice: 20.50, 
-    currentPrice: 22.85, 
-    value: 5255.50,
-    profitLoss: 540.50,
-    profitLossPercent: 11.5
-  },
-  { 
-    symbol: "KCB", 
-    name: "KCB Group", 
-    quantity: 120, 
-    avgPrice: 38.00, 
-    currentPrice: 36.20, 
-    value: 4344.00,
-    profitLoss: -216.00,
-    profitLossPercent: -4.7
-  },
-  { 
-    symbol: "EABL", 
-    name: "E.A. Breweries", 
-    quantity: 45, 
-    avgPrice: 145.00, 
-    currentPrice: 148.50, 
-    value: 6682.50,
-    profitLoss: 157.50,
-    profitLossPercent: 2.4
-  },
-  { 
-    symbol: "COOP", 
-    name: "Co-op Bank", 
-    quantity: 200, 
-    avgPrice: 18.50, 
-    currentPrice: 19.25, 
-    value: 3850.00,
-    profitLoss: 150.00,
-    profitLossPercent: 4.1
-  },
-  { 
-    symbol: "EQTY", 
-    name: "Equity Group", 
-    quantity: 80, 
-    avgPrice: 110.00, 
-    currentPrice: 112.00, 
-    value: 8960.00,
-    profitLoss: 160.00,
-    profitLossPercent: 1.8
-  },
-];
-
-const allocationData = [
-  { name: "Banking", value: 17154, color: "#FFBF00" },
-  { name: "Telecommunications", value: 5255.50, color: "#00C851" },
-  { name: "Beverages", value: 6682.50, color: "#FF4444" },
-  { name: "Others", value: 3158.34, color: "#33B5E5" },
-];
-
-const transactions = [
-  { date: "2025-05-20", type: "BUY", symbol: "SCOM", quantity: 50, price: 22.85, total: 1142.50, status: "Completed" },
-  { date: "2025-05-18", type: "SELL", symbol: "KCB", quantity: 30, price: 36.50, total: 1095.00, status: "Completed" },
-  { date: "2025-05-15", type: "BUY", symbol: "EABL", quantity: 15, price: 146.00, total: 2190.00, status: "Completed" },
-  { date: "2025-05-12", type: "DIVIDEND", symbol: "EQTY", quantity: 80, price: 2.50, total: 200.00, status: "Paid" },
-];
-
-const dividends = [
-  { symbol: "EQTY", amount: 200.00, exDate: "2025-05-10", payDate: "2025-05-25", status: "Upcoming" },
-  { symbol: "COOP", amount: 150.00, exDate: "2025-04-15", payDate: "2025-04-30", status: "Paid" },
-  { symbol: "KCB", amount: 180.00, exDate: "2025-06-01", payDate: "2025-06-15", status: "Announced" },
-];
-
-const performanceData = [
-  { date: "Jan", value: 95000 },
-  { date: "Feb", value: 98000 },
-  { date: "Mar", value: 105000 },
-  { date: "Apr", value: 112000 },
-  { date: "May", value: 124250 },
-];
+import { useFinancialData } from "../contexts/FinancialDataContext";
 
 const Portfolio: React.FC = () => {
+  const { state } = useFinancialData();
   const [activeSection, setActiveSection] = useState("overview");
   const [sortBy, setSortBy] = useState("value");
   const [filterType, setFilterType] = useState("all");
+
+  // Use real data from context
+  const portfolioData = state.portfolioData;
+  const holdings = state.holdings;
+  const transactions = state.transactions;
+
+  // Mock data for sections not yet implemented with real data
+  const allocationData = [
+    { name: "Banking", value: 17154, color: "#FFBF00" },
+    { name: "Telecommunications", value: 5255.50, color: "#00C851" },
+    { name: "Beverages", value: 6682.50, color: "#FF4444" },
+    { name: "Others", value: 3158.34, color: "#33B5E5" },
+  ];
+
+  const dividends = [
+    { symbol: "EQTY", amount: 200.00, exDate: "2025-05-10", payDate: "2025-05-25", status: "Upcoming" },
+    { symbol: "COOP", amount: 150.00, exDate: "2025-04-15", payDate: "2025-04-30", status: "Paid" },
+    { symbol: "KCB", amount: 180.00, exDate: "2025-06-01", payDate: "2025-06-15", status: "Announced" },
+  ];
+
+  const performanceData = [
+    { date: "Jan", value: 95000 },
+    { date: "Feb", value: 98000 },
+    { date: "Mar", value: 105000 },
+    { date: "Apr", value: 112000 },
+    { date: "May", value: portfolioData.totalValue },
+  ];
 
   const menuItems = [
     { id: "overview", label: "Portfolio Overview", icon: <BarChart3 size={18} /> },
@@ -191,54 +130,63 @@ const Portfolio: React.FC = () => {
         </select>
       </div>
       
-      {holdings
-        .sort((a, b) => {
-          if (sortBy === "value") return b.value - a.value;
-          if (sortBy === "profitLoss") return b.profitLoss - a.profitLoss;
-          return a.symbol.localeCompare(b.symbol);
-        })
-        .map((holding) => (
-        <div key={holding.symbol} className="glass-card p-4">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <div className="font-semibold text-off-white text-lg">{holding.symbol}</div>
-              <div className="text-xs text-neutral">{holding.name}</div>
-              <div className="text-xs text-off-white/60 mt-1">
-                {holding.quantity} shares @ KES {holding.avgPrice}
+      {holdings.length === 0 ? (
+        <div className="glass-card p-8 text-center">
+          <p className="text-off-white/60 mb-4">No holdings found</p>
+          <Button className="bg-secondary text-primary hover:bg-secondary/90">
+            Start Trading
+          </Button>
+        </div>
+      ) : (
+        holdings
+          .sort((a, b) => {
+            if (sortBy === "value") return b.value - a.value;
+            if (sortBy === "profitLoss") return b.profitLoss - a.profitLoss;
+            return a.symbol.localeCompare(b.symbol);
+          })
+          .map((holding) => (
+          <div key={holding.symbol} className="glass-card p-4">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <div className="font-semibold text-off-white text-lg">{holding.symbol}</div>
+                <div className="text-xs text-neutral">{holding.name}</div>
+                <div className="text-xs text-off-white/60 mt-1">
+                  {holding.quantity} shares @ KES {holding.avgPrice}
+                </div>
               </div>
-            </div>
-            <div className="text-right">
-              <div className="font-bold text-lg text-off-white">
-                KES {holding.value.toLocaleString()}
+              <div className="text-right">
+                <div className="font-bold text-lg text-off-white">
+                  KES {holding.value.toLocaleString()}
+                </div>
+                <div className="text-sm text-off-white/60">
+                  KES {holding.currentPrice.toFixed(2)}
+                </div>
               </div>
-              <div className="text-sm text-off-white/60">
-                KES {holding.currentPrice.toFixed(2)}
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <div className={`flex items-center gap-1 ${holding.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {holding.profitLoss >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-              <span className="font-semibold text-sm">
-                {holding.profitLoss >= 0 ? '+' : ''}KES {Math.abs(holding.profitLoss).toFixed(2)}
-              </span>
-              <span className="text-xs">
-                ({holding.profitLossPercent >= 0 ? '+' : ''}{holding.profitLossPercent}%)
-              </span>
             </div>
             
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="text-xs border-secondary/20 text-secondary hover:bg-secondary/10">
-                Buy
-              </Button>
-              <Button size="sm" variant="outline" className="text-xs border-red-500/20 text-red-400 hover:bg-red-500/10">
-                Sell
-              </Button>
+            <div className="flex justify-between items-center">
+              <div className={`flex items-center gap-1 ${holding.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {holding.profitLoss >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                <span className="font-semibold text-sm">
+                  {holding.profitLoss >= 0 ? '+' : ''}KES {Math.abs(holding.profitLoss).toFixed(2)}
+                </span>
+                <span className="text-xs">
+                  ({holding.profitLossPercent >= 0 ? '+' : ''}{holding.profitLossPercent.toFixed(2)}%)
+                </span>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" className="text-xs border-secondary/20 text-secondary hover:bg-secondary/10">
+                  Buy
+                </Button>
+                <Button size="sm" variant="outline" className="text-xs border-red-500/20 text-red-400 hover:bg-red-500/10">
+                  Sell
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 
