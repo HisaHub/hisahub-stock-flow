@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   LineChart,
   Line,
@@ -10,9 +11,10 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  ReferenceLine
+  ReferenceLine,
+  ComposedChart
 } from "recharts";
-import { Moon, Sun, TrendingUp, BarChart3, Activity, Target, Crosshair, TrendingDown } from "lucide-react";
+import { Moon, Sun, TrendingUp, BarChart3, Activity, Target, Crosshair, TrendingDown, Palette, Settings } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TradingChartProps {
@@ -21,7 +23,7 @@ interface TradingChartProps {
 
 const timeframes = ['1D', '1W', '1M', '3M', '1Y'];
 
-// Enhanced mock data generator with RSI and MACD
+// Enhanced mock data generator with OHLC data for candlesticks
 const generateMockData = (days: number) => {
   const data = [];
   let basePrice = 22.70;
@@ -31,9 +33,11 @@ const generateMockData = (days: number) => {
   
   for (let i = 0; i < days; i++) {
     const change = (Math.random() - 0.5) * 2;
+    const open = basePrice;
     basePrice += change;
-    const high = basePrice + Math.random() * 1;
-    const low = basePrice - Math.random() * 1;
+    const close = basePrice;
+    const high = Math.max(open, close) + Math.random() * 1;
+    const low = Math.min(open, close) - Math.random() * 1;
     
     // Calculate RSI (simplified)
     rsi = Math.max(0, Math.min(100, rsi + (Math.random() - 0.5) * 10));
@@ -42,18 +46,28 @@ const generateMockData = (days: number) => {
     macdLine += (Math.random() - 0.5) * 0.5;
     signalLine = signalLine * 0.9 + macdLine * 0.1;
     
+    // Calculate Bollinger Bands (simplified)
+    const sma = basePrice;
+    const upperBand = sma + 2;
+    const lowerBand = sma - 2;
+    
     data.push({
       time: new Date(Date.now() - (days - i) * 24 * 60 * 60 * 1000).toLocaleDateString(),
       price: Number(basePrice.toFixed(2)),
-      open: Number((basePrice - change).toFixed(2)),
+      open: Number(open.toFixed(2)),
       high: Number(high.toFixed(2)),
       low: Number(low.toFixed(2)),
-      close: Number(basePrice.toFixed(2)),
+      close: Number(close.toFixed(2)),
       volume: Math.floor(Math.random() * 1000000),
       rsi: Number(rsi.toFixed(2)),
       macdLine: Number(macdLine.toFixed(3)),
       signalLine: Number(signalLine.toFixed(3)),
-      histogram: Number((macdLine - signalLine).toFixed(3))
+      histogram: Number((macdLine - signalLine).toFixed(3)),
+      sma: Number(sma.toFixed(2)),
+      upperBand: Number(upperBand.toFixed(2)),
+      lowerBand: Number(lowerBand.toFixed(2)),
+      // Candlestick color based on open vs close
+      fill: close >= open ? "#22C55E" : "#EF4444"
     });
   }
   return data;
@@ -61,15 +75,30 @@ const generateMockData = (days: number) => {
 
 const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('1D');
-  const [chartType, setChartType] = useState<'line' | 'bar'>('line');
+  const [chartType, setChartType] = useState<'line' | 'candlestick'>('line');
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   const [chartData, setChartData] = useState(generateMockData(30));
-  const [showIndicators, setShowIndicators] = useState(false);
-  const [showRSI, setShowRSI] = useState(false);
-  const [showMACD, setShowMACD] = useState(false);
-  const [showAnalysisTools, setShowAnalysisTools] = useState(false);
+  const [activeIndicators, setActiveIndicators] = useState<string[]>([]);
+  const [activeTool, setActiveTool] = useState<string | null>(null);
   const [supportLevel, setSupportLevel] = useState<number | null>(null);
   const [resistanceLevel, setResistanceLevel] = useState<number | null>(null);
+  const [trendLines, setTrendLines] = useState<Array<{id: string, y: number, label: string}>>([]);
+
+  const indicators = [
+    { id: 'rsi', name: 'RSI', icon: Activity },
+    { id: 'macd', name: 'MACD', icon: TrendingDown },
+    { id: 'bollinger', name: 'Bollinger Bands', icon: BarChart3 },
+    { id: 'sma', name: 'Simple Moving Average', icon: TrendingUp }
+  ];
+
+  const tools = [
+    { id: 'trendline', name: 'Trendline', icon: TrendingUp },
+    { id: 'horizontal', name: 'Horizontal Line', icon: Crosshair },
+    { id: 'vertical', name: 'Vertical Line', icon: Crosshair },
+    { id: 'fibonacci', name: 'Fibonacci', icon: Settings },
+    { id: 'rectangle', name: 'Rectangle', icon: Target },
+    { id: 'brush', name: 'Free Draw', icon: Palette }
+  ];
 
   useEffect(() => {
     // Simulate data update when timeframe changes
@@ -85,6 +114,62 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
     setSupportLevel(Math.min(...prices) * 1.02);
     setResistanceLevel(Math.max(...prices) * 0.98);
   }, [selectedTimeframe, symbol]);
+
+  const toggleIndicator = (indicatorId: string) => {
+    setActiveIndicators(prev => 
+      prev.includes(indicatorId) 
+        ? prev.filter(id => id !== indicatorId)
+        : [...prev, indicatorId]
+    );
+  };
+
+  const handleToolSelect = (toolId: string) => {
+    setActiveTool(toolId);
+    // Simulate adding analysis lines
+    if (toolId === 'trendline' || toolId === 'horizontal') {
+      const newLine = {
+        id: `${toolId}-${Date.now()}`,
+        y: chartData[Math.floor(chartData.length / 2)]?.price || 0,
+        label: toolId === 'trendline' ? 'Trend' : 'Level'
+      };
+      setTrendLines(prev => [...prev, newLine]);
+    }
+  };
+
+  // Custom candlestick component
+  const CandlestickBar = (props: any) => {
+    const { payload, x, y, width, height } = props;
+    if (!payload) return null;
+    
+    const { open, high, low, close } = payload;
+    const isGreen = close >= open;
+    const color = isGreen ? "#22C55E" : "#EF4444";
+    const bodyHeight = Math.abs(close - open) * (height / (payload.high - payload.low));
+    const bodyY = y + (Math.max(open, close) - payload.high) * (height / (payload.high - payload.low));
+    
+    return (
+      <g>
+        {/* Wick */}
+        <line
+          x1={x + width / 2}
+          y1={y}
+          x2={x + width / 2}
+          y2={y + height}
+          stroke={color}
+          strokeWidth={1}
+        />
+        {/* Body */}
+        <rect
+          x={x + width * 0.2}
+          y={bodyY}
+          width={width * 0.6}
+          height={bodyHeight || 1}
+          fill={color}
+          stroke={color}
+        />
+      </g>
+    );
+  };
 
   return (
     <div className="glass-card animate-fade-in">
@@ -107,22 +192,87 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setChartType(chartType === 'line' ? 'bar' : 'line')}
+            onClick={() => setChartType(chartType === 'line' ? 'candlestick' : 'line')}
             className="p-2"
           >
             {chartType === 'line' ? <BarChart3 className="h-4 w-4" /> : <TrendingUp className="h-4 w-4" />}
           </Button>
           
-          {/* Analysis Tools Toggle */}
-          <Button
-            size="sm"
-            variant={showAnalysisTools ? "secondary" : "outline"}
-            onClick={() => setShowAnalysisTools(!showAnalysisTools)}
-            className="text-xs px-2"
-          >
-            <Target className="h-3 w-3 mr-1" />
-            Tools
-          </Button>
+          {/* Indicators Popover */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                size="sm"
+                variant={activeIndicators.length > 0 ? "secondary" : "outline"}
+                className="text-xs px-2"
+              >
+                <Activity className="h-3 w-3 mr-1" />
+                Indicators ({activeIndicators.length})
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 bg-primary border-secondary/20 p-3">
+              <div className="space-y-2">
+                <h4 className="font-medium text-off-white mb-3">Technical Indicators</h4>
+                {indicators.map((indicator) => {
+                  const Icon = indicator.icon;
+                  return (
+                    <div key={indicator.id} className="flex items-center space-x-2">
+                      <Button
+                        size="sm"
+                        variant={activeIndicators.includes(indicator.id) ? "secondary" : "outline"}
+                        onClick={() => toggleIndicator(indicator.id)}
+                        className="flex-1 justify-start text-xs"
+                      >
+                        <Icon className="h-3 w-3 mr-2" />
+                        {indicator.name}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+          
+          {/* Tools Popover */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                size="sm"
+                variant={activeTool ? "secondary" : "outline"}
+                className="text-xs px-2"
+              >
+                <Target className="h-3 w-3 mr-1" />
+                Tools
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 bg-primary border-secondary/20 p-3">
+              <div className="space-y-2">
+                <h4 className="font-medium text-off-white mb-3">Chart Analysis Tools</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {tools.map((tool) => {
+                    const Icon = tool.icon;
+                    return (
+                      <Button
+                        key={tool.id}
+                        size="sm"
+                        variant={activeTool === tool.id ? "secondary" : "outline"}
+                        onClick={() => handleToolSelect(tool.id)}
+                        className="text-xs p-2 h-auto flex flex-col items-center gap-1"
+                      >
+                        <Icon className="h-3 w-3" />
+                        <span className="text-xs leading-none">{tool.name}</span>
+                      </Button>
+                    );
+                  })}
+                </div>
+                {activeTool && (
+                  <div className="mt-3 p-2 bg-white/5 rounded text-xs text-off-white/80">
+                    Selected: {tools.find(t => t.id === activeTool)?.name}
+                  </div>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -141,58 +291,167 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
         ))}
       </div>
 
-      {/* Indicators Controls */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-        <Button
-          size="sm"
-          variant={showRSI ? "secondary" : "outline"}
-          onClick={() => setShowRSI(!showRSI)}
-          className="text-xs px-2"
-        >
-          <Activity className="h-3 w-3 mr-1" />
-          RSI
-        </Button>
-        <Button
-          size="sm"
-          variant={showMACD ? "secondary" : "outline"}
-          onClick={() => setShowMACD(!showMACD)}
-          className="text-xs px-2"
-        >
-          <TrendingDown className="h-3 w-3 mr-1" />
-          MACD
-        </Button>
-        <Button
-          size="sm"
-          variant={showIndicators ? "secondary" : "outline"}
-          onClick={() => setShowIndicators(!showIndicators)}
-          className="text-xs px-2"
-        >
-          Moving Avg
-        </Button>
+      {/* Main Chart */}
+      <div className="h-64 sm:h-80 w-full bg-white/5 rounded-lg p-2 sm:p-4 mb-4">
+        <ResponsiveContainer width="100%" height="100%">
+          {chartType === 'line' ? (
+            <ComposedChart data={chartData}>
+              <XAxis 
+                dataKey="time" 
+                axisLine={false} 
+                tickLine={false} 
+                style={{ fontSize: 10, fill: '#8B949E' }} 
+                tick={{ fontSize: 10 }}
+              />
+              <YAxis hide />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#21262d', 
+                  border: '1px solid #30363d',
+                  borderRadius: '6px',
+                  color: '#f0f6fc',
+                  fontSize: '12px'
+                }}
+              />
+              
+              {/* Main price line */}
+              <Line 
+                type="monotone" 
+                dataKey="price" 
+                stroke="#FFBF00" 
+                strokeWidth={2} 
+                dot={false}
+                activeDot={{ r: 4, fill: '#FFBF00' }}
+              />
+              
+              {/* Conditional indicators overlay */}
+              {activeIndicators.includes('sma') && (
+                <Line 
+                  type="monotone" 
+                  dataKey="sma" 
+                  stroke="#00D2FF" 
+                  strokeWidth={1} 
+                  dot={false}
+                  strokeDasharray="5 5"
+                />
+              )}
+              
+              {activeIndicators.includes('bollinger') && (
+                <>
+                  <Line 
+                    type="monotone" 
+                    dataKey="upperBand" 
+                    stroke="#8B5CF6" 
+                    strokeWidth={1} 
+                    dot={false}
+                    strokeDasharray="2 2"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="lowerBand" 
+                    stroke="#8B5CF6" 
+                    strokeWidth={1} 
+                    dot={false}
+                    strokeDasharray="2 2"
+                  />
+                </>
+              )}
+              
+              {/* Support/Resistance lines */}
+              {supportLevel && (
+                <ReferenceLine 
+                  y={supportLevel} 
+                  stroke="#22C55E" 
+                  strokeDasharray="3 3" 
+                  label={{ value: "Support", position: "right" }}
+                />
+              )}
+              {resistanceLevel && (
+                <ReferenceLine 
+                  y={resistanceLevel} 
+                  stroke="#EF4444" 
+                  strokeDasharray="3 3" 
+                  label={{ value: "Resistance", position: "right" }}
+                />
+              )}
+              
+              {/* User-drawn trend lines */}
+              {trendLines.map((line) => (
+                <ReferenceLine 
+                  key={line.id}
+                  y={line.y} 
+                  stroke="#FFBF00" 
+                  strokeDasharray="5 5" 
+                  label={{ value: line.label, position: "right" }}
+                />
+              ))}
+            </ComposedChart>
+          ) : (
+            <BarChart data={chartData}>
+              <XAxis 
+                dataKey="time" 
+                axisLine={false} 
+                tickLine={false} 
+                style={{ fontSize: 10, fill: '#8B949E' }} 
+                tick={{ fontSize: 10 }}
+              />
+              <YAxis hide />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#21262d', 
+                  border: '1px solid #30363d',
+                  borderRadius: '6px',
+                  color: '#f0f6fc',
+                  fontSize: '12px'
+                }}
+                formatter={(value, name) => {
+                  if (name === 'close') {
+                    const data = chartData.find(d => d.close === value);
+                    return [
+                      `O: ${data?.open} H: ${data?.high} L: ${data?.low} C: ${data?.close}`,
+                      'OHLC'
+                    ];
+                  }
+                  return [value, name];
+                }}
+              />
+              <Bar 
+                dataKey="close" 
+                shape={CandlestickBar}
+              />
+              
+              {/* Support/Resistance lines for candlestick view */}
+              {supportLevel && (
+                <ReferenceLine 
+                  y={supportLevel} 
+                  stroke="#22C55E" 
+                  strokeDasharray="3 3" 
+                  label={{ value: "Support", position: "right" }}
+                />
+              )}
+              {resistanceLevel && (
+                <ReferenceLine 
+                  y={resistanceLevel} 
+                  stroke="#EF4444" 
+                  strokeDasharray="3 3" 
+                  label={{ value: "Resistance", position: "right" }}
+                />
+              )}
+            </BarChart>
+          )}
+        </ResponsiveContainer>
       </div>
 
-      {/* Chart Tabs */}
-      <Tabs defaultValue="main" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white/10 mb-4">
-          <TabsTrigger value="main" className="text-xs">Price</TabsTrigger>
-          <TabsTrigger value="rsi" className="text-xs" disabled={!showRSI}>RSI</TabsTrigger>
-          <TabsTrigger value="macd" className="text-xs" disabled={!showMACD}>MACD</TabsTrigger>
-        </TabsList>
-
-        {/* Main Price Chart */}
-        <TabsContent value="main">
-          <div className="h-64 sm:h-80 w-full bg-white/5 rounded-lg p-2 sm:p-4">
-            <ResponsiveContainer width="100%" height="100%">
-              {chartType === 'line' ? (
+      {/* Secondary Indicator Charts */}
+      {activeIndicators.length > 0 && (
+        <div className="space-y-3">
+          {activeIndicators.includes('rsi') && (
+            <div className="h-24 w-full bg-white/5 rounded-lg p-2">
+              <div className="text-xs text-off-white/60 mb-1">RSI (14)</div>
+              <ResponsiveContainer width="100%" height="80%">
                 <LineChart data={chartData}>
-                  <XAxis 
-                    dataKey="time" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    style={{ fontSize: 10, fill: '#8B949E' }} 
-                    tick={{ fontSize: 10 }}
-                  />
-                  <YAxis hide />
+                  <XAxis dataKey="time" hide />
+                  <YAxis domain={[0, 100]} hide />
                   <Tooltip 
                     contentStyle={{ 
                       backgroundColor: '#21262d', 
@@ -204,48 +463,24 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
                   />
                   <Line 
                     type="monotone" 
-                    dataKey="price" 
-                    stroke="#FFBF00" 
+                    dataKey="rsi" 
+                    stroke="#8B5CF6" 
                     strokeWidth={2} 
                     dot={false}
-                    activeDot={{ r: 4, fill: '#FFBF00' }}
                   />
-                  {showIndicators && (
-                    <Line 
-                      type="monotone" 
-                      dataKey="close" 
-                      stroke="#00D2FF" 
-                      strokeWidth={1} 
-                      dot={false}
-                      strokeDasharray="5 5"
-                    />
-                  )}
-                  {showAnalysisTools && supportLevel && (
-                    <ReferenceLine 
-                      y={supportLevel} 
-                      stroke="#22C55E" 
-                      strokeDasharray="3 3" 
-                      label={{ value: "Support", position: "right" }}
-                    />
-                  )}
-                  {showAnalysisTools && resistanceLevel && (
-                    <ReferenceLine 
-                      y={resistanceLevel} 
-                      stroke="#EF4444" 
-                      strokeDasharray="3 3" 
-                      label={{ value: "Resistance", position: "right" }}
-                    />
-                  )}
+                  <ReferenceLine y={70} stroke="#EF4444" strokeDasharray="2 2" />
+                  <ReferenceLine y={30} stroke="#22C55E" strokeDasharray="2 2" />
                 </LineChart>
-              ) : (
-                <BarChart data={chartData}>
-                  <XAxis 
-                    dataKey="time" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    style={{ fontSize: 10, fill: '#8B949E' }} 
-                    tick={{ fontSize: 10 }}
-                  />
+              </ResponsiveContainer>
+            </div>
+          )}
+          
+          {activeIndicators.includes('macd') && (
+            <div className="h-24 w-full bg-white/5 rounded-lg p-2">
+              <div className="text-xs text-off-white/60 mb-1">MACD (12,26,9)</div>
+              <ResponsiveContainer width="100%" height="80%">
+                <ComposedChart data={chartData}>
+                  <XAxis dataKey="time" hide />
                   <YAxis hide />
                   <Tooltip 
                     contentStyle={{ 
@@ -256,123 +491,36 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
                       fontSize: '12px'
                     }}
                   />
-                  <Bar dataKey="volume" fill="#FFBF00" opacity={0.7} />
-                  {showAnalysisTools && supportLevel && (
-                    <ReferenceLine 
-                      y={supportLevel} 
-                      stroke="#22C55E" 
-                      strokeDasharray="3 3" 
-                      label={{ value: "Support", position: "right" }}
-                    />
-                  )}
-                  {showAnalysisTools && resistanceLevel && (
-                    <ReferenceLine 
-                      y={resistanceLevel} 
-                      stroke="#EF4444" 
-                      strokeDasharray="3 3" 
-                      label={{ value: "Resistance", position: "right" }}
-                    />
-                  )}
-                </BarChart>
-              )}
-            </ResponsiveContainer>
-          </div>
-        </TabsContent>
-
-        {/* RSI Chart */}
-        <TabsContent value="rsi">
-          <div className="h-32 w-full bg-white/5 rounded-lg p-2 sm:p-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <XAxis 
-                  dataKey="time" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  style={{ fontSize: 10, fill: '#8B949E' }} 
-                  tick={{ fontSize: 10 }}
-                />
-                <YAxis domain={[0, 100]} hide />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#21262d', 
-                    border: '1px solid #30363d',
-                    borderRadius: '6px',
-                    color: '#f0f6fc',
-                    fontSize: '12px'
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="rsi" 
-                  stroke="#8B5CF6" 
-                  strokeWidth={2} 
-                  dot={false}
-                />
-                <ReferenceLine y={70} stroke="#EF4444" strokeDasharray="2 2" />
-                <ReferenceLine y={30} stroke="#22C55E" strokeDasharray="2 2" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </TabsContent>
-
-        {/* MACD Chart */}
-        <TabsContent value="macd">
-          <div className="h-32 w-full bg-white/5 rounded-lg p-2 sm:p-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis 
-                  dataKey="time" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  style={{ fontSize: 10, fill: '#8B949E' }} 
-                  tick={{ fontSize: 10 }}
-                />
-                <YAxis hide />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#21262d', 
-                    border: '1px solid #30363d',
-                    borderRadius: '6px',
-                    color: '#f0f6fc',
-                    fontSize: '12px'
-                  }}
-                />
-                <Bar dataKey="histogram" fill="#FFBF00" />
-                <Line 
-                  type="monotone" 
-                  dataKey="macdLine" 
-                  stroke="#00D2FF" 
-                  strokeWidth={1} 
-                  dot={false}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="signalLine" 
-                  stroke="#EF4444" 
-                  strokeWidth={1} 
-                  dot={false}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </TabsContent>
-      </Tabs>
+                  <Bar dataKey="histogram" fill="#FFBF00" opacity={0.7} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="macdLine" 
+                    stroke="#00D2FF" 
+                    strokeWidth={1} 
+                    dot={false}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="signalLine" 
+                    stroke="#EF4444" 
+                    strokeWidth={1} 
+                    dot={false}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Chart Controls */}
       <div className="flex justify-between items-center mt-4 text-xs text-off-white/60">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <span>Real-time data simulation</span>
-          {showAnalysisTools && (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-0.5 bg-green-500"></div>
-                <span>Support</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-0.5 bg-red-500"></div>
-                <span>Resistance</span>
-              </div>
-            </div>
+          {activeIndicators.length > 0 && (
+            <span className="hidden sm:inline">
+              Active: {activeIndicators.join(', ').toUpperCase()}
+            </span>
           )}
         </div>
         <span className="hidden sm:block">Last updated: {new Date().toLocaleTimeString()}</span>
