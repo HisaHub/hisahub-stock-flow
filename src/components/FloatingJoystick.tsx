@@ -52,7 +52,7 @@ const FloatingJoystick: React.FC<FloatingJoystickProps> = ({ activeTab, onTabCha
     <>
       {/* Onboarding Hint */}
       {showHint && (
-        <div className="fixed top-1/2 right-28 z-40 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-3 text-white text-sm animate-fade-in transform -translate-y-1/2">
+        <div className="fixed top-1/2 right-24 z-40 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-3 text-white text-sm animate-fade-in transform -translate-y-1/2">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
             Tap to navigate sections
@@ -61,7 +61,7 @@ const FloatingJoystick: React.FC<FloatingJoystickProps> = ({ activeTab, onTabCha
       )}
 
       {/* Floating Joystick Container */}
-      <div className="fixed top-1/2 right-6 z-30 transform -translate-y-1/2">
+      <div className="fixed top-1/2 right-12 z-30 transform -translate-y-1/2">
         <div className="relative">
           {/* Menu Items */}
           {isExpanded && (
