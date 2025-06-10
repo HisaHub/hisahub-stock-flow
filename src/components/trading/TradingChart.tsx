@@ -225,7 +225,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
                       y={supportLevel} 
                       stroke="#22C55E" 
                       strokeDasharray="3 3" 
-                      label={{ value: "Support", position: "topRight" }}
+                      label={{ value: "Support", position: "right" }}
                     />
                   )}
                   {showAnalysisTools && resistanceLevel && (
@@ -233,7 +233,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
                       y={resistanceLevel} 
                       stroke="#EF4444" 
                       strokeDasharray="3 3" 
-                      label={{ value: "Resistance", position: "topRight" }}
+                      label={{ value: "Resistance", position: "right" }}
                     />
                   )}
                 </LineChart>
@@ -262,7 +262,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
                       y={supportLevel} 
                       stroke="#22C55E" 
                       strokeDasharray="3 3" 
-                      label={{ value: "Support", position: "topRight" }}
+                      label={{ value: "Support", position: "right" }}
                     />
                   )}
                   {showAnalysisTools && resistanceLevel && (
@@ -270,7 +270,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
                       y={resistanceLevel} 
                       stroke="#EF4444" 
                       strokeDasharray="3 3" 
-                      label={{ value: "Resistance", position: "topRight" }}
+                      label={{ value: "Resistance", position: "right" }}
                     />
                   )}
                 </BarChart>
