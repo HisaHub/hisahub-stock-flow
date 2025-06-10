@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
+import FloatingJoystick from "../components/FloatingJoystick";
 import { useTheme } from "../components/ThemeProvider";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,12 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { 
-  User, 
-  CreditCard, 
-  TrendingUp, 
   Shield, 
   Bell, 
-  Bot, 
   Globe, 
   Briefcase, 
   FileText, 
@@ -27,7 +23,10 @@ import {
   EyeOff,
   Smartphone,
   Check,
-  X
+  CreditCard,
+  User, 
+  TrendingUp, 
+  Bot
 } from "lucide-react";
 
 const Settings: React.FC = () => {
@@ -387,6 +386,18 @@ const Settings: React.FC = () => {
     }
   };
 
+  const getSectionTitle = () => {
+    switch(activeTab) {
+      case "personal": return "Personal Information";
+      case "banking": return "Banking & Payments";
+      case "trading": return "Trading Preferences";
+      case "security": return "Security & Privacy";
+      case "notifications": return "Notifications & Alerts";
+      case "ai": return "AI Assistant";
+      default: return "Personal Information";
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
       <HisaAIButton />
@@ -411,39 +422,18 @@ const Settings: React.FC = () => {
             </div>
           </div>
 
-          <div className="glass-card">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mb-6">
-                <TabsTrigger value="personal" className="flex items-center gap-2 text-xs">
-                  <User className="w-4 h-4" />
-                  Personal
-                </TabsTrigger>
-                <TabsTrigger value="banking" className="flex items-center gap-2 text-xs">
-                  <CreditCard className="w-4 h-4" />
-                  Banking
-                </TabsTrigger>
-                <TabsTrigger value="trading" className="flex items-center gap-2 text-xs">
-                  <TrendingUp className="w-4 h-4" />
-                  Trading
-                </TabsTrigger>
-                <TabsTrigger value="security" className="flex items-center gap-2 text-xs">
-                  <Shield className="w-4 h-4" />
-                  Security
-                </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex items-center gap-2 text-xs">
-                  <Bell className="w-4 h-4" />
-                  Alerts
-                </TabsTrigger>
-                <TabsTrigger value="ai" className="flex items-center gap-2 text-xs">
-                  <Bot className="w-4 h-4" />
-                  AI
-                </TabsTrigger>
-              </TabsList>
+          {/* Section Title */}
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold text-secondary mb-2">
+              {getSectionTitle()}
+            </h3>
+            <div className="h-1 w-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded"></div>
+          </div>
 
-              <div className="min-h-[500px]">
-                {renderTabContent()}
-              </div>
-            </Tabs>
+          <div className="glass-card">
+            <div className="min-h-[500px] p-6">
+              {renderTabContent()}
+            </div>
           </div>
 
           {/* Quick Access Cards */}
@@ -477,6 +467,10 @@ const Settings: React.FC = () => {
             </Card>
           </div>
         </div>
+        
+        {/* Floating Joystick Menu */}
+        <FloatingJoystick activeTab={activeTab} onTabChange={setActiveTab} />
+        
         <ChatFAB />
       </main>
       <BottomNav />
