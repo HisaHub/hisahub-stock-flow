@@ -28,24 +28,25 @@ interface Stock {
   change: number;
 }
 
-interface OrderPanelProps {
-  stock: Stock;
+interface Broker {
+  id: string;
+  name: string;
+  fee: string;
 }
 
-const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
+interface OrderPanelProps {
+  stock: Stock;
+  selectedBroker: string;
+  brokers: Broker[];
+}
+
+const OrderPanel: React.FC<OrderPanelProps> = ({ stock, selectedBroker, brokers }) => {
   const [orderType, setOrderType] = useState("market");
   const [quantity, setQuantity] = useState("");
   const [limitPrice, setLimitPrice] = useState("");
   const [stopPrice, setStopPrice] = useState("");
-  const [selectedBroker, setSelectedBroker] = useState("genghis");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [orderSide, setOrderSide] = useState<"buy" | "sell">("buy");
-
-  const brokers = [
-    { id: "genghis", name: "Genghis Capital", fee: "0.25%" },
-    { id: "kestrel", name: "Kestrel Capital", fee: "0.30%" },
-    { id: "cytonn", name: "Cytonn Investments", fee: "0.28%" },
-  ];
 
   const calculateTotal = () => {
     const qty = parseFloat(quantity) || 0;
@@ -80,7 +81,8 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
 
   const confirmOrder = () => {
     const { total } = calculateTotal();
-    toast.success(`${orderSide.toUpperCase()} order placed for ${quantity} shares of ${stock.symbol} - Total: KES ${total.toFixed(2)}`);
+    const currentBroker = brokers.find(b => b.id === selectedBroker);
+    toast.success(`${orderSide.toUpperCase()} order placed for ${quantity} shares of ${stock.symbol} via ${currentBroker?.name} - Total: KES ${total.toFixed(2)}`);
     setShowConfirmation(false);
     setQuantity("");
     setLimitPrice("");
@@ -88,6 +90,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
   };
 
   const { subtotal, fee, total } = calculateTotal();
+  const currentBroker = brokers.find(b => b.id === selectedBroker);
 
   return (
     <div className="glass-card animate-fade-in">
@@ -111,15 +114,13 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
             setLimitPrice={setLimitPrice}
             stopPrice={stopPrice}
             setStopPrice={setStopPrice}
-            selectedBroker={selectedBroker}
-            setSelectedBroker={setSelectedBroker}
-            brokers={brokers}
             stock={stock}
             subtotal={subtotal}
             fee={fee}
             total={total}
             onPlaceOrder={handlePlaceOrder}
             orderSide="buy"
+            currentBroker={currentBroker}
           />
         </TabsContent>
 
@@ -133,15 +134,13 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
             setLimitPrice={setLimitPrice}
             stopPrice={stopPrice}
             setStopPrice={setStopPrice}
-            selectedBroker={selectedBroker}
-            setSelectedBroker={setSelectedBroker}
-            brokers={brokers}
             stock={stock}
             subtotal={subtotal}
             fee={fee}
             total={total}
             onPlaceOrder={handlePlaceOrder}
             orderSide="sell"
+            currentBroker={currentBroker}
           />
         </TabsContent>
       </Tabs>
@@ -176,6 +175,10 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
               <span className="text-off-white">
                 KES {orderType === "market" ? stock.price.toFixed(2) : limitPrice}
               </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-off-white/60">Broker:</span>
+              <span className="text-off-white">{currentBroker?.name}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-off-white/60">Broker Fee:</span>
@@ -213,21 +216,19 @@ interface OrderFormProps {
   setLimitPrice: (price: string) => void;
   stopPrice: string;
   setStopPrice: (price: string) => void;
-  selectedBroker: string;
-  setSelectedBroker: (broker: string) => void;
-  brokers: Array<{id: string, name: string, fee: string}>;
   stock: Stock;
   subtotal: number;
   fee: number;
   total: number;
   onPlaceOrder: () => void;
   orderSide: "buy" | "sell";
+  currentBroker?: Broker;
 }
 
 const OrderForm: React.FC<OrderFormProps> = ({
   orderType, setOrderType, quantity, setQuantity, limitPrice, setLimitPrice,
-  stopPrice, setStopPrice, selectedBroker, setSelectedBroker, brokers,
-  stock, subtotal, fee, total, onPlaceOrder, orderSide
+  stopPrice, setStopPrice, stock, subtotal, fee, total, onPlaceOrder, 
+  orderSide, currentBroker
 }) => (
   <>
     {/* Order Type Selection */}
@@ -286,24 +287,15 @@ const OrderForm: React.FC<OrderFormProps> = ({
       </div>
     )}
 
-    {/* Broker Selection */}
-    <div className="space-y-2">
-      <Label className="text-off-white">Broker</Label>
-      <Select value={selectedBroker} onValueChange={setSelectedBroker}>
-        <SelectTrigger className="bg-white/10 border-secondary/20 text-off-white">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent className="bg-primary border-secondary/20">
-          {brokers.map((broker) => (
-            <SelectItem key={broker.id} value={broker.id}>
-              <div className="flex justify-between items-center w-full">
-                <span>{broker.name}</span>
-                <span className="text-xs text-off-white/60 ml-2">{broker.fee}</span>
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    {/* Selected Broker Display */}
+    <div className="bg-white/5 rounded-lg p-3">
+      <div className="flex justify-between items-center">
+        <span className="text-off-white/60 text-sm">Selected Broker:</span>
+        <div className="text-right">
+          <span className="text-off-white font-medium">{currentBroker?.name}</span>
+          <div className="text-xs text-off-white/60">Fee: {currentBroker?.fee}</div>
+        </div>
+      </div>
     </div>
 
     {/* Order Summary */}
