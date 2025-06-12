@@ -1,5 +1,5 @@
-
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
@@ -24,6 +24,7 @@ import ResearchPanel from "../components/trading/ResearchPanel";
 import { useFinancialData } from "../contexts/FinancialDataContext";
 
 const Trade: React.FC = () => {
+  const navigate = useNavigate();
   const { state } = useFinancialData();
   const [selectedStock, setSelectedStock] = useState(state.stocks[0]);
 
@@ -35,8 +36,7 @@ const Trade: React.FC = () => {
   };
 
   const handleBrokerLogin = () => {
-    // TODO: Navigate to broker integration page
-    console.log("Navigate to broker login page");
+    navigate("/broker-integration");
   };
 
   // Update selected stock when prices change

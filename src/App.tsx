@@ -15,6 +15,7 @@ import Settings from "./pages/Settings";
 import Chatbot from "./pages/Chatbot";
 import News from "./pages/News";
 import Auth from "./pages/Auth";
+import BrokerIntegration from "./pages/BrokerIntegration";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => {
                 <Route path="/news" element={<News />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/chatbot" element={<Chatbot />} />
+                <Route path="/broker-integration" element={<BrokerIntegration />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
