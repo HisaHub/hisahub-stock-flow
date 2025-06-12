@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,25 +27,20 @@ interface Stock {
   change: number;
 }
 
-interface Broker {
-  id: string;
-  name: string;
-  fee: string;
-}
-
 interface OrderPanelProps {
   stock: Stock;
-  selectedBroker: string;
-  brokers: Broker[];
 }
 
-const OrderPanel: React.FC<OrderPanelProps> = ({ stock, selectedBroker, brokers }) => {
+const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
   const [orderType, setOrderType] = useState("market");
   const [quantity, setQuantity] = useState("");
   const [limitPrice, setLimitPrice] = useState("");
   const [stopPrice, setStopPrice] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [orderSide, setOrderSide] = useState<"buy" | "sell">("buy");
+
+  // Default broker for now (can be updated when broker login is implemented)
+  const defaultBroker = { id: "genghis", name: "Genghis Capital", fee: "0.25%" };
 
   const calculateTotal = () => {
     const qty = parseFloat(quantity) || 0;
@@ -81,8 +75,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock, selectedBroker, brokers 
 
   const confirmOrder = () => {
     const { total } = calculateTotal();
-    const currentBroker = brokers.find(b => b.id === selectedBroker);
-    toast.success(`${orderSide.toUpperCase()} order placed for ${quantity} shares of ${stock.symbol} via ${currentBroker?.name} - Total: KES ${total.toFixed(2)}`);
+    toast.success(`${orderSide.toUpperCase()} order placed for ${quantity} shares of ${stock.symbol} via ${defaultBroker.name} - Total: KES ${total.toFixed(2)}`);
     setShowConfirmation(false);
     setQuantity("");
     setLimitPrice("");
@@ -90,7 +83,6 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock, selectedBroker, brokers 
   };
 
   const { subtotal, fee, total } = calculateTotal();
-  const currentBroker = brokers.find(b => b.id === selectedBroker);
 
   return (
     <div className="glass-card animate-fade-in">
@@ -120,7 +112,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock, selectedBroker, brokers 
             total={total}
             onPlaceOrder={handlePlaceOrder}
             orderSide="buy"
-            currentBroker={currentBroker}
+            currentBroker={defaultBroker}
           />
         </TabsContent>
 
@@ -140,7 +132,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock, selectedBroker, brokers 
             total={total}
             onPlaceOrder={handlePlaceOrder}
             orderSide="sell"
-            currentBroker={currentBroker}
+            currentBroker={defaultBroker}
           />
         </TabsContent>
       </Tabs>
@@ -178,7 +170,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock, selectedBroker, brokers 
             </div>
             <div className="flex justify-between">
               <span className="text-off-white/60">Broker:</span>
-              <span className="text-off-white">{currentBroker?.name}</span>
+              <span className="text-off-white">{defaultBroker.name}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-off-white/60">Broker Fee:</span>
@@ -222,7 +214,7 @@ interface OrderFormProps {
   total: number;
   onPlaceOrder: () => void;
   orderSide: "buy" | "sell";
-  currentBroker?: Broker;
+  currentBroker?: { id: string; name: string; fee: string };
 }
 
 const OrderForm: React.FC<OrderFormProps> = ({

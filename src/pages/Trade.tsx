@@ -11,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { LogIn } from "lucide-react";
 import TradingChart from "../components/trading/TradingChart";
 import StockSummary from "../components/trading/StockSummary";
 import OrderPanel from "../components/trading/OrderPanel";
@@ -24,19 +26,17 @@ import { useFinancialData } from "../contexts/FinancialDataContext";
 const Trade: React.FC = () => {
   const { state } = useFinancialData();
   const [selectedStock, setSelectedStock] = useState(state.stocks[0]);
-  const [selectedBroker, setSelectedBroker] = useState("genghis");
-
-  const brokers = [
-    { id: "genghis", name: "Genghis Capital", fee: "0.25%" },
-    { id: "kestrel", name: "Kestrel Capital", fee: "0.30%" },
-    { id: "cytonn", name: "Cytonn Investments", fee: "0.28%" },
-  ];
 
   const handleStockChange = (stockSymbol: string) => {
     const stock = state.stocks.find(s => s.symbol === stockSymbol);
     if (stock) {
       setSelectedStock(stock);
     }
+  };
+
+  const handleBrokerLogin = () => {
+    // TODO: Navigate to broker integration page
+    console.log("Navigate to broker login page");
   };
 
   // Update selected stock when prices change
@@ -52,7 +52,7 @@ const Trade: React.FC = () => {
       <HisaAIButton />
       
       <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col px-2 sm:px-4 py-4">
-        {/* Stock and Broker Selector Row */}
+        {/* Stock Selector and Broker Login Row */}
         <div className="mb-4 flex flex-col sm:flex-row gap-4">
           {/* Stock Selector */}
           <div className="flex-1">
@@ -94,32 +94,16 @@ const Trade: React.FC = () => {
             </Select>
           </div>
 
-          {/* Broker Selector */}
-          <div className="w-full sm:w-80">
-            <Select value={selectedBroker} onValueChange={setSelectedBroker}>
-              <SelectTrigger className="w-full bg-white/10 border-secondary/20 text-off-white">
-                <SelectValue>
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-semibold">
-                      {brokers.find(b => b.id === selectedBroker)?.name}
-                    </span>
-                    <span className="text-xs text-off-white/60">
-                      Fee: {brokers.find(b => b.id === selectedBroker)?.fee}
-                    </span>
-                  </div>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-primary border-secondary/20">
-                {brokers.map((broker) => (
-                  <SelectItem key={broker.id} value={broker.id} className="text-off-white focus:bg-white/10">
-                    <div className="flex justify-between items-center w-full">
-                      <span>{broker.name}</span>
-                      <span className="text-xs text-off-white/60 ml-2">{broker.fee}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Broker Login Button */}
+          <div className="w-full sm:w-auto">
+            <Button
+              onClick={handleBrokerLogin}
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border border-secondary/20 text-off-white px-4 py-2 h-full"
+              variant="outline"
+            >
+              <LogIn className="w-5 h-5 mr-2" />
+              Broker Login
+            </Button>
           </div>
         </div>
 
@@ -133,7 +117,7 @@ const Trade: React.FC = () => {
 
           {/* Right Column - Trading Panel */}
           <div className="space-y-4 sm:space-y-6">
-            <OrderPanel stock={selectedStock} selectedBroker={selectedBroker} brokers={brokers} />
+            <OrderPanel stock={selectedStock} />
             
             {/* Mobile Tabs for additional content */}
             <div className="lg:hidden">
