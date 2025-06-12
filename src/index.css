@@ -30,7 +30,7 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   }
   
-  /* Light theme text colors */
+  /* Light theme text colors - IMPROVED CONTRAST */
   html[data-theme="light"] .text-off-white {
     color: #1A1A1A;
   }
@@ -41,6 +41,25 @@
   
   html[data-theme="light"] .text-off-white\/80 {
     color: #2D3748;
+  }
+  
+  /* CRITICAL FIX: Light theme text on navy backgrounds */
+  html[data-theme="light"] .bg-primary .text-off-white,
+  html[data-theme="light"] .bg-nav-bg .text-off-white,
+  html[data-theme="light"] [class*="bg-primary"] .text-off-white {
+    color: #FFFFFF !important;
+  }
+  
+  html[data-theme="light"] .bg-primary .text-off-white\/60,
+  html[data-theme="light"] .bg-nav-bg .text-off-white\/60,
+  html[data-theme="light"] [class*="bg-primary"] .text-off-white\/60 {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+  
+  html[data-theme="light"] .bg-primary .text-off-white\/80,
+  html[data-theme="light"] .bg-nav-bg .text-off-white\/80,
+  html[data-theme="light"] [class*="bg-primary"] .text-off-white\/80 {
+    color: rgba(255, 255, 255, 0.9) !important;
   }
   
   /* Light theme borders and backgrounds */
@@ -56,15 +75,23 @@
     background-color: #EDF2F7;
   }
   
-  /* Light theme navigation */
+  /* Light theme navigation - IMPROVED CONTRAST */
   html[data-theme="light"] .bg-nav-bg {
     background-color: #FFFFFF;
     border-bottom: 1px solid #E2E8F0;
   }
   
-  /* Light theme primary colors */
+  /* Ensure icons are visible on navy backgrounds in light mode */
+  html[data-theme="light"] .bg-primary svg,
+  html[data-theme="light"] .bg-nav-bg svg,
+  html[data-theme="light"] [class*="bg-primary"] svg {
+    color: #FFFFFF !important;
+  }
+  
+  /* Light theme primary colors - when used as background, ensure white text */
   html[data-theme="light"] .bg-primary {
     background-color: #005C9D;
+    color: #FFFFFF !important;
   }
   
   html[data-theme="light"] .text-primary {
@@ -116,9 +143,10 @@
     background-color: #FFFFFF;
   }
   
-  /* Light theme button styles */
+  /* Light theme button styles - IMPROVED CONTRAST */
   html[data-theme="light"] .bg-charcoal {
     background-color: #005C9D;
+    color: #FFFFFF !important;
   }
   
   html[data-theme="light"] .text-charcoal {
@@ -132,6 +160,26 @@
   
   html[data-theme="light"] .hover\:bg-charcoal\/10:hover {
     background-color: rgba(0, 92, 157, 0.1);
+  }
+  
+  /* CRITICAL: Light theme specific overrides for navy elements */
+  html[data-theme="light"] .bg-primary *,
+  html[data-theme="light"] [style*="background: #131b26"] *,
+  html[data-theme="light"] [style*="background-color: #131b26"] * {
+    color: #FFFFFF !important;
+  }
+  
+  /* Ensure proper contrast for nested elements */
+  html[data-theme="light"] .bg-primary h1,
+  html[data-theme="light"] .bg-primary h2,
+  html[data-theme="light"] .bg-primary h3,
+  html[data-theme="light"] .bg-primary h4,
+  html[data-theme="light"] .bg-primary h5,
+  html[data-theme="light"] .bg-primary h6,
+  html[data-theme="light"] .bg-primary p,
+  html[data-theme="light"] .bg-primary span,
+  html[data-theme="light"] .bg-primary div {
+    color: inherit;
   }
   
   /* Light theme input styling */
@@ -180,6 +228,22 @@
   
   html[data-theme="light"] .shadow-lg {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  }
+  
+  /* ADDITIONAL FIX: Force white text on any element with navy background in light mode */
+  html[data-theme="light"] [class*="bg-primary"],
+  html[data-theme="light"] [style*="background: #131b26"],
+  html[data-theme="light"] [style*="background-color: #131b26"],
+  html[data-theme="light"] [class*="bg-nav-bg"] {
+    color: #FFFFFF !important;
+  }
+  
+  html[data-theme="light"] [class*="bg-primary"] svg,
+  html[data-theme="light"] [style*="background: #131b26"] svg,
+  html[data-theme="light"] [style*="background-color: #131b26"] svg,
+  html[data-theme="light"] [class*="bg-nav-bg"] svg {
+    color: #FFFFFF !important;
+    fill: #FFFFFF !important;
   }
 }
 
