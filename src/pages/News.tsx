@@ -85,7 +85,7 @@ const News: React.FC = () => {
         return (
           <div className="space-y-3">
             {DUMMY_NEWS.map((n, idx) => (
-              <div key={idx} className="bg-background p-3 rounded-lg shadow border-l-4 border-secondary/80">
+              <div key={idx} className="bg-card p-3 rounded-lg shadow border-l-4 border-secondary/80">
                 <div className="text-sm font-bold text-off-white">{n.headline}</div>
                 <div className="text-xs text-neutral">{n.date}</div>
               </div>
@@ -96,7 +96,7 @@ const News: React.FC = () => {
         return (
           <div className="space-y-4">
             {DUMMY_ARTICLES.map((a, idx) => (
-              <div key={idx} className="bg-background rounded-lg p-3">
+              <div key={idx} className="bg-card rounded-lg p-3">
                 <div className="font-bold text-secondary">{a.title}</div>
                 <div className="text-off-white text-xs mt-1">{a.excerpt}</div>
               </div>
@@ -108,14 +108,14 @@ const News: React.FC = () => {
           <div>
             <form onSubmit={handlePostSubmit} className="flex flex-col gap-2 mb-3">
               <input
-                className="rounded-md p-2 bg-charcoal text-off-white placeholder:text-neutral"
+                className="rounded-md p-2 bg-white/10 border border-white/10 text-off-white placeholder:text-neutral"
                 placeholder="Your name (optional)"
                 value={postName}
                 maxLength={24}
                 onChange={e => setPostName(e.target.value)}
               />
               <textarea
-                className="rounded-md p-2 bg-charcoal text-off-white placeholder:text-neutral resize-none"
+                className="rounded-md p-2 bg-white/10 border border-white/10 text-off-white placeholder:text-neutral resize-none"
                 placeholder="What do you want to share?"
                 value={postContent}
                 required
@@ -128,7 +128,7 @@ const News: React.FC = () => {
             </form>
             <div className="space-y-3">
               {posts.map((p, idx) => (
-                <div key={idx} className="bg-background p-3 rounded-lg shadow border-l-4 border-secondary/60">
+                <div key={idx} className="bg-card p-3 rounded-lg shadow border-l-4 border-secondary/60">
                   <div className="text-xs text-secondary font-semibold">{p.name || "Anonymous"}</div>
                   <div className="text-off-white mt-1">{p.content}</div>
                   <div className="text-[10px] text-neutral mt-1">{new Date(p.timestamp).toLocaleTimeString()}</div>
@@ -145,7 +145,7 @@ const News: React.FC = () => {
                 <Download size={18} className="mr-2 -ml-1" /> Download NSE Data (.csv)
               </Button>
             </div>
-            <div className="bg-background p-2 rounded-lg overflow-x-auto">
+            <div className="bg-card p-2 rounded-lg overflow-x-auto">
               <table className="w-full text-xs text-left">
                 <thead>
                   <tr className="text-secondary">
@@ -155,7 +155,7 @@ const News: React.FC = () => {
                     <th className="p-1">Profit</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-off-white">
                   {DUMMY_FINANCIALS.map((row, i) => (
                     <tr key={i}>
                       <td className="p-1">{row.company}</td>
