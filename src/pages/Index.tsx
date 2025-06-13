@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 
 const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-primary font-sans transition-colors">
+    <div className="min-h-screen flex flex-col justify-between bg-primary font-sans">
       <HisaAIButton />
       <main className="flex-1 flex flex-col px-4 py-6 w-full max-w-6xl mx-auto">
         {/* Header */}
@@ -25,7 +25,7 @@ const Index: React.FC = () => {
             </div>
             <Link
               to="/trade"
-              className="w-full max-w-xs block bg-secondary text-primary font-bold px-8 py-3 rounded-xl shadow hover:scale-105 hover:shadow-lg transition-all duration-200 text-lg"
+              className="w-full max-w-xs block bg-secondary text-primary font-bold px-8 py-3 rounded-xl shadow hover:scale-105 hover:shadow-lg transition text-lg"
             >
               Start Trading
             </Link>

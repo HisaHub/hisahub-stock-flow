@@ -26,12 +26,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     if (theme === 'light') {
       document.documentElement.classList.remove('dark');
-      document.body.style.background = '#F5F7FA';
-      document.body.style.color = '#1A1A1A';
+      document.body.style.background = '#F8F9FA';
     } else {
       document.documentElement.classList.add('dark');
       document.body.style.background = '#131b26';
-      document.body.style.color = '#F8F9FA';
     }
   }, [theme]);
 

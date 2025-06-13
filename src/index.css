@@ -16,11 +16,11 @@
 
   /* Light mode styles */
   html[data-theme="light"] {
-    background: #F5F7FA !important;
+    background: #F9FAFB !important;
   }
   
   html[data-theme="light"] body {
-    background: #F5F7FA !important;
+    background: #F9FAFB !important;
     color: #1A1A1A;
   }
   
@@ -43,25 +43,9 @@
     color: #2D3748;
   }
   
-  /* Light theme on navy backgrounds - HIGH CONTRAST */
-  html[data-theme="light"] .bg-primary .text-off-white,
-  html[data-theme="light"] .bg-primary .text-off-white\/60,
-  html[data-theme="light"] .bg-primary .text-off-white\/80,
-  html[data-theme="light"] .bg-nav-bg .text-off-white,
-  html[data-theme="light"] .bg-nav-bg .text-off-white\/60,
-  html[data-theme="light"] .bg-nav-bg .text-off-white\/80 {
-    color: #FFFFFF !important;
-  }
-  
-  html[data-theme="light"] .bg-primary svg,
-  html[data-theme="light"] .bg-nav-bg svg {
-    color: #FFFFFF !important;
-    fill: #FFFFFF !important;
-  }
-  
   /* Light theme borders and backgrounds */
   html[data-theme="light"] .border-white\/10 {
-    border-color: #E0E6ED;
+    border-color: #E2E8F0;
   }
   
   html[data-theme="light"] .bg-white\/5 {
@@ -75,35 +59,33 @@
   /* Light theme navigation */
   html[data-theme="light"] .bg-nav-bg {
     background-color: #FFFFFF;
-    border-bottom: 1px solid #E0E6ED;
+    border-bottom: 1px solid #E2E8F0;
   }
   
   /* Light theme primary colors */
   html[data-theme="light"] .bg-primary {
-    background-color: #0A1C40;
-    color: #FFFFFF !important;
+    background-color: #005C9D;
   }
   
   html[data-theme="light"] .text-primary {
-    color: #0A1C40;
+    color: #005C9D;
   }
   
   html[data-theme="light"] .border-primary {
-    border-color: #0A1C40;
+    border-color: #005C9D;
   }
   
   /* Light theme secondary (gold) colors */
   html[data-theme="light"] .bg-secondary {
-    background-color: #F5B800;
-    color: #1A1A1A !important;
+    background-color: #FFD700;
   }
   
   html[data-theme="light"] .text-secondary {
-    color: #F5B800;
+    color: #1A1A1A;
   }
   
   html[data-theme="light"] .border-secondary {
-    border-color: #F5B800;
+    border-color: #FFD700;
   }
   
   /* Light theme success/profit colors */
@@ -134,19 +116,13 @@
     background-color: #FFFFFF;
   }
   
-  html[data-theme="light"] .bg-background {
-    background-color: #FFFFFF;
-    color: #1A1A1A;
-  }
-  
   /* Light theme button styles */
   html[data-theme="light"] .bg-charcoal {
-    background-color: #0A1C40;
-    color: #FFFFFF !important;
+    background-color: #005C9D;
   }
   
   html[data-theme="light"] .text-charcoal {
-    color: #0A1C40;
+    color: #005C9D;
   }
   
   /* Light theme hover effects */
@@ -154,12 +130,8 @@
     background-color: #F7FAFC;
   }
   
-  html[data-theme="light"] .hover\:bg-white\/20:hover {
-    background-color: #EDF2F7;
-  }
-  
   html[data-theme="light"] .hover\:bg-charcoal\/10:hover {
-    background-color: rgba(10, 28, 64, 0.1);
+    background-color: rgba(0, 92, 157, 0.1);
   }
   
   /* Light theme input styling */
@@ -167,20 +139,20 @@
   html[data-theme="light"] textarea,
   html[data-theme="light"] select {
     background-color: #FFFFFF;
-    border-color: #E0E6ED;
+    border-color: #E2E8F0;
     color: #1A1A1A;
   }
   
   html[data-theme="light"] input:focus,
   html[data-theme="light"] textarea:focus,
   html[data-theme="light"] select:focus {
-    border-color: #0A1C40;
-    box-shadow: 0 0 0 3px rgba(10, 28, 64, 0.1);
+    border-color: #005C9D;
+    box-shadow: 0 0 0 3px rgba(0, 92, 157, 0.1);
   }
   
   /* Light theme placeholder text */
   html[data-theme="light"] ::placeholder {
-    color: #A0A0A0;
+    color: #4A5568;
   }
   
   /* Light theme scrollbar */
@@ -189,7 +161,7 @@
   }
   
   html[data-theme="light"] ::-webkit-scrollbar-thumb {
-    background: #E0E6ED;
+    background: #E2E8F0;
   }
   
   html[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
@@ -198,7 +170,7 @@
   
   /* Light theme highlight backgrounds */
   html[data-theme="light"] .bg-accent {
-    background-color: #FFF8E1;
+    background-color: #FFFBEA;
   }
   
   /* Light theme shadows */
@@ -208,78 +180,6 @@
   
   html[data-theme="light"] .shadow-lg {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  }
-  
-  /* Light theme specific fixes for navy elements */
-  html[data-theme="light"] .bg-primary *,
-  html[data-theme="light"] .bg-primary h1,
-  html[data-theme="light"] .bg-primary h2,
-  html[data-theme="light"] .bg-primary h3,
-  html[data-theme="light"] .bg-primary h4,
-  html[data-theme="light"] .bg-primary h5,
-  html[data-theme="light"] .bg-primary h6,
-  html[data-theme="light"] .bg-primary p,
-  html[data-theme="light"] .bg-primary span,
-  html[data-theme="light"] .bg-primary div {
-    color: #FFFFFF !important;
-  }
-  
-  /* Ensure proper button contrast in light mode */
-  html[data-theme="light"] .bg-secondary button,
-  html[data-theme="light"] .bg-secondary .button {
-    color: #1A1A1A !important;
-  }
-  
-  /* Light theme disabled states */
-  html[data-theme="light"] .disabled,
-  html[data-theme="light"] [disabled] {
-    color: #A0A0A0 !important;
-    background-color: #F5F7FA;
-  }
-  
-  /* Light theme toast notifications */
-  html[data-theme="light"] .toast {
-    background-color: #FFFFFF;
-    color: #1A1A1A;
-    border: 1px solid #E0E6ED;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  }
-  
-  /* Light theme tabs */
-  html[data-theme="light"] .tabs-list {
-    background-color: #F7FAFC;
-  }
-  
-  html[data-theme="light"] .tabs-trigger[data-state="active"] {
-    background-color: #FFFFFF;
-    color: #0A1C40;
-    border-bottom: 2px solid #F5B800;
-  }
-  
-  html[data-theme="light"] .tabs-trigger {
-    color: #4A5568;
-  }
-  
-  /* Light theme modal/dialog backgrounds */
-  html[data-theme="light"] .modal,
-  html[data-theme="light"] .dialog {
-    background-color: #FFFFFF;
-    color: #1A1A1A;
-    border: 1px solid #E0E6ED;
-  }
-  
-  /* Light theme menu/dropdown backgrounds */
-  html[data-theme="light"] .menu,
-  html[data-theme="light"] .dropdown-content {
-    background-color: #FFFFFF;
-    color: #1A1A1A;
-    border: 1px solid #E0E6ED;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  }
-  
-  html[data-theme="light"] .menu-item:hover,
-  html[data-theme="light"] .dropdown-item:hover {
-    background-color: #F7FAFC;
   }
 }
 
