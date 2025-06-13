@@ -14,6 +14,7 @@ import Portfolio from "./pages/Portfolio";
 import Settings from "./pages/Settings";
 import Chatbot from "./pages/Chatbot";
 import News from "./pages/News";
+import Community from "./pages/Community";
 import Auth from "./pages/Auth";
 import BrokerIntegration from "./pages/BrokerIntegration";
 
@@ -52,6 +53,7 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/trade" element={<Trade />} />
                 <Route path="/portfolio" element={<Portfolio />} />
+                <Route path="/community" element={<Community />} />
                 <Route path="/news" element={<News />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/chatbot" element={<Chatbot />} />
