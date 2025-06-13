@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { FileText, Newspaper, MessageSquare, Download, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
+import { useTheme } from "../components/ThemeProvider";
 
 const DUMMY_NEWS = [
   { headline: "Safaricom stocks rally as quarterly results impress", date: "2025-05-18" },
@@ -43,6 +43,7 @@ const DUMMY_FINANCIALS = [
 ];
 
 const News: React.FC = () => {
+  const { theme } = useTheme();
   const [posts, setPosts] = useState<CommunityPost[]>([
     { name: "TraderJoe", content: "Excited for upcoming earning releases!", timestamp: Date.now() - 60000 },
     { name: "NSEQueen", content: "Which stock are you bullish on this week?", timestamp: Date.now() - 360000 },
@@ -86,7 +87,7 @@ const News: React.FC = () => {
           <div className="space-y-3">
             {DUMMY_NEWS.map((n, idx) => (
               <div key={idx} className="bg-background p-3 rounded-lg shadow border-l-4 border-secondary/80">
-                <div className="text-sm font-bold text-off-white">{n.headline}</div>
+                <div className={`text-sm font-bold ${theme === 'light' ? 'text-white' : 'text-off-white'}`}>{n.headline}</div>
                 <div className="text-xs text-neutral">{n.date}</div>
               </div>
             ))}
