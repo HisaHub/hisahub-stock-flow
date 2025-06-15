@@ -13,6 +13,7 @@ import ChatInterface from "./ChatInterface";
 interface HisaSidebarProps {
   activeModule: string;
   onModuleChange: (module: string) => void;
+  activeModuleData: any;
 }
 
 const modules = [
@@ -22,7 +23,7 @@ const modules = [
   { key: "trading", name: "Trading", icon: GraduationCap },
 ];
 
-const HisaSidebar: React.FC<HisaSidebarProps> = ({ activeModule, onModuleChange }) => {
+const HisaSidebar: React.FC<HisaSidebarProps> = ({ activeModule, onModuleChange, activeModuleData }) => {
   return (
     <Sidebar collapsible="offcanvas" className="z-40 min-w-[320px] max-w-xs h-full border-r border-secondary/30 bg-background/90 backdrop-blur-sm flex flex-col">
       <SidebarContent className="flex flex-col h-full">
@@ -37,6 +38,7 @@ const HisaSidebar: React.FC<HisaSidebarProps> = ({ activeModule, onModuleChange 
             onClose={() => {}}
             activeModule={activeModule}
             onModuleChange={onModuleChange}
+            moduleData={activeModuleData}
           />
         </div>
         {/* Module navigation docked at bottom */}

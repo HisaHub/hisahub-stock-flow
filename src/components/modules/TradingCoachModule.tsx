@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Award, GraduationCap, Play, Lock, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -15,10 +14,15 @@ interface Course {
   description: string;
 }
 
-const TradingCoachModule: React.FC = () => {
+interface TradingCoachModuleProps {
+  onDataChange?: (data: any) => void;
+}
+
+const TradingCoachModule: React.FC<TradingCoachModuleProps> = ({ onDataChange }) => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [activeSection, setActiveSection] = useState('courses');
 
+  // Add learning progress data out of the map for easy reference
   const courses: Course[] = [
     {
       id: '1',
@@ -57,6 +61,17 @@ const TradingCoachModule: React.FC = () => {
       description: 'Advanced options strategies for experienced traders seeking sophisticated techniques.'
     }
   ];
+
+  useEffect(() => {
+    if (onDataChange) {
+      onDataChange({
+        learningProgress: courses.map(({ id, title, progress }) => ({ id, title, progress })),
+        selectedCourse,
+        activeSection
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCourse, activeSection]);
 
   const tradingTerms = [
     { term: 'Bull Market', definition: 'A market characterized by rising prices and investor optimism' },

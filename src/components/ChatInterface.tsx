@@ -20,6 +20,7 @@ interface ChatInterfaceProps {
   onClose: () => void;
   activeModule: string;
   onModuleChange: (module: string) => void;
+  moduleData?: any; // NEW prop for passing module context
 }
 
 const OPENAI_KEY_STORAGE = 'hisa_openai_api_key';
@@ -36,11 +37,32 @@ function removeStoredKey() {
   localStorage.removeItem(OPENAI_KEY_STORAGE);
 }
 
+const getModulePrompt = (activeModule: string, moduleData: any) => {
+  let context = '';
+  if (moduleData) {
+    context = `\nRelevant data for this question, from the user's active module:\n${JSON.stringify(moduleData, null, 2)}\n`;
+  }
+  
+  switch (activeModule) {
+    case 'crm':
+      return `You are Hisa, a helpful CRM assistant for finance professionals. Answer as an expert in customer relationship management.${context}`;
+    case 'risk':
+      return `You are Hisa, a financial AI advising on risk management, portfolio diversification, and volatility. Answer based on portfolio risk analysis and market indicators provided by the module.${context}`;
+    case 'finance':
+      return `You are Hisa, a personal finance and investing AI coach. Give budgeting, planning, and savings advice tailored for users in emerging markets. Include analysis that considers budget planner and financial health scoring results below.${context}`;
+    case 'trading':
+      return `You are Hisa, an educational AI trading coach for beginners. Explain trading strategies and concepts based on the user's learning progress and achievements. Here is the learning/training data you can reference:${context}`;
+    default:
+      return `You are Hisa, a helpful financial assistant.${context}`;
+  }
+};
+
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
   isOpen,
   onClose,
   activeModule,
   onModuleChange,
+  moduleData
 }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -71,21 +93,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setApiKey(getStoredKey());
   }, []);
 
-  const getModulePrompt = () => {
-    switch (activeModule) {
-      case 'crm':
-        return `You are Hisa, a helpful CRM assistant for finance professionals. Answer as an expert in customer relationship management.`;
-      case 'risk':
-        return `You are Hisa, a financial AI advising on risk management, portfolio diversification, and volatility, focused on the NSE and global best practices.`;
-      case 'finance':
-        return `You are Hisa, a personal finance and investing AI coach. Give budgeting, planning, and savings advice tailored for users in emerging markets like Kenya.`;
-      case 'trading':
-        return `You are Hisa, an educational AI trading coach for beginners. Explain trading strategies, stock concepts, and motivate with clear, concise answers.`;
-      default:
-        return `You are Hisa, a helpful financial assistant.`;
-    }
-  };
-
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isTyping || !apiKey) return;
     setApiError('');
@@ -106,7 +113,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       const inputMessages = [
         {
           role: 'system',
-          content: getModulePrompt()
+          content: getModulePrompt(activeModule, moduleData),
         },
         ...messages.concat(userMessage).map(m => ({
           role: m.sender === 'user' ? 'user' : 'assistant',
