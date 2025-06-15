@@ -16,6 +16,13 @@ import News from "./pages/News";
 import Community from "./pages/Community";
 import Auth from "./pages/Auth";
 import BrokerIntegration from "./pages/BrokerIntegration";
+import Dashboard from "./pages/Dashboard";
+import BudgetPlanner from "./pages/BudgetPlanner";
+import TradingInsights from "./pages/TradingInsights";
+import WealthGoals from "./pages/WealthGoals";
+import PortfolioTracker from "./pages/PortfolioTracker";
+import AskHisa from "./pages/AskHisa";
+import { ModuleProvider } from "./contexts/ModuleContext";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +47,7 @@ const App = () => {
     );
   }
 
+  // Replace Index with Dashboard, add new routes for each module
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -47,20 +55,28 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/trade" element={<Trade />} />
-                <Route path="/portfolio" element={<Portfolio />} />
-                {/* Remove Community Page Route */}
-                {/* <Route path="/community" element={<Community />} /> */}
-                <Route path="/news" element={<News />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/chatbot" element={<Chatbot />} />
-                <Route path="/broker-integration" element={<BrokerIntegration />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+            <ModuleProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/budget" element={<BudgetPlanner />} />
+                  <Route path="/trading" element={<TradingInsights />} />
+                  <Route path="/goals" element={<WealthGoals />} />
+                  <Route path="/community" element={<Community />} />
+                  <Route path="/portfolio" element={<PortfolioTracker />} />
+                  <Route path="/ask-hisa" element={<AskHisa />} />
+                  <Route path="/trade" element={<Trade />} />
+                  <Route path="/portfolio" element={<Portfolio />} />
+                  {/* Remove Community Page Route */}
+                  {/* <Route path="/community" element={<Community />} /> */}
+                  <Route path="/news" element={<News />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/chatbot" element={<Chatbot />} />
+                  <Route path="/broker-integration" element={<BrokerIntegration />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </ModuleProvider>
           </TooltipProvider>
         </FinancialDataProvider>
       </ThemeProvider>
