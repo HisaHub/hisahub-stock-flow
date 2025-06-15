@@ -7,6 +7,8 @@ import CRMModule from './modules/CRMModule';
 import RiskManagementModule from './modules/RiskManagementModule';
 import PersonalFinanceModule from './modules/PersonalFinanceModule';
 import TradingCoachModule from './modules/TradingCoachModule';
+import ChatMessages from "./chat/ChatMessages";
+import ChatInput from "./chat/ChatInput";
 
 interface Message {
   id: string;
@@ -79,7 +81,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [tempKey, setTempKey] = useState('');
   const [apiKeyError, setApiKeyError] = useState('');
   const [apiError, setApiError] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messagesEndRef = useRef < HTMLDivElement > (null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -210,7 +212,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   if (!isOpen) return null;
 
-  // Ensure chat input is always visible at bottom of the panel, and scrolling works well
+  // Use ChatMessages and ChatInput for better structure and performance
   return (
     <div className="relative flex flex-col h-full w-full max-w-[420px] mx-auto">
       {/* Header */}
@@ -219,9 +221,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <Bot size={22} className="text-white" />
           <span className="font-bold text-lg">Hisa AI</span>
         </div>
-        {/* Hide close button inside sidebar context */}
       </div>
-      
+
       {/* API Key Modal */}
       {showApiKeyModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-2">
@@ -264,76 +265,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4 bg-white min-h-0">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 rounded-2xl ${
-                message.sender === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-800'
-              }`}
-            >
-              <p className="text-xs md:text-sm break-words">{message.content}</p>
-              <p className="text-xs opacity-70 mt-1">
-                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
-          </div>
-        ))}
-        {isTyping && (
-          <div className="flex justify-start">
-            <div className="bg-gray-100 text-gray-800 px-3 md:px-4 py-2 rounded-2xl">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              </div>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-        {apiError && (
-          <div className="mt-2 text-xs text-red-500">{apiError}</div>
-        )}
-      </div>
+      <ChatMessages messages={messages} isTyping={isTyping} messagesEndRef={messagesEndRef} apiError={apiError} />
 
       {/* Input Area pinned to bottom */}
-      <div className="border-t p-3 md:p-6 shrink-0 bg-white rounded-b-xl">
-        <div className="flex gap-2 md:gap-3">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={!apiKey ? "Enter your OpenAI API key above to chat..." : (
-              activeModule === 'crm'
-                ? "Ask about customer management, leads, or sales analytics..."
-                : activeModule === 'risk'
-                  ? "Ask about portfolio risk, market volatility, or risk assessment..."
-                  : activeModule === 'finance'
-                    ? "Ask about budgeting, financial planning, or investment advice..."
-                    : activeModule === 'trading'
-                      ? "Ask about trading strategies, market analysis, or educational content..."
-                      : "How can I help you today?"
-            )}
-            disabled={!apiKey || isTyping}
-            className="flex-1 text-xs md:text-sm"
-          />
-          <Button
-            onClick={handleSendMessage}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-3 md:px-4"
-            disabled={!inputValue.trim() || !apiKey || isTyping}
-          >
-            <Send size={16} className="md:hidden" />
-            <Send size={18} className="hidden md:block" />
-          </Button>
-        </div>
-      </div>
+      <ChatInput
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        onSend={handleSendMessage}
+        onKeyPress={handleKeyPress}
+        apiKey={apiKey}
+        isTyping={isTyping}
+        activeModule={activeModule}
+      />
     </div>
   );
 };
-
 export default ChatInterface;

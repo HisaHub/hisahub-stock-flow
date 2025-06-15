@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Bot, UserCog, Shield, Calculator, GraduationCap } from "lucide-react";
 import {
@@ -15,13 +14,7 @@ interface HisaSidebarProps {
   onModuleChange: (module: string) => void;
   activeModuleData: any;
 }
-
-const modules = [
-  { key: "crm", name: "CRM", icon: UserCog },
-  { key: "risk", name: "Risk", icon: Shield },
-  { key: "finance", name: "Finance", icon: Calculator },
-  { key: "trading", name: "Trading", icon: GraduationCap },
-];
+import SidebarNavigation from "./sidebar/SidebarNavigation";
 
 const HisaSidebar: React.FC<HisaSidebarProps> = ({ activeModule, onModuleChange, activeModuleData }) => {
   return (
@@ -31,7 +24,6 @@ const HisaSidebar: React.FC<HisaSidebarProps> = ({ activeModule, onModuleChange,
           <Bot size={28} className="text-blue-700" />
           <span className="font-bold text-lg text-blue-800">Hisa AI</span>
         </div>
-        {/* Chat interface (scrollable area, input fixed at bottom) */}
         <div className="flex-1 min-h-0 flex flex-col px-2 pb-2 overflow-y-auto">
           <ChatInterface
             isOpen={true}
@@ -41,23 +33,11 @@ const HisaSidebar: React.FC<HisaSidebarProps> = ({ activeModule, onModuleChange,
             moduleData={activeModuleData}
           />
         </div>
-        {/* Module navigation docked at bottom */}
-        <SidebarMenu className="bg-background/95 border-t border-secondary/20 py-2">
-          {modules.map((mod) => (
-            <SidebarMenuItem key={mod.key}>
-              <SidebarMenuButton
-                isActive={mod.key === activeModule}
-                onClick={() => onModuleChange(mod.key)}
-                size="lg"
-                tooltip={mod.name}
-                className="mb-2"
-              >
-                <mod.icon />
-                <span>{mod.name}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
+        {/* Use new SidebarNavigation for module selection UI */}
+        <SidebarNavigation
+          activeModule={activeModule}
+          onModuleChange={onModuleChange}
+        />
       </SidebarContent>
     </Sidebar>
   );
