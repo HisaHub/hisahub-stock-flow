@@ -9,6 +9,7 @@ import PersonalFinanceModule from './modules/PersonalFinanceModule';
 import TradingCoachModule from './modules/TradingCoachModule';
 import ChatMessages from "./chat/ChatMessages";
 import ChatInput from "./chat/ChatInput";
+import ChatApiKeyModal from "./chat/ChatApiKeyModal";
 
 interface Message {
   id: string;
@@ -212,7 +213,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   if (!isOpen) return null;
 
-  // Use ChatMessages and ChatInput for better structure and performance
   return (
     <div className="relative flex flex-col h-full w-full max-w-[420px] mx-auto">
       {/* Header */}
@@ -223,33 +223,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
       </div>
 
-      {/* API Key Modal */}
-      {showApiKeyModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-2">
-          <div className="bg-white rounded-lg p-6 max-w-xs w-full shadow-lg relative">
-            <button className="absolute right-3 top-3 text-secondary" onClick={() => setShowApiKeyModal(false)}><X size={18} /></button>
-            <div className="flex items-center gap-2 mb-3">
-              <KeyRound size={20} className="text-blue-600" />
-              <span className="font-bold text-secondary text-lg">Enter OpenAI API Key</span>
-            </div>
-            <Input
-              value={tempKey}
-              onChange={e => setTempKey(e.target.value)}
-              placeholder="sk-..."
-              className="mb-2"
-              type="password"
-            />
-            {apiKeyError && <div className="text-red-600 text-xs mb-1">{apiKeyError}</div>}
-            <div className="flex gap-2">
-              <Button onClick={saveApiKey} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">Save Key</Button>
-              <Button onClick={handleRemoveKey} variant="outline" className="flex-1 text-red-600 border-red-200">Remove</Button>
-            </div>
-            <div className="text-xs text-neutral mt-3">
-              Your key is stored locally in your browser and never shared.
-            </div>
-          </div>
-        </div>
-      )}
+      {/* API Key Modal via its own component */}
+      <ChatApiKeyModal
+        show={showApiKeyModal}
+        onClose={() => setShowApiKeyModal(false)}
+        tempKey={tempKey}
+        setTempKey={setTempKey}
+        onSave={saveApiKey}
+        onRemove={handleRemoveKey}
+        apiKeyError={apiKeyError}
+      />
 
       {/* API Key Button */}
       <div className="flex justify-end px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 border-b">
@@ -264,7 +247,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         )}
       </div>
 
-      {/* Messages */}
+      {/* Messages (memoized component) */}
       <ChatMessages messages={messages} isTyping={isTyping} messagesEndRef={messagesEndRef} apiError={apiError} />
 
       {/* Input Area pinned to bottom */}

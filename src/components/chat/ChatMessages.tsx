@@ -54,4 +54,4 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isTyping, message
   </div>
 );
 
-export default ChatMessages;
+export default React.memo(ChatMessages);

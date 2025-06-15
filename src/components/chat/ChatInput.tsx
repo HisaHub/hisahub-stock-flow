@@ -50,4 +50,4 @@ const ChatInput: React.FC<ChatInputProps> = ({
   </div>
 );
 
-export default ChatInput;
+export default React.memo(ChatInput);
