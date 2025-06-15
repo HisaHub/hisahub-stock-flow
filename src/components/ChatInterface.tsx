@@ -81,7 +81,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [tempKey, setTempKey] = useState('');
   const [apiKeyError, setApiKeyError] = useState('');
   const [apiError, setApiError] = useState('');
-  const [messagesEndRef = useRef < HTMLDivElement > (null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
