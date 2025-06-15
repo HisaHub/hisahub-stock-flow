@@ -6,6 +6,7 @@ import ChatInterface from './ChatInterface';
 
 const HisaAIButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeModule, setActiveModule] = useState('crm');
 
   return (
     <>
@@ -17,9 +18,15 @@ const HisaAIButton: React.FC = () => {
         <Bot size={20} />
       </Button>
       
-      <ChatInterface isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <ChatInterface
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        activeModule={activeModule}
+        onModuleChange={setActiveModule}
+      />
     </>
   );
 };
 
 export default HisaAIButton;
+
