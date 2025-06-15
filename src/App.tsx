@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -53,7 +52,8 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/trade" element={<Trade />} />
                 <Route path="/portfolio" element={<Portfolio />} />
-                <Route path="/community" element={<Community />} />
+                {/* Remove Community Page Route */}
+                {/* <Route path="/community" element={<Community />} /> */}
                 <Route path="/news" element={<News />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/chatbot" element={<Chatbot />} />

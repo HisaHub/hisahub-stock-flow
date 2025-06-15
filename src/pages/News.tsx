@@ -12,6 +12,7 @@ import {
 import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
 import { useTheme } from "../components/ThemeProvider";
+import AdvancedCommunity from "../components/AdvancedCommunity";
 
 const DUMMY_NEWS = [
   { headline: "Safaricom stocks rally as quarterly results impress", date: "2025-05-18" },
@@ -106,37 +107,7 @@ const News: React.FC = () => {
         );
       case "community":
         return (
-          <div>
-            <form onSubmit={handlePostSubmit} className="flex flex-col gap-2 mb-3">
-              <input
-                className="rounded-md p-2 bg-charcoal text-off-white placeholder:text-neutral"
-                placeholder="Your name (optional)"
-                value={postName}
-                maxLength={24}
-                onChange={e => setPostName(e.target.value)}
-              />
-              <textarea
-                className="rounded-md p-2 bg-charcoal text-off-white placeholder:text-neutral resize-none"
-                placeholder="What do you want to share?"
-                value={postContent}
-                required
-                minLength={2}
-                maxLength={160}
-                rows={2}
-                onChange={e => setPostContent(e.target.value)}
-              />
-              <Button type="submit" className="bg-secondary text-primary mt-1 hover:bg-secondary/90 rounded font-bold">Post</Button>
-            </form>
-            <div className="space-y-3">
-              {posts.map((p, idx) => (
-                <div key={idx} className="bg-background p-3 rounded-lg shadow border-l-4 border-secondary/60">
-                  <div className="text-xs text-secondary font-semibold">{p.name || "Anonymous"}</div>
-                  <div className="text-off-white mt-1">{p.content}</div>
-                  <div className="text-[10px] text-neutral mt-1">{new Date(p.timestamp).toLocaleTimeString()}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <AdvancedCommunity />
         );
       case "financials":
         return (
