@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, X, TrendingUp, Shield, DollarSign, GraduationCap } from 'lucide-react';
+import { Bot, Send, X, KeyRound, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -21,18 +21,37 @@ interface ChatInterfaceProps {
   onClose: () => void;
 }
 
+const OPENAI_KEY_STORAGE = 'hisa_openai_api_key';
+
+function getStoredKey() {
+  return localStorage.getItem(OPENAI_KEY_STORAGE) || '';
+}
+
+function setStoredKey(key: string) {
+  localStorage.setItem(OPENAI_KEY_STORAGE, key);
+}
+
+function removeStoredKey() {
+  localStorage.removeItem(OPENAI_KEY_STORAGE);
+}
+
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
   const [activeModule, setActiveModule] = useState('crm');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       sender: 'bot',
-      content: 'Welcome to Hisa AI! I\'m your intelligent financial assistant. How can I help you today?',
+      content: "Welcome to Hisa AI! I'm your intelligent financial assistant. How can I help you today?",
       timestamp: new Date()
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [apiKey, setApiKey] = useState<string>(getStoredKey());
+  const [tempKey, setTempKey] = useState('');
+  const [apiKeyError, setApiKeyError] = useState('');
+  const [apiError, setApiError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -41,54 +60,30 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isTyping]);
 
-  const getModulePlaceholder = () => {
+  useEffect(() => {
+    setApiKey(getStoredKey());
+  }, []);
+
+  const getModulePrompt = () => {
     switch (activeModule) {
-      case 'crm': return 'Ask about customer management, leads, or sales analytics...';
-      case 'risk': return 'Ask about portfolio risk, market volatility, or risk assessment...';
-      case 'finance': return 'Ask about budgeting, financial planning, or investment advice...';
-      case 'trading': return 'Ask about trading strategies, market analysis, or educational content...';
-      default: return 'How can I help you today?';
+      case 'crm':
+        return `You are Hisa, a helpful CRM assistant for finance professionals. Answer as an expert in customer relationship management.`;
+      case 'risk':
+        return `You are Hisa, a financial AI advising on risk management, portfolio diversification, and volatility, focused on the NSE and global best practices.`;
+      case 'finance':
+        return `You are Hisa, a personal finance and investing AI coach. Give budgeting, planning, and savings advice tailored for users in emerging markets like Kenya.`;
+      case 'trading':
+        return `You are Hisa, an educational AI trading coach for beginners. Explain trading strategies, stock concepts, and motivate with clear, concise answers.`;
+      default:
+        return `You are Hisa, a helpful financial assistant.`;
     }
   };
 
-  const getModuleResponse = () => {
-    const responses = {
-      crm: [
-        'Based on your CRM data, I recommend focusing on your top 20% leads for maximum conversion.',
-        'Your customer satisfaction rate of 94.2% is excellent! Consider implementing loyalty programs.',
-        'I notice your response time is 2.3 hours. Automating initial responses could improve this.',
-        'Your conversion rate can be improved by segmenting customers based on behavior patterns.',
-        'Consider scheduling follow-ups with high-value prospects to increase closing rates.',
-      ],
-      risk: [
-        'Your portfolio shows moderate risk levels. Consider diversifying across different sectors.',
-        'Current market volatility suggests implementing stop-loss orders for protection.',
-        'Your Sharpe ratio of 1.8 indicates good risk-adjusted returns.',
-        'Market beta of 1.2 means your portfolio is slightly more volatile than the market.',
-        'VIX at 23.5 suggests elevated market uncertainty - consider hedging strategies.',
-      ],
-      finance: [
-        'Following the 50/30/20 rule could optimize your budget allocation.',
-        'Building an emergency fund should be your priority before aggressive investing.',
-        'Your savings rate indicates you could increase investments by 15%.',
-        'Consider tax-advantaged accounts like retirement funds for long-term goals.',
-        'Debt consolidation might reduce your monthly payments and interest burden.',
-      ],
-      trading: [
-        'Technical analysis suggests a bullish trend in the NSE index.',
-        'Consider learning about support and resistance levels for better entry points.',
-        'Risk management is crucial - never risk more than 2% per trade.',
-        'Moving averages indicate a potential trend reversal - monitor closely.',
-        'Your trading course progress shows good fundamentals - practice with paper trading.',
-      ]
-    };
-    return responses[activeModule as keyof typeof responses][Math.floor(Math.random() * 5)];
-  };
-
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isTyping || !apiKey) return;
+    setApiError('');
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -101,20 +96,61 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
     setInputValue('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    // Call OpenAI with current module context and conversation
+    try {
+      const inputMessages = [
+        {
+          role: 'system',
+          content: getModulePrompt()
+        },
+        ...messages.concat(userMessage).map(m => ({
+          role: m.sender === 'user' ? 'user' : 'assistant',
+          content: m.content
+        }))
+      ];
+
+      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey.trim()}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: inputMessages,
+          temperature: 0.8,
+          max_tokens: 300,
+        }),
+      });
+      if (resp.status === 401 || resp.status === 403) {
+        setApiError('Invalid API Key. Please re-enter your OpenAI API key.');
+        setIsTyping(false);
+        return;
+      }
+      if (!resp.ok) {
+        setApiError('Error communicating with OpenAI. Please try again.');
+        setIsTyping(false);
+        return;
+      }
+      const data = await resp.json();
+      const completions = data.choices?.[0]?.message?.content;
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         sender: 'bot',
-        content: getModuleResponse(),
+        content: completions || "Sorry, I couldn't generate a response.",
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botMessage]);
+    } catch (err) {
+      setApiError('Network or server error. Please check your connection and API key.');
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       handleSendMessage();
     }
   };
@@ -123,11 +159,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
     setActiveModule(module);
     const welcomeMessages = {
       crm: 'Switched to CRM module. I can help with customer management, lead tracking, and sales analytics.',
-      risk: 'Switched to Risk Management. Let\'s assess your portfolio risk and market exposure.',
+      risk: "Switched to Risk Management. Let's assess your portfolio risk and market exposure.",
       finance: 'Switched to Personal Finance. I\'ll help with budgeting, planning, and financial goals.',
       trading: 'Switched to Trading Coach. Ready to enhance your trading knowledge and strategies.'
     };
-
     const botMessage: Message = {
       id: Date.now().toString(),
       sender: 'bot',
@@ -137,10 +172,62 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
     setMessages(prev => [...prev, botMessage]);
   };
 
+  // --- API Key Modal ---
+  const openApiKeyModal = () => {
+    setTempKey('');
+    setApiKeyError('');
+    setShowApiKeyModal(true);
+  };
+
+  const saveApiKey = () => {
+    if (!tempKey.trim().startsWith('sk-')) {
+      setApiKeyError('Please enter a valid OpenAI API key (starts with "sk-").');
+      return;
+    }
+    setStoredKey(tempKey.trim());
+    setApiKey(tempKey.trim());
+    setShowApiKeyModal(false);
+    setApiKeyError('');
+  };
+
+  const handleRemoveKey = () => {
+    removeStoredKey();
+    setApiKey('');
+    setShowApiKeyModal(false);
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 md:p-4">
+      {/* API Key Modal */}
+      {showApiKeyModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-2">
+          <div className="bg-white rounded-lg p-6 max-w-xs w-full shadow-lg relative">
+            <button className="absolute right-3 top-3 text-secondary" onClick={() => setShowApiKeyModal(false)}><X size={18} /></button>
+            <div className="flex items-center gap-2 mb-3">
+              <KeyRound size={20} className="text-blue-600" />
+              <span className="font-bold text-secondary text-lg">Enter OpenAI API Key</span>
+            </div>
+            <Input
+              value={tempKey}
+              onChange={e => setTempKey(e.target.value)}
+              placeholder="sk-..."
+              className="mb-2"
+              type="password"
+            />
+            {apiKeyError && <div className="text-red-600 text-xs mb-1">{apiKeyError}</div>}
+            <div className="flex gap-2">
+              <Button onClick={saveApiKey} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">Save Key</Button>
+              <Button onClick={handleRemoveKey} variant="outline" className="flex-1 text-red-600 border-red-200">Remove</Button>
+            </div>
+            <div className="text-xs text-neutral mt-3">
+              Your key is stored locally in your browser and never shared.
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-7xl h-[95vh] md:h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 md:p-6 flex items-center justify-between shrink-0">
@@ -165,6 +252,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
           </Button>
         </div>
 
+        {/* API Key Button */}
+        <div className="flex justify-end px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+          {!apiKey ? (
+            <Button size="sm" className="bg-yellow-400 text-black hover:bg-yellow-500 rounded" onClick={openApiKeyModal}>
+              <Lock className="h-4 w-4 mr-1.5" /> Enter OpenAI API Key
+            </Button>
+          ) : (
+            <Button size="sm" className="bg-secondary text-primary hover:bg-primary/30 rounded" onClick={openApiKeyModal}>
+              <KeyRound className="h-4 w-4 mr-1.5" /> Change API Key
+            </Button>
+          )}
+        </div>
+
         {/* Navigation Buttons */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-b shrink-0 p-3 md:p-4">
           <div className="flex gap-2 md:gap-3 justify-center overflow-x-auto">
@@ -177,7 +277,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
                   : 'bg-white hover:bg-blue-50 border-blue-200'
               }`}
             >
-              <TrendingUp size={16} />
+              {/* crm icon */}
+              <Bot size={16} />
               <span className="text-sm font-medium">CRM Dashboard</span>
             </Button>
             
@@ -190,7 +291,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
                   : 'bg-white hover:bg-blue-50 border-blue-200'
               }`}
             >
-              <Shield size={16} />
+              {/* risk icon */}
+              <Bot size={16} />
               <span className="text-sm font-medium">Risk Management</span>
             </Button>
             
@@ -203,7 +305,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
                   : 'bg-white hover:bg-blue-50 border-blue-200'
               }`}
             >
-              <DollarSign size={16} />
+              {/* finance icon */}
+              <Bot size={16} />
               <span className="text-sm font-medium">Personal Finance</span>
             </Button>
             
@@ -216,7 +319,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
                   : 'bg-white hover:bg-blue-50 border-blue-200'
               }`}
             >
-              <GraduationCap size={16} />
+              {/* trading icon */}
+              <Bot size={16} />
               <span className="text-sm font-medium">Trading Coach</span>
             </Button>
           </div>
@@ -260,6 +364,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
                 </div>
               )}
               <div ref={messagesEndRef} />
+              {apiError && (
+                <div className="mt-2 text-xs text-red-500">{apiError}</div>
+              )}
             </div>
 
             {/* Input Area */}
@@ -269,12 +376,24 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={getModulePlaceholder()}
+                  placeholder={!apiKey ? "Enter your OpenAI API key above to chat..." : (
+                    activeModule === 'crm'
+                      ? "Ask about customer management, leads, or sales analytics..."
+                      : activeModule === 'risk'
+                        ? "Ask about portfolio risk, market volatility, or risk assessment..."
+                        : activeModule === 'finance'
+                          ? "Ask about budgeting, financial planning, or investment advice..."
+                          : activeModule === 'trading'
+                            ? "Ask about trading strategies, market analysis, or educational content..."
+                            : "How can I help you today?"
+                  )}
+                  disabled={!apiKey || isTyping}
                   className="flex-1 text-xs md:text-sm"
                 />
                 <Button
                   onClick={handleSendMessage}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-3 md:px-4"
+                  disabled={!inputValue.trim() || !apiKey || isTyping}
                 >
                   <Send size={16} className="md:hidden" />
                   <Send size={18} className="hidden md:block" />
@@ -307,3 +426,4 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
 };
 
 export default ChatInterface;
+
