@@ -7,7 +7,8 @@ import CRMModule from './modules/CRMModule';
 import RiskManagementModule from './modules/RiskManagementModule';
 import PersonalFinanceModule from './modules/PersonalFinanceModule';
 import TradingCoachModule from './modules/TradingCoachModule';
-import HisaSidebar from "./HisaSidebar";
+// REMOVE this import
+// import HisaSidebar from "./HisaSidebar";
 
 interface Message {
   id: string;
@@ -204,13 +205,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   if (!isOpen) return null;
 
-  // Using flex-row with sidebar, chat panel will take w-[380px] on desktop, full width on mobile.
+  // - Remove <HisaSidebar /> usage and its wrapper! Only show the chat panel/modal.
   return (
-    <div className="fixed inset-0 z-50 flex">
-      {/* Sidebar navigation */}
-      <div className="relative">
-        <HisaSidebar activeModule={activeModule} onModuleChange={onModuleChange} />
-      </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       {/* Chat panel */}
       <div className="flex-1 max-w-[420px] bg-white shadow-2xl h-full flex flex-col border-r border-gray-200">
         {/* Header */}
