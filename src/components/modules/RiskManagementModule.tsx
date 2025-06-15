@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Shield, TrendingDown, AlertTriangle, PieChart, Calculator } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 
-interface RiskManagementModuleProps {
-  onDataChange?: (data: any) => void;
-}
-
-const RiskManagementModule: React.FC<RiskManagementModuleProps> = ({ onDataChange }) => {
+const RiskManagementModule: React.FC = () => {
   const [portfolioValue, setPortfolioValue] = useState('');
   const [riskScore, setRiskScore] = useState<number | null>(null);
 
@@ -22,22 +19,6 @@ const RiskManagementModule: React.FC<RiskManagementModuleProps> = ({ onDataChang
       setRiskScore(Math.round(finalScore));
     }
   };
-
-  useEffect(() => {
-    if (riskScore !== null && onDataChange) {
-      onDataChange({
-        portfolioValue,
-        riskScore,
-        marketIndicators: {
-          vix: 23.5,
-          beta: 1.2,
-          sharpe: 1.8,
-          nseVolatility: '15.2%'
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [riskScore]);
 
   const getRiskLevel = (score: number) => {
     if (score <= 3) return { level: 'Low', color: 'text-green-600', bg: 'bg-green-50 border-green-200' };

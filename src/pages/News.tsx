@@ -13,7 +13,6 @@ import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
 import { useTheme } from "../components/ThemeProvider";
 import AdvancedCommunity from "../components/AdvancedCommunity";
-import { SidebarProvider } from "@/components/ui/sidebar"; // import SidebarProvider
 
 const DUMMY_NEWS = [
   { headline: "Safaricom stocks rally as quarterly results impress", date: "2025-05-18" },
@@ -148,53 +147,51 @@ const News: React.FC = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors pb-20">
-        <HisaAIButton />
-        <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col items-center px-4 md:px-8 py-7">
-          <div className="w-full flex items-center justify-between mb-5">
-            <h2 className="text-3xl font-bold text-secondary flex items-center gap-2">
-              <Newspaper size={30} /> News & Community
-            </h2>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="bg-white/10 border-secondary/20 text-off-white hover:bg-white/20">
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="bg-primary border-secondary/20">
-                <SheetHeader>
-                  <SheetTitle className="text-secondary">Navigation</SheetTitle>
-                  <SheetDescription className="text-off-white/60">
-                    Choose a section to explore
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="mt-6 space-y-2">
-                  {menuItems.map((item) => (
-                    <Button
-                      key={item.id}
-                      variant={activeSection === item.id ? "secondary" : "ghost"}
-                      className="w-full justify-start gap-2 text-off-white hover:bg-white/10"
-                      onClick={() => setActiveSection(item.id)}
-                    >
-                      {item.icon}
-                      {item.label}
-                    </Button>
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
+    <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors pb-20">
+      <HisaAIButton />
+      <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col items-center px-4 md:px-8 py-7">
+        <div className="w-full flex items-center justify-between mb-5">
+          <h2 className="text-3xl font-bold text-secondary flex items-center gap-2">
+            <Newspaper size={30} /> News & Community
+          </h2>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="bg-white/10 border-secondary/20 text-off-white hover:bg-white/20">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="bg-primary border-secondary/20">
+              <SheetHeader>
+                <SheetTitle className="text-secondary">Navigation</SheetTitle>
+                <SheetDescription className="text-off-white/60">
+                  Choose a section to explore
+                </SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 space-y-2">
+                {menuItems.map((item) => (
+                  <Button
+                    key={item.id}
+                    variant={activeSection === item.id ? "secondary" : "ghost"}
+                    className="w-full justify-start gap-2 text-off-white hover:bg-white/10"
+                    onClick={() => setActiveSection(item.id)}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </Button>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+        
+        <div className="w-full glass-card mb-4 px-1">
+          <div className="p-4">
+            {renderContent()}
           </div>
-          
-          <div className="w-full glass-card mb-4 px-1">
-            <div className="p-4">
-              {renderContent()}
-            </div>
-          </div>
-        </main>
-        <BottomNav />
-      </div>
-    </SidebarProvider>
+        </div>
+      </main>
+      <BottomNav />
+    </div>
   );
 };
 

@@ -1,5 +1,6 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, X, KeyRound, Lock, Menu } from 'lucide-react';
+import { Bot, Send, X, TrendingUp, Shield, DollarSign, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -7,9 +8,6 @@ import CRMModule from './modules/CRMModule';
 import RiskManagementModule from './modules/RiskManagementModule';
 import PersonalFinanceModule from './modules/PersonalFinanceModule';
 import TradingCoachModule from './modules/TradingCoachModule';
-import ChatMessages from "./chat/ChatMessages";
-import ChatInput from "./chat/ChatInput";
-import ChatApiKeyModal from "./chat/ChatApiKeyModal";
 
 interface Message {
   id: string;
@@ -21,67 +19,20 @@ interface Message {
 interface ChatInterfaceProps {
   isOpen: boolean;
   onClose: () => void;
-  activeModule: string;
-  onModuleChange: (module: string) => void;
-  moduleData?: any; // NEW prop for passing module context
 }
 
-const OPENAI_KEY_STORAGE = 'hisa_openai_api_key';
-
-function getStoredKey() {
-  return localStorage.getItem(OPENAI_KEY_STORAGE) || '';
-}
-
-function setStoredKey(key: string) {
-  localStorage.setItem(OPENAI_KEY_STORAGE, key);
-}
-
-function removeStoredKey() {
-  localStorage.removeItem(OPENAI_KEY_STORAGE);
-}
-
-const getModulePrompt = (activeModule: string, moduleData: any) => {
-  let context = '';
-  if (moduleData) {
-    context = `\nRelevant data for this question, from the user's active module:\n${JSON.stringify(moduleData, null, 2)}\n`;
-  }
-  
-  switch (activeModule) {
-    case 'crm':
-      return `You are Hisa, a helpful CRM assistant for finance professionals. Answer as an expert in customer relationship management.${context}`;
-    case 'risk':
-      return `You are Hisa, a financial AI advising on risk management, portfolio diversification, and volatility. Answer based on portfolio risk analysis and market indicators provided by the module.${context}`;
-    case 'finance':
-      return `You are Hisa, a personal finance and investing AI coach. Give budgeting, planning, and savings advice tailored for users in emerging markets. Include analysis that considers budget planner and financial health scoring results below.${context}`;
-    case 'trading':
-      return `You are Hisa, an educational AI trading coach for beginners. Explain trading strategies and concepts based on the user's learning progress and achievements. Here is the learning/training data you can reference:${context}`;
-    default:
-      return `You are Hisa, a helpful financial assistant.${context}`;
-  }
-};
-
-const ChatInterface: React.FC<ChatInterfaceProps> = ({
-  isOpen,
-  onClose,
-  activeModule,
-  onModuleChange,
-  moduleData
-}) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
+  const [activeModule, setActiveModule] = useState('crm');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       sender: 'bot',
-      content: "Welcome to Hisa AI! I'm your intelligent financial assistant. How can I help you today?",
+      content: 'Welcome to Hisa AI! I\'m your intelligent financial assistant. How can I help you today?',
       timestamp: new Date()
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
-  const [apiKey, setApiKey] = useState<string>(getStoredKey());
-  const [tempKey, setTempKey] = useState('');
-  const [apiKeyError, setApiKeyError] = useState('');
-  const [apiError, setApiError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -90,15 +41,54 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages]);
 
-  useEffect(() => {
-    setApiKey(getStoredKey());
-  }, []);
+  const getModulePlaceholder = () => {
+    switch (activeModule) {
+      case 'crm': return 'Ask about customer management, leads, or sales analytics...';
+      case 'risk': return 'Ask about portfolio risk, market volatility, or risk assessment...';
+      case 'finance': return 'Ask about budgeting, financial planning, or investment advice...';
+      case 'trading': return 'Ask about trading strategies, market analysis, or educational content...';
+      default: return 'How can I help you today?';
+    }
+  };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isTyping || !apiKey) return;
-    setApiError('');
+  const getModuleResponse = () => {
+    const responses = {
+      crm: [
+        'Based on your CRM data, I recommend focusing on your top 20% leads for maximum conversion.',
+        'Your customer satisfaction rate of 94.2% is excellent! Consider implementing loyalty programs.',
+        'I notice your response time is 2.3 hours. Automating initial responses could improve this.',
+        'Your conversion rate can be improved by segmenting customers based on behavior patterns.',
+        'Consider scheduling follow-ups with high-value prospects to increase closing rates.',
+      ],
+      risk: [
+        'Your portfolio shows moderate risk levels. Consider diversifying across different sectors.',
+        'Current market volatility suggests implementing stop-loss orders for protection.',
+        'Your Sharpe ratio of 1.8 indicates good risk-adjusted returns.',
+        'Market beta of 1.2 means your portfolio is slightly more volatile than the market.',
+        'VIX at 23.5 suggests elevated market uncertainty - consider hedging strategies.',
+      ],
+      finance: [
+        'Following the 50/30/20 rule could optimize your budget allocation.',
+        'Building an emergency fund should be your priority before aggressive investing.',
+        'Your savings rate indicates you could increase investments by 15%.',
+        'Consider tax-advantaged accounts like retirement funds for long-term goals.',
+        'Debt consolidation might reduce your monthly payments and interest burden.',
+      ],
+      trading: [
+        'Technical analysis suggests a bullish trend in the NSE index.',
+        'Consider learning about support and resistance levels for better entry points.',
+        'Risk management is crucial - never risk more than 2% per trade.',
+        'Moving averages indicate a potential trend reversal - monitor closely.',
+        'Your trading course progress shows good fundamentals - practice with paper trading.',
+      ]
+    };
+    return responses[activeModule as keyof typeof responses][Math.floor(Math.random() * 5)];
+  };
+
+  const handleSendMessage = () => {
+    if (!inputValue.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -111,73 +101,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setInputValue('');
     setIsTyping(true);
 
-    // Call OpenAI with current module context and conversation
-    try {
-      const inputMessages = [
-        {
-          role: 'system',
-          content: getModulePrompt(activeModule, moduleData),
-        },
-        ...messages.concat(userMessage).map(m => ({
-          role: m.sender === 'user' ? 'user' : 'assistant',
-          content: m.content
-        }))
-      ];
-
-      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey.trim()}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: inputMessages,
-          temperature: 0.8,
-          max_tokens: 300,
-        }),
-      });
-      if (resp.status === 401 || resp.status === 403) {
-        setApiError('Invalid API Key. Please re-enter your OpenAI API key.');
-        setIsTyping(false);
-        return;
-      }
-      if (!resp.ok) {
-        setApiError('Error communicating with OpenAI. Please try again.');
-        setIsTyping(false);
-        return;
-      }
-      const data = await resp.json();
-      const completions = data.choices?.[0]?.message?.content;
+    setTimeout(() => {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         sender: 'bot',
-        content: completions || "Sorry, I couldn't generate a response.",
+        content: getModuleResponse(),
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botMessage]);
-    } catch (err) {
-      setApiError('Network or server error. Please check your connection and API key.');
-    } finally {
       setIsTyping(false);
-    }
+    }, 1500);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
+    if (e.key === 'Enter') {
       handleSendMessage();
     }
   };
 
   const handleModuleChange = (module: string) => {
-    onModuleChange(module);
+    setActiveModule(module);
     const welcomeMessages = {
       crm: 'Switched to CRM module. I can help with customer management, lead tracking, and sales analytics.',
-      risk: "Switched to Risk Management. Let's assess your portfolio risk and market exposure.",
+      risk: 'Switched to Risk Management. Let\'s assess your portfolio risk and market exposure.',
       finance: 'Switched to Personal Finance. I\'ll help with budgeting, planning, and financial goals.',
       trading: 'Switched to Trading Coach. Ready to enhance your trading knowledge and strategies.'
     };
+
     const botMessage: Message = {
       id: Date.now().toString(),
       sender: 'bot',
@@ -187,80 +137,173 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setMessages(prev => [...prev, botMessage]);
   };
 
-  // --- API Key Modal ---
-  const openApiKeyModal = () => {
-    setTempKey('');
-    setApiKeyError('');
-    setShowApiKeyModal(true);
-  };
-
-  const saveApiKey = () => {
-    if (!tempKey.trim().startsWith('sk-')) {
-      setApiKeyError('Please enter a valid OpenAI API key (starts with "sk-").');
-      return;
-    }
-    setStoredKey(tempKey.trim());
-    setApiKey(tempKey.trim());
-    setShowApiKeyModal(false);
-    setApiKeyError('');
-  };
-
-  const handleRemoveKey = () => {
-    removeStoredKey();
-    setApiKey('');
-    setShowApiKeyModal(false);
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div className="relative flex flex-col h-full w-full max-w-[420px] mx-auto">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 flex items-center justify-between shrink-0 rounded-t-xl">
-        <div className="flex items-center gap-2">
-          <Bot size={22} className="text-white" />
-          <span className="font-bold text-lg">Hisa AI</span>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 md:p-4">
+      <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-7xl h-[95vh] md:h-[90vh] flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 md:p-6 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-br from-blue-400 to-purple-600 rounded-lg md:rounded-xl flex items-center justify-center">
+              <Bot size={16} className="md:hidden text-white" />
+              <Bot size={24} className="hidden md:block text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg md:text-2xl font-bold">Hisa AI</h1>
+              <p className="text-xs md:text-sm text-blue-100">AI-Driven Financial Brain</p>
+            </div>
+          </div>
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/20 rounded-full w-8 h-8 md:w-10 md:h-10"
+          >
+            <X size={18} className="md:hidden" />
+            <X size={24} className="hidden md:block" />
+          </Button>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-b shrink-0 p-3 md:p-4">
+          <div className="flex gap-2 md:gap-3 justify-center overflow-x-auto">
+            <Button
+              onClick={() => handleModuleChange('crm')}
+              variant={activeModule === 'crm' ? 'default' : 'outline'}
+              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
+                activeModule === 'crm' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'bg-white hover:bg-blue-50 border-blue-200'
+              }`}
+            >
+              <TrendingUp size={16} />
+              <span className="text-sm font-medium">CRM Dashboard</span>
+            </Button>
+            
+            <Button
+              onClick={() => handleModuleChange('risk')}
+              variant={activeModule === 'risk' ? 'default' : 'outline'}
+              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
+                activeModule === 'risk' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'bg-white hover:bg-blue-50 border-blue-200'
+              }`}
+            >
+              <Shield size={16} />
+              <span className="text-sm font-medium">Risk Management</span>
+            </Button>
+            
+            <Button
+              onClick={() => handleModuleChange('finance')}
+              variant={activeModule === 'finance' ? 'default' : 'outline'}
+              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
+                activeModule === 'finance' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'bg-white hover:bg-blue-50 border-blue-200'
+              }`}
+            >
+              <DollarSign size={16} />
+              <span className="text-sm font-medium">Personal Finance</span>
+            </Button>
+            
+            <Button
+              onClick={() => handleModuleChange('trading')}
+              variant={activeModule === 'trading' ? 'default' : 'outline'}
+              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
+                activeModule === 'trading' 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : 'bg-white hover:bg-blue-50 border-blue-200'
+              }`}
+            >
+              <GraduationCap size={16} />
+              <span className="text-sm font-medium">Trading Coach</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+          {/* Chat Area */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 rounded-2xl ${
+                      message.sender === 'user'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    <p className="text-xs md:text-sm break-words">{message.content}</p>
+                    <p className="text-xs opacity-70 mt-1">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 text-gray-800 px-3 md:px-4 py-2 rounded-2xl">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className="border-t p-3 md:p-6 shrink-0">
+              <div className="flex gap-2 md:gap-3">
+                <Input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder={getModulePlaceholder()}
+                  className="flex-1 text-xs md:text-sm"
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-3 md:px-4"
+                >
+                  <Send size={16} className="md:hidden" />
+                  <Send size={18} className="hidden md:block" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Module Sidebar */}
+          <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l bg-gray-50 overflow-y-auto">
+            <Tabs value={activeModule} className="w-full h-full">
+              <TabsContent value="crm" className="h-full m-0">
+                <CRMModule />
+              </TabsContent>
+              <TabsContent value="risk" className="h-full m-0">
+                <RiskManagementModule />
+              </TabsContent>
+              <TabsContent value="finance" className="h-full m-0">
+                <PersonalFinanceModule />
+              </TabsContent>
+              <TabsContent value="trading" className="h-full m-0">
+                <TradingCoachModule />
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
-
-      {/* API Key Modal via its own component */}
-      <ChatApiKeyModal
-        show={showApiKeyModal}
-        onClose={() => setShowApiKeyModal(false)}
-        tempKey={tempKey}
-        setTempKey={setTempKey}
-        onSave={saveApiKey}
-        onRemove={handleRemoveKey}
-        apiKeyError={apiKeyError}
-      />
-
-      {/* API Key Button */}
-      <div className="flex justify-end px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 border-b">
-        {!apiKey ? (
-          <Button size="sm" className="bg-yellow-400 text-black hover:bg-yellow-500 rounded" onClick={openApiKeyModal}>
-            <Lock className="h-4 w-4 mr-1.5" /> Enter OpenAI API Key
-          </Button>
-        ) : (
-          <Button size="sm" className="bg-secondary text-primary hover:bg-primary/30 rounded" onClick={openApiKeyModal}>
-            <KeyRound className="h-4 w-4 mr-1.5" /> Change API Key
-          </Button>
-        )}
-      </div>
-
-      {/* Messages (memoized component) */}
-      <ChatMessages messages={messages} isTyping={isTyping} messagesEndRef={messagesEndRef} apiError={apiError} />
-
-      {/* Input Area pinned to bottom */}
-      <ChatInput
-        inputValue={inputValue}
-        setInputValue={setInputValue}
-        onSend={handleSendMessage}
-        onKeyPress={handleKeyPress}
-        apiKey={apiKey}
-        isTyping={isTyping}
-        activeModule={activeModule}
-      />
     </div>
   );
 };
+
 export default ChatInterface;

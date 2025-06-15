@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Calculator, DollarSign, Target, TrendingUp, CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 
-interface PersonalFinanceModuleProps {
-  onDataChange?: (data: any) => void;
-}
-
-const PersonalFinanceModule: React.FC<PersonalFinanceModuleProps> = ({ onDataChange }) => {
+const PersonalFinanceModule: React.FC = () => {
   const [income, setIncome] = useState('');
   const [expenses, setExpenses] = useState('');
   const [goal, setGoal] = useState('');
@@ -37,19 +34,6 @@ const PersonalFinanceModule: React.FC<PersonalFinanceModuleProps> = ({ onDataCha
       });
     }
   };
-
-  useEffect(() => {
-    if (budgetAnalysis && onDataChange) {
-      onDataChange({
-        income,
-        expenses,
-        goal,
-        timeline,
-        budgetAnalysis
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [budgetAnalysis]);
 
   return (
     <div className="p-3 md:p-6 h-full space-y-4 md:space-y-6">
