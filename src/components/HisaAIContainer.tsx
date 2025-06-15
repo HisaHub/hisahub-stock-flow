@@ -14,12 +14,12 @@ const HisaAIContainer: React.FC = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-primary">
-        {/* Sidebar with chat & hamburger menu */}
+        {/* Sidebar with chat & navigation */}
         <HisaSidebar
           activeModule={activeModule}
-          onModuleChange={(mod) => setActiveModule(mod)}
+          onModuleChange={setActiveModule}
         />
-        {/* Hamburger trigger (top-left absolute for visibility) */}
+        {/* Hamburger trigger (top-left absolute for visibility on mobile) */}
         <SidebarTrigger className="fixed top-4 left-4 z-50 md:hidden bg-white rounded-full shadow p-2" />
         {/* Main content area */}
         <div className="flex-1 bg-gray-50 p-6 pl-0 md:pl-0 overflow-y-auto min-h-screen">

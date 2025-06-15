@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Bot, UserCog, Shield, Calculator, GraduationCap, Menu } from "lucide-react";
+import { Bot, UserCog, Shield, Calculator, GraduationCap } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -24,14 +24,14 @@ const modules = [
 
 const HisaSidebar: React.FC<HisaSidebarProps> = ({ activeModule, onModuleChange }) => {
   return (
-    <Sidebar collapsible="offcanvas" className="z-40 min-w-[280px] max-w-xs border-r border-secondary/30 bg-background/90 backdrop-blur-sm">
-      <SidebarContent>
+    <Sidebar collapsible="offcanvas" className="z-40 min-w-[320px] max-w-xs h-full border-r border-secondary/30 bg-background/90 backdrop-blur-sm flex flex-col">
+      <SidebarContent className="flex flex-col h-full">
         <div className="flex items-center gap-2 mb-4 mt-4 px-4">
           <Bot size={28} className="text-blue-700" />
           <span className="font-bold text-lg text-blue-800">Hisa AI</span>
         </div>
-        {/* Chat interface lives in the sidebar */}
-        <div className="mb-4 px-2">
+        {/* Chat interface (scrollable area, input fixed at bottom) */}
+        <div className="flex-1 min-h-0 flex flex-col px-2 pb-2 overflow-y-auto">
           <ChatInterface
             isOpen={true}
             onClose={() => {}}
@@ -39,8 +39,8 @@ const HisaSidebar: React.FC<HisaSidebarProps> = ({ activeModule, onModuleChange 
             onModuleChange={onModuleChange}
           />
         </div>
-        {/* Module navigation */}
-        <SidebarMenu>
+        {/* Module navigation docked at bottom */}
+        <SidebarMenu className="bg-background/95 border-t border-secondary/20 py-2">
           {modules.map((mod) => (
             <SidebarMenuItem key={mod.key}>
               <SidebarMenuButton
