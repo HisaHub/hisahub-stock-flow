@@ -11,4 +11,5 @@ const Chatbot: React.FC = () => (
     <BottomNav />
   </div>
 );
+
 export default Chatbot;
