@@ -1,423 +1,189 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { useSupabaseData } from '../hooks/useSupabaseData';
+import { useMarketData } from '../hooks/useMarketData';
 
-// Types
+// Define types for stocks, holdings, and market indices
 export interface Stock {
+  id: string;
   symbol: string;
   name: string;
+  sector: string;
   price: number;
+  volume: number;
+  high: number;
+  low: number;
   change: number;
-  marketCap?: string;
-  peRatio?: string;
-  volume?: string;
-  dayRange?: string;
+  changePercent: string;
 }
 
 export interface Holding {
-  id: number;
+  id: string;
+  portfolio_id: string;
+  stock_id: string;
+  quantity: number;
+  average_price: number;
+  current_price: number;
+  market_value: number;
+  unrealized_pnl: number;
+  stocks?: {
+    symbol: string;
+    name: string;
+  };
+}
+
+export interface MarketIndex {
+  id: string;
   symbol: string;
   name: string;
-  quantity: number;
-  avgPrice: number;
-  currentPrice: number;
   value: number;
-  profitLoss: number;
-  profitLossPercent: number;
+  change_value: number;
+  change_percent: number;
+  timestamp: string;
 }
 
-export interface Transaction {
-  id: number;
-  date: string;
-  type: 'BUY' | 'SELL' | 'DIVIDEND';
-  symbol: string;
-  quantity: number;
-  price: number;
-  total: number;
-  status: string;
-}
-
-export interface PortfolioData {
-  totalValue: number;
-  dailyChange: number;
-  dailyChangePercent: number;
-  weeklyChangePercent: number;
-  monthlyChangePercent: number;
-}
-
-export interface AccountData {
-  balance: number;
-  brokerName: string;
-}
-
-interface FinancialState {
+interface FinancialDataState {
+  accountData: {
+    balance: number;
+    totalValue: number;
+    todaysPnL: number;
+    totalPnL: number;
+  };
   stocks: Stock[];
   holdings: Holding[];
-  transactions: Transaction[];
-  portfolioData: PortfolioData;
-  accountData: AccountData;
-  lastUpdated: number;
+  marketIndices: MarketIndex[];
+  isLoading: boolean;
+  user: any;
+  portfolio: any;
 }
 
-type FinancialAction = 
-  | { type: 'UPDATE_STOCK_PRICES'; payload: Stock[] }
-  | { type: 'UPDATE_PORTFOLIO' }
-  | { type: 'ADD_TRANSACTION'; payload: Transaction }
-  | { type: 'BUY_STOCK'; payload: { symbol: string; quantity: number; price: number } }
-  | { type: 'SELL_STOCK'; payload: { symbol: string; quantity: number; price: number } }
-  | { type: 'ADD_FUNDS'; payload: number };
+interface FinancialDataContextType {
+  state: FinancialDataState;
+  dispatch: React.Dispatch<any>;
+  placeOrder: (symbol: string, quantity: number, orderType?: string) => Promise<boolean>;
+  updateMarketData: () => Promise<void>;
+}
 
-// Initial state with consistent data
-const initialStocks: Stock[] = [
-  { 
-    symbol: "SCOM", 
-    name: "Safaricom PLC", 
-    price: 22.70, 
-    change: 2.3,
-    marketCap: "KES 1.2T",
-    peRatio: "15.4",
-    volume: "2.1M"
-  },
-  { 
-    symbol: "EQTY", 
-    name: "Equity Group Holdings", 
-    price: 45.50, 
-    change: -1.2,
-    marketCap: "KES 450B",
-    peRatio: "8.2",
-    volume: "1.8M"
-  },
-  { 
-    symbol: "KCB", 
-    name: "KCB Group", 
-    price: 38.25, 
-    change: 0.8,
-    marketCap: "KES 380B",
-    peRatio: "6.5",
-    volume: "1.5M"
-  },
-  { 
-    symbol: "COOP", 
-    name: "Co-operative Bank", 
-    price: 12.85, 
-    change: 1.5,
-    marketCap: "KES 180B",
-    peRatio: "5.8",
-    volume: "900K"
-  },
-  { 
-    symbol: "ABSA", 
-    name: "Absa Bank Kenya", 
-    price: 8.90, 
-    change: -0.5,
-    marketCap: "KES 120B",
-    peRatio: "7.2",
-    volume: "600K"
-  }
-];
+const FinancialDataContext = createContext<FinancialDataContextType | undefined>(undefined);
 
-const calculateHoldings = (stocks: Stock[]): Holding[] => {
-  return [
-    {
-      id: 1,
-      symbol: "SCOM",
-      name: "Safaricom PLC",
-      quantity: 230,
-      avgPrice: 20.50,
-      currentPrice: stocks.find(s => s.symbol === "SCOM")?.price || 22.70,
-      value: 0, // Will be calculated
-      profitLoss: 0, // Will be calculated
-      profitLossPercent: 0 // Will be calculated
-    },
-    {
-      id: 2,
-      symbol: "KCB",
-      name: "KCB Group",
-      quantity: 120,
-      avgPrice: 38.00,
-      currentPrice: stocks.find(s => s.symbol === "KCB")?.price || 38.25,
-      value: 0,
-      profitLoss: 0,
-      profitLossPercent: 0
-    },
-    {
-      id: 3,
-      symbol: "EQTY",
-      name: "Equity Group",
-      quantity: 80,
-      avgPrice: 46.20,
-      currentPrice: stocks.find(s => s.symbol === "EQTY")?.price || 45.50,
-      value: 0,
-      profitLoss: 0,
-      profitLossPercent: 0
-    },
-    {
-      id: 4,
-      symbol: "COOP",
-      name: "Co-op Bank",
-      quantity: 200,
-      avgPrice: 18.50,
-      currentPrice: stocks.find(s => s.symbol === "COOP")?.price || 12.85,
-      value: 0,
-      profitLoss: 0,
-      profitLossPercent: 0
-    }
-  ].map(holding => {
-    const value = holding.quantity * holding.currentPrice;
-    const profitLoss = value - (holding.quantity * holding.avgPrice);
-    const profitLossPercent = (profitLoss / (holding.quantity * holding.avgPrice)) * 100;
-    
-    return {
-      ...holding,
-      value,
-      profitLoss,
-      profitLossPercent
-    };
-  });
-};
-
-const initialHoldings = calculateHoldings(initialStocks);
-
-const initialState: FinancialState = {
-  stocks: initialStocks,
-  holdings: initialHoldings,
-  transactions: [
-    {
-      id: 1,
-      date: "2025-05-20",
-      type: "BUY",
-      symbol: "SCOM",
-      quantity: 50,
-      price: 22.85,
-      total: 1142.50,
-      status: "Completed"
-    },
-    {
-      id: 2,
-      date: "2025-05-18",
-      type: "SELL",
-      symbol: "KCB",
-      quantity: 30,
-      price: 36.50,
-      total: 1095.00,
-      status: "Completed"
-    }
-  ],
-  portfolioData: {
-    totalValue: initialHoldings.reduce((sum, h) => sum + h.value, 0),
-    dailyChange: 3250.20,
-    dailyChangePercent: 2.6,
-    weeklyChangePercent: 5.8,
-    monthlyChangePercent: 12.4
-  },
+const initialState: FinancialDataState = {
   accountData: {
-    balance: 100200,
-    brokerName: "ABC Capital"
+    balance: 0,
+    totalValue: 0,
+    todaysPnL: 0,
+    totalPnL: 0,
   },
-  lastUpdated: Date.now()
+  stocks: [],
+  holdings: [],
+  marketIndices: [],
+  isLoading: true,
+  user: null,
+  portfolio: null,
 };
 
-// Reducer
-function financialReducer(state: FinancialState, action: FinancialAction): FinancialState {
+function financialDataReducer(state: FinancialDataState, action: any): FinancialDataState {
   switch (action.type) {
-    case 'UPDATE_STOCK_PRICES': {
-      const updatedStocks = action.payload;
-      const updatedHoldings = calculateHoldings(updatedStocks);
-      const totalValue = updatedHoldings.reduce((sum, h) => sum + h.value, 0);
-      const previousValue = state.portfolioData.totalValue;
-      const dailyChange = totalValue - previousValue;
-      const dailyChangePercent = (dailyChange / previousValue) * 100;
-
-      return {
-        ...state,
-        stocks: updatedStocks,
-        holdings: updatedHoldings,
-        portfolioData: {
-          ...state.portfolioData,
-          totalValue,
-          dailyChange,
-          dailyChangePercent
-        },
-        lastUpdated: Date.now()
-      };
-    }
-
-    case 'BUY_STOCK': {
-      const { symbol, quantity, price } = action.payload;
-      const total = quantity * price;
-      
-      if (state.accountData.balance < total) {
-        return state; // Insufficient funds
-      }
-
-      const newTransaction: Transaction = {
-        id: Date.now(),
-        date: new Date().toISOString().split('T')[0],
-        type: 'BUY',
-        symbol,
-        quantity,
-        price,
-        total,
-        status: 'Completed'
-      };
-
-      // Update holdings
-      const existingHoldingIndex = state.holdings.findIndex(h => h.symbol === symbol);
-      let updatedHoldings = [...state.holdings];
-
-      if (existingHoldingIndex >= 0) {
-        const existing = state.holdings[existingHoldingIndex];
-        const newQuantity = existing.quantity + quantity;
-        const newAvgPrice = ((existing.quantity * existing.avgPrice) + (quantity * price)) / newQuantity;
-        
-        updatedHoldings[existingHoldingIndex] = {
-          ...existing,
-          quantity: newQuantity,
-          avgPrice: newAvgPrice,
-          value: newQuantity * existing.currentPrice,
-          profitLoss: (newQuantity * existing.currentPrice) - (newQuantity * newAvgPrice),
-          profitLossPercent: ((existing.currentPrice - newAvgPrice) / newAvgPrice) * 100
-        };
-      } else {
-        const stock = state.stocks.find(s => s.symbol === symbol);
-        if (stock) {
-          updatedHoldings.push({
-            id: Date.now(),
-            symbol,
-            name: stock.name,
-            quantity,
-            avgPrice: price,
-            currentPrice: stock.price,
-            value: quantity * stock.price,
-            profitLoss: quantity * (stock.price - price),
-            profitLossPercent: ((stock.price - price) / price) * 100
-          });
-        }
-      }
-
-      return {
-        ...state,
-        holdings: updatedHoldings,
-        transactions: [newTransaction, ...state.transactions],
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload };
+    case 'SET_USER_DATA':
+      return { 
+        ...state, 
+        user: action.payload.user,
+        portfolio: action.payload.portfolio,
         accountData: {
           ...state.accountData,
-          balance: state.accountData.balance - total
-        },
-        portfolioData: {
-          ...state.portfolioData,
-          totalValue: updatedHoldings.reduce((sum, h) => sum + h.value, 0)
+          balance: action.payload.portfolio?.cash_balance || 0
         }
       };
-    }
-
-    case 'SELL_STOCK': {
-      const { symbol, quantity, price } = action.payload;
-      const total = quantity * price;
-      
-      const existingHoldingIndex = state.holdings.findIndex(h => h.symbol === symbol);
-      if (existingHoldingIndex < 0 || state.holdings[existingHoldingIndex].quantity < quantity) {
-        return state; // Insufficient shares
-      }
-
-      const newTransaction: Transaction = {
-        id: Date.now(),
-        date: new Date().toISOString().split('T')[0],
-        type: 'SELL',
-        symbol,
-        quantity,
-        price,
-        total,
-        status: 'Completed'
+    case 'SET_MARKET_DATA':
+      return { 
+        ...state, 
+        stocks: action.payload.stocks,
+        marketIndices: action.payload.marketIndices 
       };
-
-      let updatedHoldings = [...state.holdings];
-      const existing = state.holdings[existingHoldingIndex];
-      const newQuantity = existing.quantity - quantity;
-
-      if (newQuantity === 0) {
-        updatedHoldings.splice(existingHoldingIndex, 1);
-      } else {
-        updatedHoldings[existingHoldingIndex] = {
-          ...existing,
-          quantity: newQuantity,
-          value: newQuantity * existing.currentPrice,
-          profitLoss: (newQuantity * existing.currentPrice) - (newQuantity * existing.avgPrice),
-          profitLossPercent: ((existing.currentPrice - existing.avgPrice) / existing.avgPrice) * 100
-        };
-      }
-
-      return {
-        ...state,
-        holdings: updatedHoldings,
-        transactions: [newTransaction, ...state.transactions],
-        accountData: {
-          ...state.accountData,
-          balance: state.accountData.balance + total
-        },
-        portfolioData: {
-          ...state.portfolioData,
-          totalValue: updatedHoldings.reduce((sum, h) => sum + h.value, 0)
-        }
+    case 'SET_HOLDINGS':
+      return { ...state, holdings: action.payload };
+    case 'UPDATE_ACCOUNT_DATA':
+      return { 
+        ...state, 
+        accountData: { ...state.accountData, ...action.payload } 
       };
-    }
-
-    case 'ADD_FUNDS': {
-      return {
-        ...state,
-        accountData: {
-          ...state.accountData,
-          balance: state.accountData.balance + action.payload
-        }
-      };
-    }
-
     default:
       return state;
   }
 }
 
-// Context
-const FinancialDataContext = createContext<{
-  state: FinancialState;
-  dispatch: React.Dispatch<FinancialAction>;
-} | null>(null);
-
-// Provider component
 export const FinancialDataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(financialReducer, initialState);
+  const [state, dispatch] = useReducer(financialDataReducer, initialState);
+  const { user, portfolio, loading: userLoading, placeOrder, getPortfolioSummary } = useSupabaseData();
+  const { stocks, marketIndices, loading: marketLoading, updateMarketData } = useMarketData();
 
-  // Simulate real-time market updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      const updatedStocks = state.stocks.map(stock => {
-        const change = (Math.random() - 0.5) * 0.5;
-        const newPrice = Math.max(0.1, stock.price + change);
-        const priceChange = ((newPrice - stock.price) / stock.price) * 100;
-        
-        return {
-          ...stock,
-          price: Number(newPrice.toFixed(2)),
-          change: Number(priceChange.toFixed(2)),
-          dayRange: `${(newPrice * 0.98).toFixed(2)} - ${(newPrice * 1.02).toFixed(2)}`
-        };
+    dispatch({
+      type: 'SET_USER_DATA',
+      payload: { user, portfolio }
+    });
+  }, [user, portfolio]);
+
+  useEffect(() => {
+    dispatch({
+      type: 'SET_MARKET_DATA',
+      payload: { stocks, marketIndices }
+    });
+  }, [stocks, marketIndices]);
+
+  useEffect(() => {
+    dispatch({
+      type: 'SET_LOADING',
+      payload: userLoading || marketLoading
+    });
+  }, [userLoading, marketLoading]);
+
+  useEffect(() => {
+    if (portfolio) {
+      loadPortfolioData();
+    }
+  }, [portfolio]);
+
+  const loadPortfolioData = async () => {
+    const portfolioData = await getPortfolioSummary();
+    if (portfolioData) {
+      dispatch({
+        type: 'SET_HOLDINGS',
+        payload: portfolioData.holdings
       });
+      dispatch({
+        type: 'UPDATE_ACCOUNT_DATA',
+        payload: {
+          totalValue: portfolioData.total_value,
+          totalPnL: portfolioData.holdings.reduce((sum: number, h: any) => sum + h.unrealized_pnl, 0)
+        }
+      });
+    }
+  };
 
-      dispatch({ type: 'UPDATE_STOCK_PRICES', payload: updatedStocks });
-    }, 5000); // Update every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [state.stocks]);
+  const contextValue: FinancialDataContextType = {
+    state,
+    dispatch,
+    placeOrder: async (symbol: string, quantity: number, orderType = 'market') => {
+      const success = await placeOrder(symbol, quantity, orderType);
+      if (success) {
+        await loadPortfolioData(); // Refresh portfolio data
+      }
+      return success;
+    },
+    updateMarketData
+  };
 
   return (
-    <FinancialDataContext.Provider value={{ state, dispatch }}>
+    <FinancialDataContext.Provider value={contextValue}>
       {children}
     </FinancialDataContext.Provider>
   );
 };
 
-// Custom hook
 export const useFinancialData = () => {
   const context = useContext(FinancialDataContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useFinancialData must be used within a FinancialDataProvider');
   }
   return context;
