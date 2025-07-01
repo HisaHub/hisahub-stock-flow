@@ -27,8 +27,10 @@ serve(async (req) => {
           .from('portfolios')
           .insert({
             user_id,
-            name: 'Main Portfolio',
-            is_default: true
+            name: 'Demo Portfolio',
+            is_default: true,
+            cash_balance: 10000, // KES 10,000 demo balance
+            is_demo: true
           })
           .select()
           .single();
@@ -50,7 +52,8 @@ serve(async (req) => {
           throw new Error('Stock not found');
         }
 
-        // Get latest stock price
+        // Get latest stock price with realistic demo pricing
+        let price = 0;
         const { data: latestPrice } = await supabaseClient
           .from('stock_prices')
           .select('price')
@@ -59,7 +62,37 @@ serve(async (req) => {
           .limit(1)
           .single();
 
-        const price = latestPrice?.price || 0;
+        if (latestPrice) {
+          price = latestPrice.price;
+        } else {
+          // Generate realistic demo prices for Kenyan stocks
+          const demoPrices: { [key: string]: number } = {
+            'SCOM': 28.50,
+            'EQTY': 45.75,
+            'KCB': 38.25,
+            'COOP': 12.85,
+            'BAT': 550.00,
+            'EABL': 146.00,
+            'ABSA': 14.20,
+            'DTBK': 95.50,
+            'SCBK': 180.00,
+            'NBK': 8.45
+          };
+          price = demoPrices[stock_symbol] || 25.00;
+        }
+
+        // Check portfolio balance for buy orders
+        const { data: portfolio } = await supabaseClient
+          .from('portfolios')
+          .select('cash_balance')
+          .eq('id', portfolio_id)
+          .single();
+
+        const totalCost = Math.abs(quantity) * price;
+        
+        if (quantity > 0 && portfolio && totalCost > portfolio.cash_balance) {
+          throw new Error('Insufficient funds for this trade');
+        }
 
         // Create order
         const { data: order } = await supabaseClient
@@ -78,6 +111,7 @@ serve(async (req) => {
           .single();
 
         // Create transaction
+        const brokerFee = totalCost * 0.005; // 0.5% fee
         await supabaseClient
           .from('transactions')
           .insert({
@@ -88,9 +122,19 @@ serve(async (req) => {
             type: quantity > 0 ? 'buy' : 'sell',
             quantity: Math.abs(quantity),
             price,
-            amount: Math.abs(quantity) * price,
-            fees: Math.abs(quantity) * price * 0.005 // 0.5% fee
+            amount: totalCost,
+            fees: brokerFee
           });
+
+        // Update portfolio cash balance
+        const newCashBalance = quantity > 0 
+          ? portfolio.cash_balance - totalCost - brokerFee
+          : portfolio.cash_balance + totalCost - brokerFee;
+
+        await supabaseClient
+          .from('portfolios')
+          .update({ cash_balance: newCashBalance })
+          .eq('id', portfolio_id);
 
         // Update or create holding
         const { data: existingHolding } = await supabaseClient
@@ -102,18 +146,28 @@ serve(async (req) => {
 
         if (existingHolding) {
           const newQuantity = existingHolding.quantity + quantity;
-          const newAveragePrice = newQuantity > 0 ? 
-            ((existingHolding.quantity * existingHolding.average_price) + (quantity * price)) / newQuantity :
-            0;
+          
+          if (newQuantity > 0) {
+            const newAveragePrice = 
+              ((existingHolding.quantity * existingHolding.average_price) + (quantity * price)) / newQuantity;
 
-          await supabaseClient
-            .from('holdings')
-            .update({
-              quantity: newQuantity,
-              average_price: newAveragePrice,
-              current_price: price
-            })
-            .eq('id', existingHolding.id);
+            await supabaseClient
+              .from('holdings')
+              .update({
+                quantity: newQuantity,
+                average_price: newAveragePrice,
+                current_price: price,
+                market_value: newQuantity * price,
+                unrealized_pnl: (price - newAveragePrice) * newQuantity
+              })
+              .eq('id', existingHolding.id);
+          } else {
+            // Remove holding if quantity becomes 0 or negative
+            await supabaseClient
+              .from('holdings')
+              .delete()
+              .eq('id', existingHolding.id);
+          }
         } else if (quantity > 0) {
           await supabaseClient
             .from('holdings')
@@ -122,7 +176,9 @@ serve(async (req) => {
               stock_id: stock.id,
               quantity,
               average_price: price,
-              current_price: price
+              current_price: price,
+              market_value: quantity * price,
+              unrealized_pnl: 0
             });
         }
 
@@ -136,14 +192,21 @@ serve(async (req) => {
           .from('holdings')
           .select(`
             *,
-            stocks:stock_id (symbol, name),
-            stock_prices:stock_id (price)
+            stocks:stock_id (symbol, name)
           `)
           .eq('portfolio_id', portfolio_id);
 
-        let totalValue = 0;
+        const { data: portfolioInfo } = await supabaseClient
+          .from('portfolios')
+          .select('cash_balance')
+          .eq('id', portfolio_id)
+          .single();
+
+        let totalValue = portfolioInfo?.cash_balance || 0;
         const processedHoldings = holdings?.map(holding => {
-          const currentPrice = holding.stock_prices?.[0]?.price || holding.current_price;
+          // Add realistic price fluctuations for demo
+          const priceVariation = (Math.random() - 0.5) * 0.1; // ±5% variation
+          const currentPrice = holding.current_price * (1 + priceVariation);
           const marketValue = holding.quantity * currentPrice;
           const unrealizedPnL = marketValue - (holding.quantity * holding.average_price);
           
@@ -151,9 +214,9 @@ serve(async (req) => {
 
           return {
             ...holding,
-            current_price: currentPrice,
-            market_value: marketValue,
-            unrealized_pnl: unrealizedPnL
+            current_price: Number(currentPrice.toFixed(2)),
+            market_value: Number(marketValue.toFixed(2)),
+            unrealized_pnl: Number(unrealizedPnL.toFixed(2))
           };
         }) || [];
 
@@ -161,7 +224,8 @@ serve(async (req) => {
           JSON.stringify({ 
             success: true, 
             holdings: processedHoldings,
-            total_value: totalValue
+            total_value: Number(totalValue.toFixed(2)),
+            cash_balance: portfolioInfo?.cash_balance || 0
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

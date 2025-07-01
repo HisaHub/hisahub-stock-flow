@@ -60,7 +60,7 @@ export const useSupabaseData = () => {
         profile = newProfile;
       }
 
-      // Get or create default portfolio
+      // Get or create default demo portfolio with KES 10,000
       let { data: portfolios } = await supabase
         .from('portfolios')
         .select('*')
@@ -71,15 +71,21 @@ export const useSupabaseData = () => {
           .from('portfolios')
           .insert({
             user_id: userId,
-            name: 'Main Portfolio',
+            name: 'Demo Portfolio',
             is_default: true,
-            cash_balance: 100000 // Demo balance
+            cash_balance: 10000, // KES 10,000 demo balance
+            is_demo: true
           })
           .select()
           .single();
 
         if (error) throw error;
         setPortfolio(newPortfolio);
+        
+        toast({
+          title: "Welcome to HisaHub!",
+          description: "Your demo portfolio has been created with KES 10,000 to start trading.",
+        });
       } else {
         setPortfolio(portfolios[0]);
       }
