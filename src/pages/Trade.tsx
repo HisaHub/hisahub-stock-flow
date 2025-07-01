@@ -21,12 +21,23 @@ import AlertsPanel from "../components/trading/AlertsPanel";
 import NewsFeed from "../components/trading/NewsFeed";
 import WatchlistPanel from "../components/trading/WatchlistPanel";
 import ResearchPanel from "../components/trading/ResearchPanel";
-import { useFinancialData } from "../contexts/FinancialDataContext";
+import { useFinancialData, Stock } from "../contexts/FinancialDataContext";
 
 const Trade: React.FC = () => {
   const navigate = useNavigate();
   const { state } = useFinancialData();
-  const [selectedStock, setSelectedStock] = useState(state.stocks[0]);
+  const [selectedStock, setSelectedStock] = useState<Stock>(state.stocks[0] || {
+    id: '',
+    symbol: 'SCOM',
+    name: 'Safaricom PLC',
+    sector: 'Technology',
+    price: 28.50,
+    volume: 1000000,
+    high: 29.00,
+    low: 28.00,
+    change: 0.50,
+    changePercent: '1.79'
+  });
 
   const handleStockChange = (stockSymbol: string) => {
     const stock = state.stocks.find(s => s.symbol === stockSymbol);
@@ -41,11 +52,13 @@ const Trade: React.FC = () => {
 
   // Update selected stock when prices change
   React.useEffect(() => {
-    const updatedStock = state.stocks.find(s => s.symbol === selectedStock.symbol);
-    if (updatedStock) {
-      setSelectedStock(updatedStock);
+    if (state.stocks.length > 0 && selectedStock) {
+      const updatedStock = state.stocks.find(s => s.symbol === selectedStock.symbol);
+      if (updatedStock) {
+        setSelectedStock(updatedStock);
+      }
     }
-  }, [state.stocks, selectedStock.symbol]);
+  }, [state.stocks, selectedStock]);
 
   return (
     <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">

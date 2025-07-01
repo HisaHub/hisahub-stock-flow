@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { useMarketData } from '../hooks/useMarketData';
@@ -16,6 +17,7 @@ export interface Stock {
   changePercent: string;
 }
 
+// Enhanced Holding interface with computed properties
 export interface Holding {
   id: string;
   portfolio_id: string;
@@ -29,6 +31,14 @@ export interface Holding {
     symbol: string;
     name: string;
   };
+  // Computed properties for UI
+  symbol: string;
+  name: string;
+  value: number;
+  avgPrice: number;
+  currentPrice: number;
+  profitLoss: number;
+  profitLossPercent: number;
 }
 
 export interface MarketIndex {
@@ -41,6 +51,25 @@ export interface MarketIndex {
   timestamp: string;
 }
 
+export interface Transaction {
+  id: string;
+  symbol: string;
+  type: string;
+  quantity: number;
+  price: number;
+  total: number;
+  date: string;
+  status: string;
+}
+
+interface PortfolioData {
+  totalValue: number;
+  dailyChange: number;
+  dailyChangePercent: number;
+  weeklyChangePercent: number;
+  monthlyChangePercent: number;
+}
+
 interface FinancialDataState {
   accountData: {
     balance: number;
@@ -48,9 +77,11 @@ interface FinancialDataState {
     todaysPnL: number;
     totalPnL: number;
   };
+  portfolioData: PortfolioData;
   stocks: Stock[];
   holdings: Holding[];
   marketIndices: MarketIndex[];
+  transactions: Transaction[];
   isLoading: boolean;
   user: any;
   portfolio: any;
@@ -72,9 +103,17 @@ const initialState: FinancialDataState = {
     todaysPnL: 0,
     totalPnL: 0,
   },
+  portfolioData: {
+    totalValue: 0,
+    dailyChange: 0,
+    dailyChangePercent: 0,
+    weeklyChangePercent: 0,
+    monthlyChangePercent: 0,
+  },
   stocks: [],
   holdings: [],
   marketIndices: [],
+  transactions: [],
   isLoading: true,
   user: null,
   portfolio: null,
@@ -101,11 +140,31 @@ function financialDataReducer(state: FinancialDataState, action: any): Financial
         marketIndices: action.payload.marketIndices 
       };
     case 'SET_HOLDINGS':
-      return { ...state, holdings: action.payload };
+      // Transform holdings data to include computed properties
+      const transformedHoldings = action.payload.map((holding: any) => ({
+        ...holding,
+        symbol: holding.stocks?.symbol || '',
+        name: holding.stocks?.name || '',
+        value: holding.market_value || holding.quantity * holding.current_price,
+        avgPrice: holding.average_price,
+        currentPrice: holding.current_price,
+        profitLoss: holding.unrealized_pnl || 0,
+        profitLossPercent: holding.average_price > 0 
+          ? ((holding.current_price - holding.average_price) / holding.average_price) * 100 
+          : 0
+      }));
+      return { ...state, holdings: transformedHoldings };
+    case 'SET_TRANSACTIONS':
+      return { ...state, transactions: action.payload };
     case 'UPDATE_ACCOUNT_DATA':
       return { 
         ...state, 
         accountData: { ...state.accountData, ...action.payload } 
+      };
+    case 'UPDATE_PORTFOLIO_DATA':
+      return {
+        ...state,
+        portfolioData: { ...state.portfolioData, ...action.payload }
       };
     default:
       return state;
@@ -151,12 +210,57 @@ export const FinancialDataProvider: React.FC<{ children: ReactNode }> = ({ child
         type: 'SET_HOLDINGS',
         payload: portfolioData.holdings
       });
+      
+      const totalValue = portfolioData.total_value || 0;
+      const totalPnL = portfolioData.holdings.reduce((sum: number, h: any) => sum + (h.unrealized_pnl || 0), 0);
+      const dailyChangePercent = totalValue > 0 ? (totalPnL / (totalValue - totalPnL)) * 100 : 0;
+      
       dispatch({
         type: 'UPDATE_ACCOUNT_DATA',
         payload: {
-          totalValue: portfolioData.total_value,
-          totalPnL: portfolioData.holdings.reduce((sum: number, h: any) => sum + h.unrealized_pnl, 0)
+          totalValue,
+          totalPnL
         }
+      });
+
+      dispatch({
+        type: 'UPDATE_PORTFOLIO_DATA',
+        payload: {
+          totalValue,
+          dailyChange: totalPnL,
+          dailyChangePercent,
+          weeklyChangePercent: 2.5, // Mock data
+          monthlyChangePercent: 8.2, // Mock data
+        }
+      });
+
+      // Mock transactions data - in a real app this would come from the API
+      const mockTransactions: Transaction[] = [
+        {
+          id: '1',
+          symbol: 'EQTY',
+          type: 'BUY',
+          quantity: 100,
+          price: 45.50,
+          total: 4550,
+          date: '2024-01-15',
+          status: 'Completed'
+        },
+        {
+          id: '2',
+          symbol: 'KCB',
+          type: 'BUY',
+          quantity: 200,
+          price: 38.25,
+          total: 7650,
+          date: '2024-01-14',
+          status: 'Completed'
+        }
+      ];
+
+      dispatch({
+        type: 'SET_TRANSACTIONS',
+        payload: mockTransactions
       });
     }
   };
