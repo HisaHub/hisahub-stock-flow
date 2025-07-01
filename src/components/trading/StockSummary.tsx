@@ -2,17 +2,7 @@
 import React, { useState } from "react";
 import { Star, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface Stock {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  marketCap?: string;
-  peRatio?: string;
-  volume?: string;
-  dayRange?: string;
-}
+import { Stock } from "../../contexts/FinancialDataContext";
 
 interface StockSummaryProps {
   stock: Stock;
@@ -22,7 +12,17 @@ const StockSummary: React.FC<StockSummaryProps> = ({ stock }) => {
   const [isWatchlisted, setIsWatchlisted] = useState(false);
 
   const isPositive = stock.change >= 0;
-  const percentChange = stock.change.toFixed(2);
+  const percentChange = stock.changePercent;
+
+  // Format volume for display
+  const formatVolume = (volume: number) => {
+    if (volume >= 1000000) {
+      return `${(volume / 1000000).toFixed(1)}M`;
+    } else if (volume >= 1000) {
+      return `${(volume / 1000).toFixed(1)}K`;
+    }
+    return volume.toString();
+  };
 
   return (
     <div className="glass-card animate-fade-in">
@@ -59,19 +59,19 @@ const StockSummary: React.FC<StockSummaryProps> = ({ stock }) => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="text-center">
           <p className="text-off-white/60 text-xs">Market Cap</p>
-          <p className="text-off-white font-semibold text-sm">{stock.marketCap || "N/A"}</p>
+          <p className="text-off-white font-semibold text-sm">N/A</p>
         </div>
         <div className="text-center">
           <p className="text-off-white/60 text-xs">P/E Ratio</p>
-          <p className="text-off-white font-semibold text-sm">{stock.peRatio || "N/A"}</p>
+          <p className="text-off-white font-semibold text-sm">N/A</p>
         </div>
         <div className="text-center">
           <p className="text-off-white/60 text-xs">Volume</p>
-          <p className="text-off-white font-semibold text-sm">{stock.volume || "N/A"}</p>
+          <p className="text-off-white font-semibold text-sm">{formatVolume(stock.volume)}</p>
         </div>
         <div className="text-center">
           <p className="text-off-white/60 text-xs">Day Range</p>
-          <p className="text-off-white font-semibold text-xs">{stock.dayRange || `${(stock.price * 0.98).toFixed(2)} - ${(stock.price * 1.02).toFixed(2)}`}</p>
+          <p className="text-off-white font-semibold text-xs">{stock.low.toFixed(2)} - {stock.high.toFixed(2)}</p>
         </div>
       </div>
 
