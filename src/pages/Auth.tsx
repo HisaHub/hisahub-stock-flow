@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,13 +20,40 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would validate credentials
+
+    const { email, password } = loginForm;
+
+    if (!email || !password) {
+      alert("Please fill in both email and password.");
+      return;
+    }
+
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isValidEmail) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    // TODO: Replace with API call or auth logic
     onLogin();
   };
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would create account
+
+    const { name, email, password, confirmPassword } = signupForm;
+
+    if (!name || !email || !password || !confirmPassword) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    // TODO: Replace with API call or sign-up logic
     onLogin();
   };
 
