@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,54 +19,43 @@ export default {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#131b26", // Deep navy for dark theme
+          foreground: "#F8F9FA",
+          light: "#005C9D", // Navy blue for light theme
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#FFC000", // Amber for dark theme
+          foreground: "#131b26",
+          light: "#FFD700", // Gold for light theme
         },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+        background: {
+          DEFAULT: "#131b26",
+          light: "#F9FAFB", // Soft gray white for light theme
         },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        // Keep existing custom colors for app-specific styling
         charcoal: "#2A2A2A",
         neutral: {
           DEFAULT: "#8E9196",
-          light: "#4A5568",
+          light: "#4A5568", // Muted dark grey for light theme secondary text
         },
         "off-white": "#F8F9FA",
+        card: {
+          DEFAULT: "#1b2230",
+          light: "#FFFFFF", // White cards for light theme
+        },
+        accent: {
+          DEFAULT: "#FFC000",
+          light: "#FFFBEA", // Soft gold tint for light theme highlights
+        },
         "nav-bg": "#181f2c",
         "glass-bg": "rgba(255,255,255,0.08)",
-        "light-text": "#1A1A1A",
-        "light-text-secondary": "#4A5568",
-        "light-border": "#E2E8F0",
-        "light-bg-highlight": "#F7FAFC",
-        "light-success": "#28A745",
-        "light-danger": "#E53E3E",
+        // Light theme specific colors
+        "light-text": "#1A1A1A", // Main text for light theme
+        "light-text-secondary": "#4A5568", // Secondary text for light theme
+        "light-border": "#E2E8F0", // Borders for light theme
+        "light-bg-highlight": "#F7FAFC", // Background highlights
+        "light-success": "#28A745", // Success/profit color
+        "light-danger": "#E53E3E", // Danger/loss color
       },
       fontFamily: {
         sans: ['Poppins', 'sans-serif'],

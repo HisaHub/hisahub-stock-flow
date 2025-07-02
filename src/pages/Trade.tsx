@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ChatFAB from "../components/ChatFAB";
@@ -62,7 +61,7 @@ const Trade: React.FC = () => {
   }, [state.stocks, selectedStock]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground font-sans transition-colors">
+    <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
       <HisaAIButton />
       
       <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col px-2 sm:px-4 py-4">
@@ -71,33 +70,33 @@ const Trade: React.FC = () => {
           {/* Stock Selector */}
           <div className="flex-1">
             <Select value={selectedStock.symbol} onValueChange={handleStockChange}>
-              <SelectTrigger className="w-full bg-card border-border text-foreground">
+              <SelectTrigger className="w-full bg-white/10 border-secondary/20 text-off-white">
                 <SelectValue>
                   <div className="flex items-center justify-between w-full">
                     <div className="flex flex-col items-start">
                       <span className="font-semibold">{selectedStock.symbol}</span>
-                      <span className="text-xs text-muted-foreground">{selectedStock.name}</span>
+                      <span className="text-xs text-off-white/60">{selectedStock.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-mono">KES {selectedStock.price.toFixed(2)}</span>
-                      <span className={`text-xs ${selectedStock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      <span className={`text-xs ${selectedStock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {selectedStock.change >= 0 ? '+' : ''}{selectedStock.change.toFixed(2)}%
                       </span>
                     </div>
                   </div>
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent className="bg-popover border-border text-popover-foreground">
+              <SelectContent className="bg-primary border-secondary/20">
                 {state.stocks.map((stock) => (
-                  <SelectItem key={stock.symbol} value={stock.symbol} className="focus:bg-accent focus:text-accent-foreground">
+                  <SelectItem key={stock.symbol} value={stock.symbol} className="text-off-white focus:bg-white/10">
                     <div className="flex items-center justify-between w-full">
                       <div className="flex flex-col items-start">
                         <span className="font-semibold">{stock.symbol}</span>
-                        <span className="text-xs text-muted-foreground">{stock.name}</span>
+                        <span className="text-xs text-off-white/60">{stock.name}</span>
                       </div>
                       <div className="flex items-center gap-2 ml-4">
                         <span className="font-mono text-sm">KES {stock.price.toFixed(2)}</span>
-                        <span className={`text-xs ${stock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        <span className={`text-xs ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                           {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)}%
                         </span>
                       </div>
@@ -112,7 +111,7 @@ const Trade: React.FC = () => {
           <div className="w-full sm:w-auto">
             <Button
               onClick={handleBrokerLogin}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border border-secondary/20 text-off-white px-4 py-2 h-full"
               variant="outline"
             >
               <LogIn className="w-5 h-5 mr-2" />
@@ -136,7 +135,7 @@ const Trade: React.FC = () => {
             {/* Mobile Tabs for additional content */}
             <div className="lg:hidden">
               <Tabs defaultValue="positions" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 bg-muted text-xs">
+                <TabsList className="grid w-full grid-cols-5 bg-white/10 text-xs">
                   <TabsTrigger value="positions" className="text-xs">Positions</TabsTrigger>
                   <TabsTrigger value="watchlist" className="text-xs">Watch</TabsTrigger>
                   <TabsTrigger value="research" className="text-xs">Research</TabsTrigger>
