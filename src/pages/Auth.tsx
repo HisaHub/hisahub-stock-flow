@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,7 +114,6 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const handleDemoLogin = async () => {
     setLoading(true);
     try {
-      // Create a demo account with a unique email
       const demoEmail = `demo_${Date.now()}@hisahub.demo`;
       const demoPassword = "demo123456";
       
@@ -136,7 +134,6 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         return;
       }
 
-      // Sign in with the demo account
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: demoEmail,
         password: demoPassword,
@@ -156,53 +153,53 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary px-4">
-      <Card className="w-full max-w-md bg-white/10 border-secondary/20">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md bg-card border-border">
         <CardHeader className="text-center">
           <div className="rounded-lg border-4 border-secondary p-3 mb-4 flex justify-center items-center mx-auto w-fit">
             <span className="font-extrabold text-secondary text-4xl" style={{ fontFamily: "'Poppins',sans-serif" }}>H</span>
           </div>
-          <CardTitle className="text-2xl font-bold text-off-white">Welcome to HisaHub</CardTitle>
-          <CardDescription className="text-off-white/80">
+          <CardTitle className="text-2xl font-bold text-foreground">Welcome to HisaHub</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Your gateway to the Nairobi Securities Exchange
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-white/10">
-              <TabsTrigger value="login" className="text-off-white">Login</TabsTrigger>
-              <TabsTrigger value="signup" className="text-off-white">Sign Up</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 bg-muted">
+              <TabsTrigger value="login" className="text-foreground">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="text-foreground">Sign Up</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login" className="space-y-4">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-off-white">Email</Label>
+                  <Label htmlFor="email" className="text-foreground">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     value={loginForm.email}
                     onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                    className="bg-white/10 border-secondary/20 text-off-white"
+                    className="bg-background border-border text-foreground"
                     placeholder="Enter your email"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-off-white">Password</Label>
+                  <Label htmlFor="password" className="text-foreground">Password</Label>
                   <Input
                     id="password"
                     type="password"
                     value={loginForm.password}
                     onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                    className="bg-white/10 border-secondary/20 text-off-white"
+                    className="bg-background border-border text-foreground"
                     placeholder="Enter your password"
                     required
                   />
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-secondary text-primary hover:bg-secondary/90"
+                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
                   disabled={loading}
                 >
                   {loading ? "Logging in..." : "Login"}
@@ -213,56 +210,56 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             <TabsContent value="signup" className="space-y-4">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-off-white">Full Name</Label>
+                  <Label htmlFor="name" className="text-foreground">Full Name</Label>
                   <Input
                     id="name"
                     type="text"
                     value={signupForm.name}
                     onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
-                    className="bg-white/10 border-secondary/20 text-off-white"
+                    className="bg-background border-border text-foreground"
                     placeholder="Enter your full name"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email" className="text-off-white">Email</Label>
+                  <Label htmlFor="signup-email" className="text-foreground">Email</Label>
                   <Input
                     id="signup-email"
                     type="email"
                     value={signupForm.email}
                     onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                    className="bg-white/10 border-secondary/20 text-off-white"
+                    className="bg-background border-border text-foreground"
                     placeholder="Enter your email"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password" className="text-off-white">Password</Label>
+                  <Label htmlFor="signup-password" className="text-foreground">Password</Label>
                   <Input
                     id="signup-password"
                     type="password"
                     value={signupForm.password}
                     onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                    className="bg-white/10 border-secondary/20 text-off-white"
+                    className="bg-background border-border text-foreground"
                     placeholder="Create a password"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password" className="text-off-white">Confirm Password</Label>
+                  <Label htmlFor="confirm-password" className="text-foreground">Confirm Password</Label>
                   <Input
                     id="confirm-password"
                     type="password"
                     value={signupForm.confirmPassword}
                     onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
-                    className="bg-white/10 border-secondary/20 text-off-white"
+                    className="bg-background border-border text-foreground"
                     placeholder="Confirm your password"
                     required
                   />
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-secondary text-primary hover:bg-secondary/90"
+                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
                   disabled={loading}
                 >
                   {loading ? "Creating Account..." : "Create Account"}
@@ -271,11 +268,11 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             </TabsContent>
           </Tabs>
           
-          <div className="mt-6 pt-6 border-t border-white/10">
+          <div className="mt-6 pt-6 border-t border-border">
             <Button 
               onClick={handleDemoLogin} 
               variant="outline" 
-              className="w-full border-secondary/50 text-secondary hover:bg-secondary/10"
+              className="w-full border-border text-foreground hover:bg-accent hover:text-accent-foreground"
               disabled={loading}
             >
               {loading ? "Creating Demo Account..." : "Login as Demo User"}

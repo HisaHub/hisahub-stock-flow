@@ -141,7 +141,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 md:p-4">
-      <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-7xl h-[95vh] md:h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-background rounded-xl md:rounded-2xl shadow-2xl w-full max-w-7xl h-[95vh] md:h-[90vh] flex flex-col overflow-hidden border border-border">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 md:p-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2 md:gap-3">
@@ -166,16 +166,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Navigation Buttons */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-b shrink-0 p-3 md:p-4">
+        <div className="bg-muted border-b shrink-0 p-3 md:p-4">
           <div className="flex gap-2 md:gap-3 justify-center overflow-x-auto">
             <Button
               onClick={() => handleModuleChange('crm')}
               variant={activeModule === 'crm' ? 'default' : 'outline'}
-              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
-                activeModule === 'crm' 
-                  ? 'bg-blue-600 text-white shadow-md' 
-                  : 'bg-white hover:bg-blue-50 border-blue-200'
-              }`}
+              className="flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all"
             >
               <TrendingUp size={16} />
               <span className="text-sm font-medium">CRM Dashboard</span>
@@ -184,11 +180,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
             <Button
               onClick={() => handleModuleChange('risk')}
               variant={activeModule === 'risk' ? 'default' : 'outline'}
-              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
-                activeModule === 'risk' 
-                  ? 'bg-blue-600 text-white shadow-md' 
-                  : 'bg-white hover:bg-blue-50 border-blue-200'
-              }`}
+              className="flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all"
             >
               <Shield size={16} />
               <span className="text-sm font-medium">Risk Management</span>
@@ -197,11 +189,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
             <Button
               onClick={() => handleModuleChange('finance')}
               variant={activeModule === 'finance' ? 'default' : 'outline'}
-              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
-                activeModule === 'finance' 
-                  ? 'bg-blue-600 text-white shadow-md' 
-                  : 'bg-white hover:bg-blue-50 border-blue-200'
-              }`}
+              className="flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all"
             >
               <DollarSign size={16} />
               <span className="text-sm font-medium">Personal Finance</span>
@@ -210,11 +198,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
             <Button
               onClick={() => handleModuleChange('trading')}
               variant={activeModule === 'trading' ? 'default' : 'outline'}
-              className={`flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all ${
-                activeModule === 'trading' 
-                  ? 'bg-blue-600 text-white shadow-md' 
-                  : 'bg-white hover:bg-blue-50 border-blue-200'
-              }`}
+              className="flex items-center gap-2 whitespace-nowrap px-3 md:px-4 py-2 rounded-lg transition-all"
             >
               <GraduationCap size={16} />
               <span className="text-sm font-medium">Trading Coach</span>
@@ -236,8 +220,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
                   <div
                     className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 rounded-2xl ${
                       message.sender === 'user'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-800'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     <p className="text-xs md:text-sm break-words">{message.content}</p>
@@ -250,11 +234,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
               
               {isTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 text-gray-800 px-3 md:px-4 py-2 rounded-2xl">
+                  <div className="bg-muted text-muted-foreground px-3 md:px-4 py-2 rounded-2xl">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -263,14 +247,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
             </div>
 
             {/* Input Area */}
-            <div className="border-t p-3 md:p-6 shrink-0">
+            <div className="border-t border-border p-3 md:p-6 shrink-0">
               <div className="flex gap-2 md:gap-3">
                 <Input
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder={getModulePlaceholder()}
-                  className="flex-1 text-xs md:text-sm"
+                  className="flex-1 text-xs md:text-sm bg-background border-border text-foreground"
                 />
                 <Button
                   onClick={handleSendMessage}
@@ -284,7 +268,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Module Sidebar */}
-          <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l bg-gray-50 overflow-y-auto">
+          <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-border bg-muted overflow-y-auto">
             <Tabs value={activeModule} className="w-full h-full">
               <TabsContent value="crm" className="h-full m-0">
                 <CRMModule />

@@ -4,189 +4,90 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Dark theme variables (default) */
+    --background: 210 40% 15%; /* #131b26 */
+    --foreground: 210 40% 98%; /* #F8F9FA */
+    --card: 210 40% 18%; /* #1b2230 */
+    --card-foreground: 210 40% 98%;
+    --popover: 210 40% 15%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 15%; /* #131b26 */
+    --primary-foreground: 45 93% 47%; /* #FFC000 */
+    --secondary: 45 100% 50%; /* #FFC000 */
+    --secondary-foreground: 210 40% 15%;
+    --muted: 210 40% 20%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 45 100% 50%; /* #FFC000 */
+    --accent-foreground: 210 40% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 45 100% 50% / 0.2; /* secondary/20 */
+    --input: 45 100% 50% / 0.2;
+    --ring: 45 100% 50%;
+  }
+
+  html[data-theme="light"] {
+    /* Light theme variables */
+    --background: 210 20% 98%; /* #F9FAFB */
+    --foreground: 210 20% 10%; /* #1A1A1A */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 210 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 20% 10%;
+    --primary: 210 100% 30%; /* #005C9D */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 51 100% 50%; /* #FFD700 */
+    --secondary-foreground: 210 20% 10%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 25% 27%;
+    --accent: 51 100% 95%; /* #FFFBEA */
+    --accent-foreground: 210 20% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 91%; /* #E2E8F0 */
+    --input: 214 32% 91%;
+    --ring: 210 100% 30%;
+  }
+
   html {
     font-family: 'Poppins', sans-serif;
-    background: #131b26; /* Deeper navy per user image */
   }
+  
   body {
-    @apply bg-primary text-secondary font-sans;
-    background: #131b26 !important;
-    color: #F8F9FA;
+    @apply bg-background text-foreground font-sans;
   }
 
-  /* Light mode styles */
-  html[data-theme="light"] {
-    background: #F9FAFB !important;
+  /* Glass card styling with theme awareness */
+  .glass-card {
+    @apply bg-card/80 shadow-xl rounded-2xl p-6 border border-border backdrop-blur-[8px];
   }
-  
-  html[data-theme="light"] body {
-    background: #F9FAFB !important;
-    color: #1A1A1A;
-  }
-  
-  /* Light theme glass cards */
-  html[data-theme="light"] .glass-card {
-    @apply bg-white shadow-lg rounded-2xl p-6 border border-gray-100 backdrop-blur-[8px];
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  }
-  
-  /* Light theme text colors */
-  html[data-theme="light"] .text-off-white {
-    color: #1A1A1A;
-  }
-  
-  html[data-theme="light"] .text-off-white\/60 {
-    color: #4A5568;
-  }
-  
-  html[data-theme="light"] .text-off-white\/80 {
-    color: #2D3748;
-  }
-  
-  /* Light theme borders and backgrounds */
-  html[data-theme="light"] .border-white\/10 {
-    border-color: #E2E8F0;
-  }
-  
-  html[data-theme="light"] .bg-white\/5 {
-    background-color: #F7FAFC;
-  }
-  
-  html[data-theme="light"] .bg-white\/10 {
-    background-color: #EDF2F7;
-  }
-  
-  /* Light theme navigation */
-  html[data-theme="light"] .bg-nav-bg {
-    background-color: #FFFFFF;
-    border-bottom: 1px solid #E2E8F0;
-  }
-  
-  /* Light theme primary colors */
-  html[data-theme="light"] .bg-primary {
-    background-color: #005C9D;
-  }
-  
-  html[data-theme="light"] .text-primary {
-    color: #005C9D;
-  }
-  
-  html[data-theme="light"] .border-primary {
-    border-color: #005C9D;
-  }
-  
-  /* Light theme secondary (gold) colors */
-  html[data-theme="light"] .bg-secondary {
-    background-color: #FFD700;
-  }
-  
-  html[data-theme="light"] .text-secondary {
-    color: #1A1A1A;
-  }
-  
-  html[data-theme="light"] .border-secondary {
-    border-color: #FFD700;
-  }
-  
-  /* Light theme success/profit colors */
-  html[data-theme="light"] .text-green-500 {
-    color: #28A745;
-  }
-  
-  html[data-theme="light"] .bg-green-500 {
-    background-color: #28A745;
-  }
-  
-  /* Light theme danger/loss colors */
-  html[data-theme="light"] .text-red-500 {
-    color: #E53E3E;
-  }
-  
-  html[data-theme="light"] .bg-red-500 {
-    background-color: #E53E3E;
-  }
-  
-  /* Light theme neutral text */
-  html[data-theme="light"] .text-neutral {
-    color: #4A5568;
-  }
-  
-  /* Light theme card backgrounds */
-  html[data-theme="light"] .bg-card {
-    background-color: #FFFFFF;
-  }
-  
-  /* Light theme button styles */
-  html[data-theme="light"] .bg-charcoal {
-    background-color: #005C9D;
-  }
-  
-  html[data-theme="light"] .text-charcoal {
-    color: #005C9D;
-  }
-  
-  /* Light theme hover effects */
-  html[data-theme="light"] .hover\:bg-white\/10:hover {
-    background-color: #F7FAFC;
-  }
-  
-  html[data-theme="light"] .hover\:bg-charcoal\/10:hover {
-    background-color: rgba(0, 92, 157, 0.1);
-  }
-  
-  /* Light theme input styling */
-  html[data-theme="light"] input,
-  html[data-theme="light"] textarea,
-  html[data-theme="light"] select {
-    background-color: #FFFFFF;
-    border-color: #E2E8F0;
-    color: #1A1A1A;
-  }
-  
-  html[data-theme="light"] input:focus,
-  html[data-theme="light"] textarea:focus,
-  html[data-theme="light"] select:focus {
-    border-color: #005C9D;
-    box-shadow: 0 0 0 3px rgba(0, 92, 157, 0.1);
-  }
-  
-  /* Light theme placeholder text */
-  html[data-theme="light"] ::placeholder {
-    color: #4A5568;
-  }
-  
-  /* Light theme scrollbar */
-  html[data-theme="light"] ::-webkit-scrollbar-track {
-    background: #F7FAFC;
-  }
-  
-  html[data-theme="light"] ::-webkit-scrollbar-thumb {
-    background: #E2E8F0;
-  }
-  
-  html[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-    background: #CBD5E0;
-  }
-  
-  /* Light theme highlight backgrounds */
-  html[data-theme="light"] .bg-accent {
-    background-color: #FFFBEA;
-  }
-  
-  /* Light theme shadows */
-  html[data-theme="light"] .shadow-xl {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  }
-  
-  html[data-theme="light"] .shadow-lg {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  }
-}
 
-.glass-card {
-  @apply bg-white/5 shadow-xl rounded-2xl p-6 border border-secondary/20 backdrop-blur-[8px];
-}
+  /* Theme-aware text colors */
+  .text-off-white {
+    @apply text-foreground;
+  }
+  
+  .text-off-white\/60 {
+    @apply text-muted-foreground;
+  }
+  
+  .text-off-white\/80 {
+    @apply text-foreground/80;
+  }
 
-.market-mono {
-  font-family: 'Roboto Mono', monospace;
+  /* Market mono font */
+  .market-mono {
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  /* Ensure proper contrast for interactive elements */
+  button:focus-visible {
+    @apply ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Fix popover and dropdown visibility */
+  [data-radix-popper-content-wrapper] {
+    z-index: 50 !important;
+  }
 }
