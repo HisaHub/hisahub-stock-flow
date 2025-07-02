@@ -8,20 +8,30 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+  storageKey?: string;
+}
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('dark');
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
+  children, 
+  defaultTheme = 'dark',
+  storageKey = 'theme'
+}) => {
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme;
+    const savedTheme = localStorage.getItem(storageKey) as Theme;
     if (savedTheme) {
       setTheme(savedTheme);
     }
-  }, []);
+  }, [storageKey]);
 
   useEffect(() => {
-    localStorage.setItem('theme', theme);
+    localStorage.setItem(storageKey, theme);
     document.documentElement.setAttribute('data-theme', theme);
     
     if (theme === 'light') {
@@ -31,7 +41,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       document.documentElement.classList.add('dark');
       document.body.style.background = '#131b26';
     }
-  }, [theme]);
+  }, [theme, storageKey]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
