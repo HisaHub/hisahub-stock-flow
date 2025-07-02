@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Shield, Plus, Lightbulb, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import HisaAIButton from "../components/HisaAIButton";
 
 const brokers = [
@@ -122,9 +122,40 @@ const BrokerIntegration: React.FC = () => {
     }, 3000);
   };
 
-  const handleDemoAccount = () => {
-    toast.success("Demo account activated! You can now practice trading without real money.");
-    navigate("/trade");
+  const handleDemoAccount = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast.error("Please log in to activate demo mode");
+        setIsLoading(false);
+        return;
+      }
+
+      // Create demo portfolio through the portfolio management function
+      const { data, error } = await supabase.functions.invoke('portfolio-management', {
+        body: {
+          action: 'create_portfolio',
+          user_id: user.id
+        }
+      });
+
+      if (error) {
+        console.error('Demo portfolio creation error:', error);
+        toast.error("Failed to create demo portfolio");
+      } else {
+        toast.success("Demo account activated! You now have KES 10,000 to practice trading.");
+        navigate("/trade");
+      }
+    } catch (error) {
+      console.error('Error activating demo account:', error);
+      toast.error("An error occurred while activating demo account");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -424,10 +455,11 @@ const BrokerIntegration: React.FC = () => {
           <Button
             variant="outline"
             onClick={handleDemoAccount}
+            disabled={isLoading}
             className="flex items-center gap-2 bg-white/10 border-secondary/20 text-off-white hover:bg-white/20"
           >
             <Lightbulb className="w-4 h-4" />
-            Use Demo Account
+            {isLoading ? "Activating Demo..." : "Use Demo Account"}
           </Button>
         </div>
 

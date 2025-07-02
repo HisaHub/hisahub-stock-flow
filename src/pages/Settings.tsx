@@ -11,6 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { 
   Shield, 
   Bell, 
@@ -26,13 +29,33 @@ import {
   CreditCard,
   User, 
   TrendingUp, 
-  Bot
+  Bot,
+  LogOut
 } from "lucide-react";
 
 const Settings: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
+  const [signingOut, setSigningOut] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast.error("Failed to sign out: " + error.message);
+      } else {
+        toast.success("Signed out successfully");
+        navigate("/auth");
+      }
+    } catch (error) {
+      toast.error("An error occurred while signing out");
+    } finally {
+      setSigningOut(false);
+    }
+  };
 
   const PersonalInfoSection = () => (
     <div className="space-y-6">
@@ -86,6 +109,21 @@ const Settings: React.FC = () => {
             <Input id="taxStatus" defaultValue="Individual" className="mt-1" />
           </div>
         </div>
+      </div>
+
+      {/* Sign Out Section */}
+      <Separator />
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-red-500">Account Actions</h3>
+        <Button 
+          onClick={handleSignOut}
+          disabled={signingOut}
+          variant="destructive"
+          className="w-full flex items-center gap-2"
+        >
+          <LogOut className="w-4 h-4" />
+          {signingOut ? "Signing Out..." : "Sign Out"}
+        </Button>
       </div>
     </div>
   );
