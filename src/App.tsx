@@ -13,7 +13,14 @@ import Auth from './pages/Auth';
 import { FinancialDataProvider } from './contexts/FinancialDataContext';
 import { GlobalUserProvider } from './contexts/GlobalUserContext';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (

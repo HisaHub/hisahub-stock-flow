@@ -26,6 +26,7 @@ export const GlobalUserProvider: React.FC<{ children: ReactNode }> = ({ children
   const [transactions, setTransactions] = useState([]);
   const [notifications, setNotifications] = useState([]);
   
+  // Always call hooks at the top level
   const { user, portfolio, loading: userLoading, getPortfolioSummary } = useSupabaseData();
   const { stocks, marketIndices, loading: marketLoading } = useMarketData();
 
