@@ -1,7 +1,5 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGlobalUser } from "../contexts/GlobalUserContext";
 import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
@@ -23,12 +21,12 @@ import AlertsPanel from "../components/trading/AlertsPanel";
 import NewsFeed from "../components/trading/NewsFeed";
 import WatchlistPanel from "../components/trading/WatchlistPanel";
 import ResearchPanel from "../components/trading/ResearchPanel";
-import { Stock } from "../contexts/FinancialDataContext";
+import { useFinancialData, Stock } from "../contexts/FinancialDataContext";
 
 const Trade: React.FC = () => {
   const navigate = useNavigate();
-  const { stocks, loading } = useGlobalUser();
-  const [selectedStock, setSelectedStock] = useState<Stock>(stocks[0] || {
+  const { state } = useFinancialData();
+  const [selectedStock, setSelectedStock] = useState<Stock>(state.stocks[0] || {
     id: '',
     symbol: 'SCOM',
     name: 'Safaricom PLC',
@@ -42,7 +40,7 @@ const Trade: React.FC = () => {
   });
 
   const handleStockChange = (stockSymbol: string) => {
-    const stock = stocks.find(s => s.symbol === stockSymbol);
+    const stock = state.stocks.find(s => s.symbol === stockSymbol);
     if (stock) {
       setSelectedStock(stock);
     }
@@ -54,28 +52,16 @@ const Trade: React.FC = () => {
 
   // Update selected stock when prices change
   React.useEffect(() => {
-    if (stocks.length > 0 && selectedStock) {
-      const updatedStock = stocks.find(s => s.symbol === selectedStock.symbol);
+    if (state.stocks.length > 0 && selectedStock) {
+      const updatedStock = state.stocks.find(s => s.symbol === selectedStock.symbol);
       if (updatedStock) {
         setSelectedStock(updatedStock);
       }
     }
-  }, [stocks, selectedStock]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-primary font-sans">
-        <HisaAIButton />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-secondary">Loading...</div>
-        </main>
-        <BottomNav />
-      </div>
-    );
-  }
+  }, [state.stocks, selectedStock]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-primary font-sans">
+    <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
       <HisaAIButton />
       
       <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col px-2 sm:px-4 py-4">
@@ -101,7 +87,7 @@ const Trade: React.FC = () => {
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-primary border-secondary/20">
-                {stocks.map((stock) => (
+                {state.stocks.map((stock) => (
                   <SelectItem key={stock.symbol} value={stock.symbol} className="text-off-white focus:bg-white/10">
                     <div className="flex items-center justify-between w-full">
                       <div className="flex flex-col items-start">
@@ -125,7 +111,7 @@ const Trade: React.FC = () => {
           <div className="w-full sm:w-auto">
             <Button
               onClick={handleBrokerLogin}
-              className="w-full sm:w-auto bg-white/10 border border-secondary/20 text-off-white px-4 py-2 h-full"
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border border-secondary/20 text-off-white px-4 py-2 h-full"
               variant="outline"
             >
               <LogIn className="w-5 h-5 mr-2" />

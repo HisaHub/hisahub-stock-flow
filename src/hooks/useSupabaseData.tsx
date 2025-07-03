@@ -10,48 +10,30 @@ export const useSupabaseData = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    let mounted = true;
-
-    const getSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (mounted) {
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await fetchUserData(session.user.id);
-          } else {
-            setLoading(false);
-          }
-        }
-      } catch (error) {
-        console.error('Error getting session:', error);
-        if (mounted) {
-          setLoading(false);
-        }
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserData(session.user.id);
+      } else {
+        setLoading(false);
       }
-    };
-
-    getSession();
+    });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (mounted) {
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await fetchUserData(session.user.id);
-          } else {
-            setPortfolio(null);
-            setLoading(false);
-          }
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await fetchUserData(session.user.id);
+        } else {
+          setPortfolio(null);
+          setLoading(false);
         }
       }
     );
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const fetchUserData = async (userId: string) => {
@@ -92,6 +74,7 @@ export const useSupabaseData = () => {
             name: 'Demo Portfolio',
             is_default: true,
             cash_balance: 10000, // KES 10,000 demo balance
+            is_demo: true
           })
           .select()
           .single();
@@ -99,25 +82,21 @@ export const useSupabaseData = () => {
         if (error) throw error;
         setPortfolio(newPortfolio);
         
-        if (toast) {
-          toast({
-            title: "Welcome to HisaHub!",
-            description: "Your demo portfolio has been created with KES 10,000 to start trading.",
-          });
-        }
+        toast({
+          title: "Welcome to HisaHub!",
+          description: "Your demo portfolio has been created with KES 10,000 to start trading.",
+        });
       } else {
         setPortfolio(portfolios[0]);
       }
 
     } catch (error) {
       console.error('Error fetching user data:', error);
-      if (toast) {
-        toast({
-          title: "Error",
-          description: "Failed to load user data",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Error",
+        description: "Failed to load user data",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -140,23 +119,19 @@ export const useSupabaseData = () => {
 
       if (response.error) throw response.error;
 
-      if (toast) {
-        toast({
-          title: "Order Placed",
-          description: `Successfully ${quantity > 0 ? 'bought' : 'sold'} ${Math.abs(quantity)} shares of ${stockSymbol}`,
-        });
-      }
+      toast({
+        title: "Order Placed",
+        description: `Successfully ${quantity > 0 ? 'bought' : 'sold'} ${Math.abs(quantity)} shares of ${stockSymbol}`,
+      });
 
       return true;
     } catch (error) {
       console.error('Error placing order:', error);
-      if (toast) {
-        toast({
-          title: "Order Failed",
-          description: error.message || "Failed to place order",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Order Failed",
+        description: error.message || "Failed to place order",
+        variant: "destructive"
+      });
       return false;
     }
   };

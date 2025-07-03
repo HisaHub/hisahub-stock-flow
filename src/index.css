@@ -14,16 +14,6 @@
     color: #F8F9FA;
   }
 
-  /* Remove all hover effects globally */
-  * {
-    transition: none !important;
-  }
-  
-  *:hover {
-    transform: none !important;
-    scale: none !important;
-  }
-
   /* Light mode styles */
   html[data-theme="light"] {
     background: #F9FAFB !important;
@@ -133,6 +123,15 @@
   
   html[data-theme="light"] .text-charcoal {
     color: #005C9D;
+  }
+  
+  /* Light theme hover effects */
+  html[data-theme="light"] .hover\:bg-white\/10:hover {
+    background-color: #F7FAFC;
+  }
+  
+  html[data-theme="light"] .hover\:bg-charcoal\/10:hover {
+    background-color: rgba(0, 92, 157, 0.1);
   }
   
   /* Light theme input styling */
