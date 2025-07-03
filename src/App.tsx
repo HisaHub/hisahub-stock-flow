@@ -1,106 +1,48 @@
-
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
-import Index from "./pages/Index";
-import Trade from "./pages/Trade";
-import Portfolio from "./pages/Portfolio";
-import News from "./pages/News";
-import Community from "./pages/Community";
-import Settings from "./pages/Settings";
-import Auth from "./pages/Auth";
-import BrokerIntegration from "./pages/BrokerIntegration";
-import Chatbot from "./pages/Chatbot";
-import NotFound from "./pages/NotFound";
-import { ThemeProvider } from "./components/ThemeProvider";
-import { FinancialDataProvider } from "./contexts/FinancialDataContext";
-import SplashScreen from "./components/SplashScreen";
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
+import { ThemeProvider } from './components/ThemeProvider';
+import { Toaster } from "@/components/ui/toaster"
+import Home from './pages/Home';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Portfolio from './pages/Portfolio';
+import Trade from './pages/Trade';
+import Chatbot from './pages/Chatbot';
+import BrokerIntegration from './pages/BrokerIntegration';
+import { FinancialDataProvider } from './contexts/FinancialDataContext';
+import { GlobalUserProvider } from './contexts/GlobalUserContext';
 
 const queryClient = new QueryClient();
 
-const App = () => {
-  const [showSplash, setShowSplash] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const handleSplashComplete = () => {
-    setShowSplash(false);
-  };
-
-  const handleLogin = () => {
-    // The auth state change will be handled by the listener
-    // so we don't need to do anything here
-  };
-
-  useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (loading) {
-    return <div className="min-h-screen bg-primary flex items-center justify-center">
-      <div className="text-off-white">Loading...</div>
-    </div>;
-  }
-
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
-            {showSplash ? (
-              <SplashScreen onComplete={handleSplashComplete} />
-            ) : (
-              <FinancialDataProvider>
-                <Routes>
-                  {user ? (
-                    <>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/trade" element={<Trade />} />
-                      <Route path="/portfolio" element={<Portfolio />} />
-                      <Route path="/news" element={<News />} />
-                      <Route path="/community" element={<Community />} />
-                      <Route path="/settings" element={<Settings />} />
-                      <Route path="/broker-integration" element={<BrokerIntegration />} />
-                      <Route path="/chatbot" element={<Chatbot />} />
-                      <Route path="/auth" element={<Navigate to="/" replace />} />
-                    </>
-                  ) : (
-                    <>
-                      <Route path="/auth" element={<Auth onLogin={handleLogin} />} />
-                      <Route path="*" element={<Navigate to="/auth" replace />} />
-                    </>
-                  )}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </FinancialDataProvider>
-            )}
-          </BrowserRouter>
-        </TooltipProvider>
+      <ThemeProvider defaultTheme="dark" storageKey="hisahub-theme">
+        <FinancialDataProvider>
+          <GlobalUserProvider>
+            <Toaster />
+            <Router>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/portfolio" element={<Portfolio />} />
+                <Route path="/trade" element={<Trade />} />
+                <Route path="/chatbot" element={<Chatbot />} />
+                <Route path="/broker-integration" element={<BrokerIntegration />} />
+              </Routes>
+            </Router>
+          </GlobalUserProvider>
+        </FinancialDataProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
