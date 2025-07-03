@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
@@ -38,7 +38,102 @@ const Settings: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
   const [signingOut, setSigningOut] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+
+  // User profile state
+  const [userProfile, setUserProfile] = useState({
+    first_name: "",
+    last_name: "",
+    phone_number: "",
+    date_of_birth: "",
+    national_id: "",
+    account_status: "",
+    role: "",
+    biometric_enabled: false
+  });
+
+  const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      setUserEmail(user.email || "");
+
+      // Fetch user profile
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        throw error;
+      }
+
+      if (profile) {
+        setUserProfile({
+          first_name: profile.first_name || "",
+          last_name: profile.last_name || "",
+          phone_number: profile.phone_number || "",
+          date_of_birth: profile.date_of_birth || "",
+          national_id: profile.national_id || "",
+          account_status: profile.account_status || "",
+          role: profile.role || "",
+          biometric_enabled: profile.biometric_enabled || false
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      toast.error("Failed to load user profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setSaving(true);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({
+          id: user.id,
+          first_name: userProfile.first_name,
+          last_name: userProfile.last_name,
+          phone_number: userProfile.phone_number,
+          date_of_birth: userProfile.date_of_birth,
+          national_id: userProfile.national_id,
+          biometric_enabled: userProfile.biometric_enabled,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast.error("Failed to save profile");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -59,72 +154,102 @@ const Settings: React.FC = () => {
 
   const PersonalInfoSection = () => (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="fullName">Full Name</Label>
-          <Input id="fullName" defaultValue="John Doe" className="mt-1" />
-        </div>
-        <div>
-          <Label htmlFor="email">Email Address</Label>
-          <Input id="email" type="email" defaultValue="john.doe@email.com" className="mt-1" />
-        </div>
-        <div>
-          <Label htmlFor="phone">Phone Number</Label>
-          <Input id="phone" defaultValue="+254 712 345 678" className="mt-1" />
-        </div>
-        <div>
-          <Label htmlFor="dob">Date of Birth</Label>
-          <Input id="dob" type="date" defaultValue="1990-01-01" className="mt-1" />
-        </div>
-      </div>
-      
-      <Separator />
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Identity Verification</h3>
-        <div className="flex items-center justify-between p-4 border rounded-lg">
-          <div className="flex items-center gap-3">
-            <Shield className="w-5 h-5 text-green-500" />
+      {loading ? (
+        <div className="text-center py-8">Loading profile...</div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="font-medium">ID Verification</p>
-              <p className="text-sm text-muted-foreground">Verified</p>
+              <Label htmlFor="firstName">First Name</Label>
+              <Input 
+                id="firstName" 
+                value={userProfile.first_name}
+                onChange={(e) => setUserProfile(prev => ({ ...prev, first_name: e.target.value }))}
+                className="mt-1" 
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input 
+                id="lastName" 
+                value={userProfile.last_name}
+                onChange={(e) => setUserProfile(prev => ({ ...prev, last_name: e.target.value }))}
+                className="mt-1" 
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email Address</Label>
+              <Input id="email" type="email" value={userEmail} disabled className="mt-1 bg-gray-100" />
+            </div>
+            <div>
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input 
+                id="phone" 
+                value={userProfile.phone_number}
+                onChange={(e) => setUserProfile(prev => ({ ...prev, phone_number: e.target.value }))}
+                className="mt-1" 
+              />
+            </div>
+            <div>
+              <Label htmlFor="dob">Date of Birth</Label>
+              <Input 
+                id="dob" 
+                type="date" 
+                value={userProfile.date_of_birth}
+                onChange={(e) => setUserProfile(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                className="mt-1" 
+              />
+            </div>
+            <div>
+              <Label htmlFor="nationalId">National ID</Label>
+              <Input 
+                id="nationalId" 
+                value={userProfile.national_id}
+                onChange={(e) => setUserProfile(prev => ({ ...prev, national_id: e.target.value }))}
+                className="mt-1" 
+              />
             </div>
           </div>
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            <Check className="w-3 h-3 mr-1" />
-            Verified
-          </Badge>
-        </div>
-      </div>
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Tax Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <Button onClick={handleSaveProfile} disabled={saving} className="w-full">
+            {saving ? "Saving..." : "Save Profile"}
+          </Button>
+          
+          <Separator />
+          
           <div>
-            <Label htmlFor="taxId">Tax ID (KRA PIN)</Label>
-            <Input id="taxId" defaultValue="A123456789Z" className="mt-1" />
+            <h3 className="text-lg font-semibold mb-4">Account Status</h3>
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center gap-3">
+                <Shield className="w-5 h-5 text-green-500" />
+                <div>
+                  <p className="font-medium">Account Status</p>
+                  <p className="text-sm text-muted-foreground capitalize">{userProfile.account_status}</p>
+                </div>
+              </div>
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Check className="w-3 h-3 mr-1" />
+                {userProfile.role}
+              </Badge>
+            </div>
           </div>
-          <div>
-            <Label htmlFor="taxStatus">Tax Status</Label>
-            <Input id="taxStatus" defaultValue="Individual" className="mt-1" />
-          </div>
-        </div>
-      </div>
 
-      {/* Sign Out Section */}
-      <Separator />
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-red-500">Account Actions</h3>
-        <Button 
-          onClick={handleSignOut}
-          disabled={signingOut}
-          variant="destructive"
-          className="w-full flex items-center gap-2"
-        >
-          <LogOut className="w-4 h-4" />
-          {signingOut ? "Signing Out..." : "Sign Out"}
-        </Button>
-      </div>
+          {/* Sign Out Section */}
+          <Separator />
+          <div>
+            <h3 className="text-lg font-semibold mb-4 text-red-500">Account Actions</h3>
+            <Button 
+              onClick={handleSignOut}
+              disabled={signingOut}
+              variant="destructive"
+              className="w-full flex items-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              {signingOut ? "Signing Out..." : "Sign Out"}
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 
@@ -276,7 +401,10 @@ const Settings: React.FC = () => {
               <p className="font-medium">Biometric Login</p>
               <p className="text-sm text-muted-foreground">Use fingerprint or face ID</p>
             </div>
-            <Switch defaultChecked />
+            <Switch 
+              checked={userProfile.biometric_enabled}
+              onCheckedChange={(checked) => setUserProfile(prev => ({ ...prev, biometric_enabled: checked }))}
+            />
           </div>
         </div>
       </div>
@@ -290,8 +418,8 @@ const Settings: React.FC = () => {
             <div className="flex items-center gap-3">
               <Smartphone className="w-5 h-5" />
               <div>
-                <p className="font-medium">iPhone 13 Pro</p>
-                <p className="text-sm text-muted-foreground">Current session • Nairobi, Kenya</p>
+                <p className="font-medium">Current Device</p>
+                <p className="text-sm text-muted-foreground">Active session • {new Date().toLocaleDateString()}</p>
               </div>
             </div>
             <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
@@ -476,28 +604,28 @@ const Settings: React.FC = () => {
 
           {/* Quick Access Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer">
+            <Card className="bg-white/5 border-white/10 transition-colors cursor-pointer">
               <CardContent className="p-4 text-center">
                 <Globe className="w-6 h-6 mx-auto mb-2 text-blue-400" />
                 <p className="text-sm text-white/80">Localization</p>
               </CardContent>
             </Card>
             
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer">
+            <Card className="bg-white/5 border-white/10 transition-colors cursor-pointer">
               <CardContent className="p-4 text-center">
                 <Briefcase className="w-6 h-6 mx-auto mb-2 text-green-400" />
                 <p className="text-sm text-white/80">Account</p>
               </CardContent>
             </Card>
             
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer">
+            <Card className="bg-white/5 border-white/10 transition-colors cursor-pointer">
               <CardContent className="p-4 text-center">
                 <FileText className="w-6 h-6 mx-auto mb-2 text-yellow-400" />
                 <p className="text-sm text-white/80">Legal</p>
               </CardContent>
             </Card>
             
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer">
+            <Card className="bg-white/5 border-white/10 transition-colors cursor-pointer">
               <CardContent className="p-4 text-center">
                 <HelpCircle className="w-6 h-6 mx-auto mb-2 text-purple-400" />
                 <p className="text-sm text-white/80">Help</p>
