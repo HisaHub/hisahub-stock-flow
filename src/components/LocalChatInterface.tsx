@@ -47,7 +47,7 @@ const LocalChatInterface: React.FC<LocalChatInterfaceProps> = ({ isOpen, onClose
               <Bot size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold">Local Gemma AI</h1>
+              <h1 className="text-lg font-bold">Local Nomic AI</h1>
               <p className="text-sm text-blue-100">Running on 127.0.0.1:11434</p>
             </div>
           </div>
@@ -66,7 +66,7 @@ const LocalChatInterface: React.FC<LocalChatInterfaceProps> = ({ isOpen, onClose
           {messages.length === 0 && (
             <div className="text-center text-gray-500 mt-8">
               <Bot size={48} className="mx-auto mb-4 text-gray-300" />
-              <p>Start a conversation with your local Gemma model!</p>
+              <p>Start a conversation with your local Nomic model!</p>
             </div>
           )}
           
@@ -128,7 +128,7 @@ const LocalChatInterface: React.FC<LocalChatInterfaceProps> = ({ isOpen, onClose
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask your local Gemma model anything..."
+              placeholder="Ask your local Nomic model anything..."
               className="flex-1"
               disabled={loading}
             />

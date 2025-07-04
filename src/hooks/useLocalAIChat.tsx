@@ -23,7 +23,7 @@ export const useLocalAIChat = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gemma',
+          model: 'nomic-ai/nomic-embed-text-v1.5-GGUF',
           prompt: message,
           stream: false
         })
@@ -43,7 +43,7 @@ export const useLocalAIChat = () => {
       console.error('Local AI Chat error:', error);
       toast({
         title: "Chat Error",
-        description: "Failed to connect to local Gemma model. Please ensure it's running on 127.0.0.1:11434",
+        description: "Failed to connect to local Nomic model. Please ensure it's running on 127.0.0.1:11434",
         variant: "destructive"
       });
       
