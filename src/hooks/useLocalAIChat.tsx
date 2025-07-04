@@ -17,7 +17,7 @@ export const useLocalAIChat = () => {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const response = await fetch('http://localhost:11434/api/generate', {
+      const response = await fetch('http://127.0.0.1:11434/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export const useLocalAIChat = () => {
       console.error('Local AI Chat error:', error);
       toast({
         title: "Chat Error",
-        description: "Failed to connect to local Gemma model. Please ensure it's running on localhost:11434",
+        description: "Failed to connect to local Gemma model. Please ensure it's running on 127.0.0.1:11434",
         variant: "destructive"
       });
       

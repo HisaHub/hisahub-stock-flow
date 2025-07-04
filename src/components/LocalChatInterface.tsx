@@ -48,7 +48,7 @@ const LocalChatInterface: React.FC<LocalChatInterfaceProps> = ({ isOpen, onClose
             </div>
             <div>
               <h1 className="text-lg font-bold">Local Gemma AI</h1>
-              <p className="text-sm text-blue-100">Running on localhost:11434</p>
+              <p className="text-sm text-blue-100">Running on 127.0.0.1:11434</p>
             </div>
           </div>
           <Button
