@@ -4,6 +4,7 @@ import BottomNav from "../components/BottomNav";
 import HisaAIButton from "../components/HisaAIButton";
 import FloatingJoystick from "../components/FloatingJoystick";
 import { useTheme } from "../components/ThemeProvider";
+import { useUserProfile } from "../hooks/useUserProfile";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,15 +31,37 @@ import {
   User, 
   TrendingUp, 
   Bot,
-  LogOut
+  LogOut,
+  Save
 } from "lucide-react";
 
 const Settings: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
+  const { profile, loading, updating, updateProfile } = useUserProfile();
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
   const [signingOut, setSigningOut] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    phone_number: "",
+    date_of_birth: "",
+    national_id: ""
+  });
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        phone_number: profile.phone_number || "",
+        date_of_birth: profile.date_of_birth || "",
+        national_id: profile.national_id || ""
+      });
+    }
+  }, [profile]);
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -57,76 +80,199 @@ const Settings: React.FC = () => {
     }
   };
 
-  const PersonalInfoSection = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="fullName">Full Name</Label>
-          <Input id="fullName" defaultValue="John Doe" className="mt-1" />
-        </div>
-        <div>
-          <Label htmlFor="email">Email Address</Label>
-          <Input id="email" type="email" defaultValue="john.doe@email.com" className="mt-1" />
-        </div>
-        <div>
-          <Label htmlFor="phone">Phone Number</Label>
-          <Input id="phone" defaultValue="+254 712 345 678" className="mt-1" />
-        </div>
-        <div>
-          <Label htmlFor="dob">Date of Birth</Label>
-          <Input id="dob" type="date" defaultValue="1990-01-01" className="mt-1" />
-        </div>
-      </div>
-      
-      <Separator />
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Identity Verification</h3>
-        <div className="flex items-center justify-between p-4 border rounded-lg">
-          <div className="flex items-center gap-3">
-            <Shield className="w-5 h-5 text-green-500" />
-            <div>
-              <p className="font-medium">ID Verification</p>
-              <p className="text-sm text-muted-foreground">Verified</p>
-            </div>
+  const handleSaveProfile = async () => {
+    const success = await updateProfile(formData);
+    if (success) {
+      setEditMode(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        phone_number: profile.phone_number || "",
+        date_of_birth: profile.date_of_birth || "",
+        national_id: profile.national_id || ""
+      });
+    }
+    setEditMode(false);
+  };
+
+  const PersonalInfoSection = () => {
+    if (loading) {
+      return <div className="text-center py-8">Loading profile...</div>;
+    }
+
+    const getDisplayEmail = () => {
+      // Get email from Supabase auth user
+      return supabase.auth.getUser().then(({ data }) => data.user?.email || "Not available");
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Personal Information</h3>
+          <div className="flex gap-2">
+            {editMode ? (
+              <>
+                <Button
+                  onClick={handleCancelEdit}
+                  variant="outline"
+                  size="sm"
+                  disabled={updating}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveProfile}
+                  size="sm"
+                  disabled={updating}
+                  className="flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {updating ? "Saving..." : "Save"}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => setEditMode(true)}
+                variant="outline"
+                size="sm"
+              >
+                Edit Profile
+              </Button>
+            )}
           </div>
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            <Check className="w-3 h-3 mr-1" />
-            Verified
-          </Badge>
         </div>
-      </div>
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Tax Information</h3>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="taxId">Tax ID (KRA PIN)</Label>
-            <Input id="taxId" defaultValue="A123456789Z" className="mt-1" />
+            <Label htmlFor="firstName">First Name</Label>
+            <Input
+              id="firstName"
+              value={formData.first_name}
+              onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+              disabled={!editMode}
+              className="mt-1"
+              placeholder="Enter your first name"
+            />
           </div>
           <div>
-            <Label htmlFor="taxStatus">Tax Status</Label>
-            <Input id="taxStatus" defaultValue="Individual" className="mt-1" />
+            <Label htmlFor="lastName">Last Name</Label>
+            <Input
+              id="lastName"
+              value={formData.last_name}
+              onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+              disabled={!editMode}
+              className="mt-1"
+              placeholder="Enter your last name"
+            />
+          </div>
+          <div>
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              defaultValue=""
+              disabled
+              className="mt-1 bg-gray-50"
+              placeholder="Loading email..."
+            />
+            <script dangerouslySetInnerHTML={{
+              __html: `
+                supabase.auth.getUser().then(({data}) => {
+                  const emailInput = document.getElementById('email');
+                  if (emailInput && data.user?.email) {
+                    emailInput.value = data.user.email;
+                  }
+                });
+              `
+            }} />
+          </div>
+          <div>
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              value={formData.phone_number}
+              onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
+              disabled={!editMode}
+              className="mt-1"
+              placeholder="Enter your phone number"
+            />
+          </div>
+          <div>
+            <Label htmlFor="dob">Date of Birth</Label>
+            <Input
+              id="dob"
+              type="date"
+              value={formData.date_of_birth}
+              onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
+              disabled={!editMode}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="nationalId">National ID</Label>
+            <Input
+              id="nationalId"
+              value={formData.national_id}
+              onChange={(e) => setFormData(prev => ({ ...prev, national_id: e.target.value }))}
+              disabled={!editMode}
+              className="mt-1"
+              placeholder="Enter your national ID"
+            />
           </div>
         </div>
-      </div>
+        
+        <Separator />
+        
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Account Status</h3>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center gap-3">
+              <Shield className="w-5 h-5 text-green-500" />
+              <div>
+                <p className="font-medium">Account Verification</p>
+                <p className="text-sm text-muted-foreground">
+                  {profile?.account_status === 'active' ? 'Verified' : 'Pending Verification'}
+                </p>
+              </div>
+            </div>
+            <Badge 
+              variant="secondary" 
+              className={profile?.account_status === 'active' ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}
+            >
+              {profile?.account_status === 'active' ? (
+                <>
+                  <Check className="w-3 h-3 mr-1" />
+                  Verified
+                </>
+              ) : (
+                "Pending"
+              )}
+            </Badge>
+          </div>
+        </div>
 
-      {/* Sign Out Section */}
-      <Separator />
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-red-500">Account Actions</h3>
-        <Button 
-          onClick={handleSignOut}
-          disabled={signingOut}
-          variant="destructive"
-          className="w-full flex items-center gap-2"
-        >
-          <LogOut className="w-4 h-4" />
-          {signingOut ? "Signing Out..." : "Sign Out"}
-        </Button>
+        {/* Sign Out Section */}
+        <Separator />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-red-500">Account Actions</h3>
+          <Button 
+            onClick={handleSignOut}
+            disabled={signingOut}
+            variant="destructive"
+            className="w-full flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            {signingOut ? "Signing Out..." : "Sign Out"}
+          </Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const BankingSection = () => (
     <div className="space-y-6">
@@ -276,7 +422,7 @@ const Settings: React.FC = () => {
               <p className="font-medium">Biometric Login</p>
               <p className="text-sm text-muted-foreground">Use fingerprint or face ID</p>
             </div>
-            <Switch defaultChecked />
+            <Switch checked={profile?.biometric_enabled || false} />
           </div>
         </div>
       </div>
@@ -290,8 +436,8 @@ const Settings: React.FC = () => {
             <div className="flex items-center gap-3">
               <Smartphone className="w-5 h-5" />
               <div>
-                <p className="font-medium">iPhone 13 Pro</p>
-                <p className="text-sm text-muted-foreground">Current session • Nairobi, Kenya</p>
+                <p className="font-medium">Current Device</p>
+                <p className="text-sm text-muted-foreground">Active session • Location unavailable</p>
               </div>
             </div>
             <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
