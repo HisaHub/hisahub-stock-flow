@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { FinancialDataProvider } from "./contexts/FinancialDataContext";
 import SplashScreen from "./components/SplashScreen";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -49,6 +51,7 @@ const App = () => {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -95,6 +98,8 @@ const App = () => {
                     <Route path="*" element={<Navigate to="/auth" replace />} />
                   )}
                 </Routes>
+                {/* Show PWA install prompt only when user is authenticated */}
+                {user && <PWAInstallPrompt />}
               </FinancialDataProvider>
             )}
           </BrowserRouter>
