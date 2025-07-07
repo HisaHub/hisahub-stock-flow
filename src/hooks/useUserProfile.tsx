@@ -2,18 +2,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/types';
 
-interface UserProfile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  phone_number: string | null;
-  date_of_birth: string | null;
-  national_id: string | null;
-  account_status: string | null;
-  biometric_enabled: boolean | null;
-  created_at: string | null;
-}
+type UserProfile = Database['public']['Tables']['profiles']['Row'];
+type UserProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
 export const useUserProfile = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -69,7 +61,7 @@ export const useUserProfile = () => {
     }
   };
 
-  const updateProfile = async (updates: Partial<UserProfile>) => {
+  const updateProfile = async (updates: UserProfileUpdate) => {
     if (!profile) return false;
 
     setUpdating(true);
