@@ -74,6 +74,10 @@ const App = () => {
             ) : (
               <FinancialDataProvider>
                 <Routes>
+                  {/* Auth route - accessible to everyone */}
+                  <Route path="/auth" element={<Auth onLogin={handleLogin} />} />
+                  
+                  {/* Protected routes - only accessible to authenticated users */}
                   {user ? (
                     <>
                       <Route path="/" element={<Index />} />
@@ -84,15 +88,12 @@ const App = () => {
                       <Route path="/settings" element={<Settings />} />
                       <Route path="/broker-integration" element={<BrokerIntegration />} />
                       <Route path="/chatbot" element={<Chatbot />} />
-                      <Route path="/auth" element={<Navigate to="/" replace />} />
+                      <Route path="*" element={<NotFound />} />
                     </>
                   ) : (
-                    <>
-                      <Route path="/auth" element={<Auth onLogin={handleLogin} />} />
-                      <Route path="*" element={<Navigate to="/auth" replace />} />
-                    </>
+                    // Redirect all routes to auth if not authenticated
+                    <Route path="*" element={<Navigate to="/auth" replace />} />
                   )}
-                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </FinancialDataProvider>
             )}
