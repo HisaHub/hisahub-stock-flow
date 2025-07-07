@@ -1,13 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const useSupabaseData = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [portfolio, setPortfolio] = useState(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Get initial session
@@ -25,7 +24,10 @@ export const useSupabaseData = () => {
       async (event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
-          await fetchUserData(session.user.id);
+          // Use setTimeout to avoid potential recursion issues
+          setTimeout(() => {
+            fetchUserData(session.user.id);
+          }, 0);
         } else {
           setPortfolio(null);
           setLoading(false);
@@ -38,15 +40,17 @@ export const useSupabaseData = () => {
 
   const fetchUserData = async (userId: string) => {
     try {
-      // Get or create user profile
-      let { data: profile } = await supabase
+      // First check if user profile exists
+      let { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (!profile) {
-        const { data: newProfile, error } = await supabase
+      // If profile doesn't exist, it should have been created by the auth trigger
+      // If not, we'll create it here as a fallback
+      if (profileError && profileError.code === 'PGRST116') {
+        const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert({
             id: userId,
@@ -56,11 +60,18 @@ export const useSupabaseData = () => {
           .select()
           .single();
 
-        if (error) throw error;
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          toast.error('Failed to create user profile');
+          setLoading(false);
+          return;
+        }
         profile = newProfile;
+      } else if (profileError) {
+        throw profileError;
       }
 
-      // Get or create default demo portfolio with KES 10,000
+      // Get or create default demo portfolio
       let { data: portfolios } = await supabase
         .from('portfolios')
         .select('*')
@@ -74,29 +85,25 @@ export const useSupabaseData = () => {
             name: 'Demo Portfolio',
             is_default: true,
             cash_balance: 10000, // KES 10,000 demo balance
-            is_demo: true
+            total_value: 10000
           })
           .select()
           .single();
 
-        if (error) throw error;
-        setPortfolio(newPortfolio);
-        
-        toast({
-          title: "Welcome to HisaHub!",
-          description: "Your demo portfolio has been created with KES 10,000 to start trading.",
-        });
+        if (error) {
+          console.error('Error creating portfolio:', error);
+          toast.error('Failed to create portfolio');
+        } else {
+          setPortfolio(newPortfolio);
+          toast.success('Welcome to HisaHub! Your demo portfolio has been created with KES 10,000.');
+        }
       } else {
         setPortfolio(portfolios[0]);
       }
 
     } catch (error) {
       console.error('Error fetching user data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load user data",
-        variant: "destructive"
-      });
+      toast.error('Failed to load user data');
     } finally {
       setLoading(false);
     }
@@ -119,19 +126,11 @@ export const useSupabaseData = () => {
 
       if (response.error) throw response.error;
 
-      toast({
-        title: "Order Placed",
-        description: `Successfully ${quantity > 0 ? 'bought' : 'sold'} ${Math.abs(quantity)} shares of ${stockSymbol}`,
-      });
-
+      toast.success(`Successfully ${quantity > 0 ? 'bought' : 'sold'} ${Math.abs(quantity)} shares of ${stockSymbol}`);
       return true;
     } catch (error) {
       console.error('Error placing order:', error);
-      toast({
-        title: "Order Failed",
-        description: error.message || "Failed to place order",
-        variant: "destructive"
-      });
+      toast.error(error.message || 'Failed to place order');
       return false;
     }
   };

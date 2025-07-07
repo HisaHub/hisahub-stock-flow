@@ -1,663 +1,279 @@
-import React, { useState } from "react";
-import ChatFAB from "../components/ChatFAB";
-import BottomNav from "../components/BottomNav";
-import HisaAIButton from "../components/HisaAIButton";
-import FloatingJoystick from "../components/FloatingJoystick";
-import { useTheme } from "../components/ThemeProvider";
-import { useUserProfile } from "../hooks/useUserProfile";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { 
-  Shield, 
-  Bell, 
-  Globe, 
-  Briefcase, 
-  FileText, 
-  HelpCircle,
-  ChevronRight,
-  Eye,
-  EyeOff,
-  Smartphone,
-  Check,
-  CreditCard,
-  User, 
-  TrendingUp, 
-  Bot,
-  LogOut,
-  Save
-} from "lucide-react";
 
-const Settings: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { User, Shield, Bell, Smartphone, LogOut, Loader } from 'lucide-react';
+
+const Settings = () => {
   const { profile, loading, updating, updateProfile } = useUserProfile();
-  const [showPassword, setShowPassword] = useState(false);
-  const [activeTab, setActiveTab] = useState("personal");
-  const [signingOut, setSigningOut] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    phone_number: "",
-    date_of_birth: "",
-    national_id: ""
+    first_name: '',
+    last_name: '',
+    phone_number: '',
+    date_of_birth: '',
+    national_id: '',
+    risk_tolerance: 5,
+    biometric_enabled: false
   });
-  const navigate = useNavigate();
 
-  React.useEffect(() => {
+  // Sync form data when profile loads
+  useEffect(() => {
     if (profile) {
       setFormData({
-        first_name: profile.first_name || "",
-        last_name: profile.last_name || "",
-        phone_number: profile.phone_number || "",
-        date_of_birth: profile.date_of_birth || "",
-        national_id: profile.national_id || ""
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        phone_number: profile.phone_number || '',
+        date_of_birth: profile.date_of_birth || '',
+        national_id: profile.national_id || '',
+        risk_tolerance: profile.risk_tolerance || 5,
+        biometric_enabled: profile.biometric_enabled || false
       });
     }
   }, [profile]);
 
-  const handleSignOut = async () => {
-    setSigningOut(true);
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        toast.error("Failed to sign out: " + error.message);
-      } else {
-        toast.success("Signed out successfully");
-        navigate("/auth");
-      }
-    } catch (error) {
-      toast.error("An error occurred while signing out");
-    } finally {
-      setSigningOut(false);
-    }
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSaveProfile = async () => {
     const success = await updateProfile(formData);
     if (success) {
-      setEditMode(false);
+      toast.success('Profile updated successfully');
     }
   };
 
-  const handleCancelEdit = () => {
-    if (profile) {
-      setFormData({
-        first_name: profile.first_name || "",
-        last_name: profile.last_name || "",
-        phone_number: profile.phone_number || "",
-        date_of_birth: profile.date_of_birth || "",
-        national_id: profile.national_id || ""
-      });
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast.success('Signed out successfully');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
     }
-    setEditMode(false);
   };
 
-  const PersonalInfoSection = () => {
-    if (loading) {
-      return <div className="text-center py-8">Loading profile...</div>;
-    }
-
-    const getDisplayEmail = () => {
-      // Get email from Supabase auth user
-      return supabase.auth.getUser().then(({ data }) => data.user?.email || "Not available");
-    };
-
+  if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Personal Information</h3>
-          <div className="flex gap-2">
-            {editMode ? (
-              <>
-                <Button
-                  onClick={handleCancelEdit}
-                  variant="outline"
-                  size="sm"
-                  disabled={updating}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSaveProfile}
-                  size="sm"
-                  disabled={updating}
-                  className="flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {updating ? "Saving..." : "Save"}
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={() => setEditMode(true)}
-                variant="outline"
-                size="sm"
-              >
-                Edit Profile
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="firstName">First Name</Label>
-            <Input
-              id="firstName"
-              value={formData.first_name}
-              onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
-              disabled={!editMode}
-              className="mt-1"
-              placeholder="Enter your first name"
-            />
-          </div>
-          <div>
-            <Label htmlFor="lastName">Last Name</Label>
-            <Input
-              id="lastName"
-              value={formData.last_name}
-              onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
-              disabled={!editMode}
-              className="mt-1"
-              placeholder="Enter your last name"
-            />
-          </div>
-          <div>
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              defaultValue=""
-              disabled
-              className="mt-1 bg-gray-50"
-              placeholder="Loading email..."
-            />
-            <script dangerouslySetInnerHTML={{
-              __html: `
-                supabase.auth.getUser().then(({data}) => {
-                  const emailInput = document.getElementById('email');
-                  if (emailInput && data.user?.email) {
-                    emailInput.value = data.user.email;
-                  }
-                });
-              `
-            }} />
-          </div>
-          <div>
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input
-              id="phone"
-              value={formData.phone_number}
-              onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
-              disabled={!editMode}
-              className="mt-1"
-              placeholder="Enter your phone number"
-            />
-          </div>
-          <div>
-            <Label htmlFor="dob">Date of Birth</Label>
-            <Input
-              id="dob"
-              type="date"
-              value={formData.date_of_birth}
-              onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
-              disabled={!editMode}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label htmlFor="nationalId">National ID</Label>
-            <Input
-              id="nationalId"
-              value={formData.national_id}
-              onChange={(e) => setFormData(prev => ({ ...prev, national_id: e.target.value }))}
-              disabled={!editMode}
-              className="mt-1"
-              placeholder="Enter your national ID"
-            />
-          </div>
-        </div>
-        
-        <Separator />
-        
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Account Status</h3>
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-green-500" />
-              <div>
-                <p className="font-medium">Account Verification</p>
-                <p className="text-sm text-muted-foreground">
-                  {profile?.account_status === 'active' ? 'Verified' : 'Pending Verification'}
-                </p>
-              </div>
-            </div>
-            <Badge 
-              variant="secondary" 
-              className={profile?.account_status === 'active' ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}
-            >
-              {profile?.account_status === 'active' ? (
-                <>
-                  <Check className="w-3 h-3 mr-1" />
-                  Verified
-                </>
-              ) : (
-                "Pending"
-              )}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Sign Out Section */}
-        <Separator />
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-red-500">Account Actions</h3>
-          <Button 
-            onClick={handleSignOut}
-            disabled={signingOut}
-            variant="destructive"
-            className="w-full flex items-center gap-2"
-          >
-            <LogOut className="w-4 h-4" />
-            {signingOut ? "Signing Out..." : "Sign Out"}
-          </Button>
+      <div className="min-h-screen bg-primary flex items-center justify-center">
+        <div className="flex items-center gap-2 text-off-white">
+          <Loader className="w-5 h-5 animate-spin" />
+          <span>Loading settings...</span>
         </div>
       </div>
     );
-  };
-
-  const BankingSection = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Linked Accounts</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <CreditCard className="w-5 h-5 text-blue-500" />
-              <div>
-                <p className="font-medium">Equity Bank</p>
-                <p className="text-sm text-muted-foreground">****1234</p>
-              </div>
-            </div>
-            <Badge variant="secondary">Primary</Badge>
-          </div>
-          
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Smartphone className="w-5 h-5 text-green-500" />
-              <div>
-                <p className="font-medium">M-Pesa</p>
-                <p className="text-sm text-muted-foreground">254712345678</p>
-              </div>
-            </div>
-            <Badge variant="outline">Connected</Badge>
-          </div>
-        </div>
-        
-        <Button variant="outline" className="w-full mt-4">
-          + Add Bank Account
-        </Button>
-      </div>
-      
-      <Separator />
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Transaction Settings</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Daily Withdrawal Limit</p>
-              <p className="text-sm text-muted-foreground">KES 500,000</p>
-            </div>
-            <Button variant="ghost" size="sm">
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Auto-invest Savings</p>
-              <p className="text-sm text-muted-foreground">Enabled</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const TradingSection = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Default Broker</h3>
-        <div className="p-4 border rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Nairobi Securities Exchange</p>
-              <p className="text-sm text-muted-foreground">Connected</p>
-            </div>
-            <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
-          </div>
-        </div>
-      </div>
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Risk Profile</h3>
-        <div className="grid grid-cols-3 gap-3">
-          <Button variant="outline" className="h-auto p-4 flex flex-col">
-            <div className="text-green-500 font-medium">Conservative</div>
-            <div className="text-xs text-muted-foreground">Low Risk</div>
-          </Button>
-          <Button variant="default" className="h-auto p-4 flex flex-col">
-            <div className="font-medium">Moderate</div>
-            <div className="text-xs">Medium Risk</div>
-          </Button>
-          <Button variant="outline" className="h-auto p-4 flex flex-col">
-            <div className="text-orange-500 font-medium">Aggressive</div>
-            <div className="text-xs text-muted-foreground">High Risk</div>
-          </Button>
-        </div>
-      </div>
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Trading PIN</h3>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="currentPin">Current PIN</Label>
-            <div className="relative mt-1">
-              <Input 
-                id="currentPin" 
-                type={showPassword ? "text" : "password"} 
-                placeholder="Enter current PIN"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </Button>
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="newPin">New PIN</Label>
-            <Input id="newPin" type="password" placeholder="Enter new PIN" className="mt-1" />
-          </div>
-          <Button className="w-full">Update Trading PIN</Button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const SecuritySection = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Password & Authentication</h3>
-        <div className="space-y-4">
-          <Button variant="outline" className="w-full justify-start">
-            <Shield className="w-4 h-4 mr-2" />
-            Change Password
-          </Button>
-          
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div>
-              <p className="font-medium">Two-Factor Authentication</p>
-              <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
-            </div>
-            <Switch />
-          </div>
-          
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div>
-              <p className="font-medium">Biometric Login</p>
-              <p className="text-sm text-muted-foreground">Use fingerprint or face ID</p>
-            </div>
-            <Switch checked={profile?.biometric_enabled || false} />
-          </div>
-        </div>
-      </div>
-      
-      <Separator />
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Active Sessions</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Smartphone className="w-5 h-5" />
-              <div>
-                <p className="font-medium">Current Device</p>
-                <p className="text-sm text-muted-foreground">Active session • Location unavailable</p>
-              </div>
-            </div>
-            <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
-          </div>
-        </div>
-        
-        <Button variant="destructive" className="w-full mt-4">
-          Sign Out All Devices
-        </Button>
-      </div>
-    </div>
-  );
-
-  const NotificationsSection = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Alert Preferences</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Push Notifications</p>
-              <p className="text-sm text-muted-foreground">Receive alerts on your device</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Email Alerts</p>
-              <p className="text-sm text-muted-foreground">Market updates and trade confirmations</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">SMS Notifications</p>
-              <p className="text-sm text-muted-foreground">Critical alerts only</p>
-            </div>
-            <Switch />
-          </div>
-        </div>
-      </div>
-      
-      <Separator />
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Trading Alerts</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span>Price movement alerts</span>
-            <Switch defaultChecked />
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Order execution updates</span>
-            <Switch defaultChecked />
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Market news</span>
-            <Switch />
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Portfolio performance</span>
-            <Switch defaultChecked />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const AISection = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">AI Assistant Preferences</h3>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="aiLanguage">Language</Label>
-            <select className="w-full mt-1 p-2 border rounded-md" id="aiLanguage">
-              <option value="en">English</option>
-              <option value="sw">Swahili</option>
-              <option value="fr">French</option>
-            </select>
-          </div>
-          
-          <div>
-            <Label htmlFor="aiTone">Communication Style</Label>
-            <select className="w-full mt-1 p-2 border rounded-md" id="aiTone">
-              <option value="professional">Professional</option>
-              <option value="casual">Casual</option>
-              <option value="detailed">Detailed</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      
-      <Separator />
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Data & Privacy</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Share trading data for insights</p>
-              <p className="text-sm text-muted-foreground">Help improve AI recommendations</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Personalized suggestions</p>
-              <p className="text-sm text-muted-foreground">AI learns from your preferences</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderTabContent = () => {
-    switch(activeTab) {
-      case "personal": return <PersonalInfoSection />;
-      case "banking": return <BankingSection />;
-      case "trading": return <TradingSection />;
-      case "security": return <SecuritySection />;
-      case "notifications": return <NotificationsSection />;
-      case "ai": return <AISection />;
-      default: return <PersonalInfoSection />;
-    }
-  };
-
-  const getSectionTitle = () => {
-    switch(activeTab) {
-      case "personal": return "Personal Information";
-      case "banking": return "Banking & Payments";
-      case "trading": return "Trading Preferences";
-      case "security": return "Security & Privacy";
-      case "notifications": return "Notifications & Alerts";
-      case "ai": return "AI Assistant";
-      default: return "Personal Information";
-    }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
-      <HisaAIButton />
-      <main className="flex-1 flex flex-col px-4 py-6">
-        <div className="max-w-4xl mx-auto w-full">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-secondary" style={{ fontFamily: "'Poppins',sans-serif" }}>
-              Settings
-            </h2>
+    <div className="min-h-screen bg-primary p-4">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-off-white mb-2">Settings</h1>
+          <p className="text-off-white/80">Manage your account and preferences</p>
+        </div>
+
+        {/* Account Status Card */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-foreground flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Account Status
+                </CardTitle>
+                <CardDescription>Your current account verification status</CardDescription>
+              </div>
+              <Badge 
+                variant={profile?.account_status === 'active' ? 'default' : 'secondary'}
+                className="text-sm"
+              >
+                {profile?.account_status || 'pending'}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-off-white/60 text-sm">Theme</span>
-                <button
-                  onClick={toggleTheme}
-                  className={`transition duration-200 px-3 py-1 rounded text-sm border border-secondary 
-                    ${theme === 'dark' ? "bg-secondary text-primary" : "bg-white/10 text-secondary" }
-                  `}
-                >
-                  {theme === 'dark' ? "Dark" : "Light"}
-                </button>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">
+                  Role: <span className="font-medium">{profile?.role || 'standard'}</span>
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Member since: {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
+                </p>
               </div>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Section Title */}
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold text-secondary mb-2">
-              {getSectionTitle()}
-            </h3>
-            <div className="h-1 w-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded"></div>
-          </div>
-
-          <div className="glass-card">
-            <div className="min-h-[500px] p-6">
-              {renderTabContent()}
+        {/* Profile Information */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Profile Information
+            </CardTitle>
+            <CardDescription>Update your personal information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="first_name">First Name</Label>
+                <Input
+                  id="first_name"
+                  value={formData.first_name}
+                  onChange={(e) => handleInputChange('first_name', e.target.value)}
+                  placeholder="Enter your first name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  id="last_name"
+                  value={formData.last_name}
+                  onChange={(e) => handleInputChange('last_name', e.target.value)}
+                  placeholder="Enter your last name"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Quick Access Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <Globe className="w-6 h-6 mx-auto mb-2 text-blue-400" />
-                <p className="text-sm text-white/80">Localization</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <Briefcase className="w-6 h-6 mx-auto mb-2 text-green-400" />
-                <p className="text-sm text-white/80">Account</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <FileText className="w-6 h-6 mx-auto mb-2 text-yellow-400" />
-                <p className="text-sm text-white/80">Legal</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <HelpCircle className="w-6 h-6 mx-auto mb-2 text-purple-400" />
-                <p className="text-sm text-white/80">Help</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-        
-        {/* Floating Joystick Menu */}
-        <FloatingJoystick activeTab={activeTab} onTabChange={setActiveTab} />
-        
-        <ChatFAB />
-      </main>
-      <BottomNav />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone_number">Phone Number</Label>
+                <Input
+                  id="phone_number"
+                  value={formData.phone_number}
+                  onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                  placeholder="Enter your phone number"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="date_of_birth">Date of Birth</Label>
+                <Input
+                  id="date_of_birth"
+                  type="date"
+                  value={formData.date_of_birth}
+                  onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="national_id">National ID</Label>
+              <Input
+                id="national_id"
+                value={formData.national_id}
+                onChange={(e) => handleInputChange('national_id', e.target.value)}
+                placeholder="Enter your national ID"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="risk_tolerance">Risk Tolerance (1-10)</Label>
+              <Select 
+                value={formData.risk_tolerance.toString()} 
+                onValueChange={(value) => handleInputChange('risk_tolerance', parseInt(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                    <SelectItem key={num} value={num.toString()}>
+                      {num} - {num <= 3 ? 'Conservative' : num <= 7 ? 'Moderate' : 'Aggressive'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button 
+              onClick={handleSaveProfile} 
+              disabled={updating}
+              className="bg-secondary text-primary hover:bg-secondary/90"
+            >
+              {updating ? (
+                <>
+                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Profile'
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Security Settings */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Smartphone className="w-5 h-5" />
+              Security Settings
+            </CardTitle>
+            <CardDescription>Manage your security preferences</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="biometric">Biometric Authentication</Label>
+                <p className="text-sm text-muted-foreground">
+                  Use fingerprint or face recognition for secure access
+                </p>
+              </div>
+              <Switch
+                id="biometric"
+                checked={formData.biometric_enabled}
+                onCheckedChange={(checked) => handleInputChange('biometric_enabled', checked)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notification Settings */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Notifications
+            </CardTitle>
+            <CardDescription>Control how you receive notifications</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Notification preferences coming soon...
+            </p>
+          </CardContent>
+        </Card>
+
+        <Separator className="bg-border" />
+
+        {/* Sign Out */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground">Account Actions</CardTitle>
+            <CardDescription>Manage your account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={handleSignOut}
+              variant="destructive"
+              className="flex items-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
