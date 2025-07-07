@@ -34,8 +34,7 @@ const App = () => {
   };
 
   const handleLogin = () => {
-    // The auth state change will be handled by the listener
-    // so we don't need to do anything here
+    // Auth state changes will be handled by the listener
   };
 
   useEffect(() => {

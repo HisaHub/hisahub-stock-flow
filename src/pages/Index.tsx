@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 
 const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-primary font-sans">
+    <div className="min-h-screen flex flex-col justify-between bg-primary font-sans pb-20">
       <HisaAIButton />
       <main className="flex-1 flex flex-col px-4 py-6 w-full max-w-6xl mx-auto">
         {/* Header */}

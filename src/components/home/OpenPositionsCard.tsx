@@ -1,75 +1,122 @@
 
-import React from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useFinancialData } from "../../contexts/FinancialDataContext";
+import React, { useRef, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 const OpenPositionsCard: React.FC = () => {
-  const { state } = useFinancialData();
-  
-  // Show top 3 holdings
-  const topHoldings = state.holdings
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 3);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
-  if (topHoldings.length === 0) {
-    return (
-      <div className="glass-card animate-fade-in">
-        <h2 className="text-lg font-bold text-off-white mb-4">Open Positions</h2>
-        <div className="text-center py-8">
-          <p className="text-off-white/60 mb-4">No open positions yet</p>
-          <Link 
-            to="/trade" 
-            className="inline-block bg-secondary text-primary font-semibold px-4 py-2 rounded-lg hover:bg-secondary/90 transition"
-          >
-            Start Trading
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const positions = [
+    { symbol: 'SCOM', shares: 100, avgPrice: 40.25, currentPrice: 42.50, value: 4250 },
+    { symbol: 'EQTY', shares: 50, avgPrice: 60.00, currentPrice: 58.75, value: 2937.50 },
+    { symbol: 'KCB', shares: 75, avgPrice: 44.50, currentPrice: 45.00, value: 3375 },
+  ];
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setStartX(e.pageX - (scrollRef.current?.offsetLeft || 0));
+    setScrollLeft(scrollRef.current?.scrollLeft || 0);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - (scrollRef.current.offsetLeft || 0);
+    const walk = (x - startX) * 2;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - (scrollRef.current?.offsetLeft || 0));
+    setScrollLeft(scrollRef.current?.scrollLeft || 0);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    const x = e.touches[0].pageX - (scrollRef.current.offsetLeft || 0);
+    const walk = (x - startX) * 2;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
+  const calculatePnL = (position: typeof positions[0]) => {
+    const gainLoss = (position.currentPrice - position.avgPrice) * position.shares;
+    const gainLossPercent = ((position.currentPrice - position.avgPrice) / position.avgPrice) * 100;
+    return { gainLoss, gainLossPercent };
+  };
 
   return (
-    <div className="glass-card animate-fade-in">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold text-off-white">Open Positions</h2>
-        <Link 
-          to="/portfolio" 
-          className="text-secondary text-sm hover:text-secondary/80 transition"
+    <Card className="glass-card">
+      <CardHeader>
+        <CardTitle className="text-off-white">Open Positions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div 
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
-          View All
-        </Link>
-      </div>
-      
-      <div className="space-y-3">
-        {topHoldings.map((holding) => {
-          const isPositive = holding.profitLossPercent >= 0;
-          return (
-            <div key={holding.id} className="flex justify-between items-center py-2 border-b border-white/10 last:border-b-0">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-off-white">{holding.symbol}</span>
-                  <span className="text-xs text-off-white/60">{holding.quantity} shares</span>
+          {positions.map((position) => {
+            const { gainLoss, gainLossPercent } = calculatePnL(position);
+            return (
+              <div key={position.symbol} className="min-w-[250px] bg-white/5 border border-white/10 rounded-lg p-4 flex-shrink-0 select-none">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="text-off-white font-semibold">{position.symbol}</h3>
+                    <p className="text-off-white/60 text-sm">{position.shares} shares</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-off-white font-semibold">KES {position.value.toLocaleString()}</p>
+                    <div className={`flex items-center text-sm ${gainLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {gainLoss >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
+                      {gainLoss >= 0 ? '+' : ''}KES {gainLoss.toFixed(2)}
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-off-white/60">{holding.name}</p>
-              </div>
-              
-              <div className="text-right">
-                <p className="font-mono font-semibold text-off-white">
-                  KES {holding.value.toLocaleString()}
-                </p>
-                <div className={`flex items-center gap-1 justify-end text-xs ${
-                  isPositive ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  <span>{isPositive ? '+' : ''}{holding.profitLossPercent.toFixed(2)}%</span>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-off-white/60">Avg Price:</span>
+                    <span className="text-off-white">KES {position.avgPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-off-white/60">Current:</span>
+                    <span className="text-off-white">KES {position.currentPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-off-white/60">Return:</span>
+                    <span className={gainLoss >= 0 ? 'text-green-400' : 'text-red-400'}>
+                      {gainLossPercent >= 0 ? '+' : ''}{gainLossPercent.toFixed(2)}%
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

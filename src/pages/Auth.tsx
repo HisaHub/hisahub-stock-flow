@@ -7,12 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface AuthProps {
   onLogin: () => void;
 }
 
 const Auth: React.FC<AuthProps> = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ 
     name: '', 
@@ -52,6 +54,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       } else {
         toast.success("Login successful!");
         onLogin();
+        navigate('/'); // Redirect to home page
       }
     } catch (error) {
       toast.error("An unexpected error occurred during login.");
@@ -107,49 +110,6 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       }
     } catch (error) {
       toast.error("An unexpected error occurred during signup.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async () => {
-    setLoading(true);
-    try {
-      // Create a demo account with a unique email
-      const demoEmail = `demo_${Date.now()}@hisahub.demo`;
-      const demoPassword = "demo123456";
-      
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: demoEmail,
-        password: demoPassword,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: "Demo User",
-          }
-        }
-      });
-
-      if (signUpError) {
-        toast.error("Failed to create demo account");
-        setLoading(false);
-        return;
-      }
-
-      // Sign in with the demo account
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: demoEmail,
-        password: demoPassword,
-      });
-
-      if (signInError) {
-        toast.error("Failed to sign in to demo account");
-      } else {
-        toast.success("Demo account activated! You now have KES 10,000 to practice trading.");
-        onLogin();
-      }
-    } catch (error) {
-      toast.error("An error occurred while creating demo account.");
     } finally {
       setLoading(false);
     }
@@ -270,17 +230,6 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               </form>
             </TabsContent>
           </Tabs>
-          
-          <div className="mt-6 pt-6 border-t border-white/10">
-            <Button 
-              onClick={handleDemoLogin} 
-              variant="outline" 
-              className="w-full border-secondary/50 text-secondary hover:bg-secondary/10"
-              disabled={loading}
-            >
-              {loading ? "Creating Demo Account..." : "Login as Demo User"}
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>
