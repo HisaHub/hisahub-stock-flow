@@ -51,9 +51,6 @@ const Index: React.FC = () => {
           <MarketOverviewSection />
         </section>
 
-        <footer className="mt-10 text-secondary text-xs opacity-80 text-center w-full">
-          Inspired by Robinhood &amp; built for Kenya | Made with 💛
-        </footer>
         
         <ChatFAB />
       </main>

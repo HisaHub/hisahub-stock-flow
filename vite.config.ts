@@ -17,21 +17,30 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.ico'],
+      includeAssets: ['/lovable-uploads/d119c8de-4cb2-4d81-b0c7-5c63f121873d.png'],
       manifest: {
-        name: 'HisaHub - Stock Trading Platform',
+        name: 'HisaHub - AI-Powered NSE Trading Platform',
         short_name: 'HisaHub',
-        description: 'Your gateway to the Nairobi Securities Exchange',
+        description: 'Democratizing access to the Nairobi Securities Exchange with AI-powered trading tools and real-time market data',
         theme_color: '#22c55e',
         background_color: '#0f172a',
         display: 'standalone',
         scope: '/',
         start_url: '/',
+        orientation: 'portrait',
+        categories: ['finance', 'productivity', 'business'],
         icons: [
           {
-            src: 'favicon.ico',
-            sizes: '64x64 32x32 24x24 16x16',
-            type: 'image/x-icon'
+            src: '/lovable-uploads/d119c8de-4cb2-4d81-b0c7-5c63f121873d.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+          {
+            src: '/lovable-uploads/d119c8de-4cb2-4d81-b0c7-5c63f121873d.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ]
       },
