@@ -1,6 +1,6 @@
 
 import React from "react";
-import { PieChart } from "lucide-react"; // Use PieChart as portfolio icon
+import { PieChart } from "lucide-react";
 
 const PortfolioWidget: React.FC = () => {
   // Mock data. Later, plug real portfolio
