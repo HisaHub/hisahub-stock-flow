@@ -23,8 +23,8 @@ export const useLocalAIChat = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'nomic-ai/nomic-embed-text-v1.5-GGUF',
-          prompt: message,
+          model: 'finance-chat',
+          prompt: `You are Invisa, a helpful and knowledgeable Kenyan financial assistant. ${message}`,
           stream: false
         })
       });
@@ -43,7 +43,7 @@ export const useLocalAIChat = () => {
       console.error('Local AI Chat error:', error);
       toast({
         title: "Chat Error",
-        description: "Failed to connect to local Nomic model. Please ensure it's running on 127.0.0.1:11434",
+        description: "Failed to connect to local Invisa model. Please ensure it's running on 127.0.0.1:11434",
         variant: "destructive"
       });
       
