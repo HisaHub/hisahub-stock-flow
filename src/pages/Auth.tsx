@@ -88,11 +88,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: name,
           }
@@ -106,7 +105,18 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           toast.error(error.message);
         }
       } else {
-        toast.success("Account created successfully! Please check your email for verification.");
+        // If user is immediately available (no email confirmation required)
+        if (data.user && !data.user.email_confirmed_at) {
+          toast.success("Account created successfully! You are now logged in.");
+          onLogin();
+          navigate('/');
+        } else if (data.user) {
+          toast.success("Account created successfully! You are now logged in.");
+          onLogin();
+          navigate('/');
+        } else {
+          toast.success("Account created successfully! Please check your email for verification.");
+        }
       }
     } catch (error) {
       toast.error("An unexpected error occurred during signup.");
