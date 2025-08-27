@@ -190,3 +190,24 @@
 .market-mono {
   font-family: 'Roboto Mono', monospace;
 }
+
+/* Community post styling */
+.ticker-tag {
+  color: #10B981;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ticker-tag:hover {
+  text-decoration: underline;
+}
+
+.hashtag-tag {
+  color: #3B82F6;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.hashtag-tag:hover {
+  text-decoration: underline;
+}

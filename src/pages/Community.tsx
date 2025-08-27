@@ -2,15 +2,17 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Users, MessageSquare, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Plus, TrendingUp, Users, MessageSquare, Brain, GraduationCap, Signal, Bookmark } from 'lucide-react';
 import { useCommunity } from '@/hooks/useCommunity';
-import UserProfileCard from '@/components/community/UserProfileCard';
-import PostCard from '@/components/community/PostCard';
-import CreatePostDialog from '@/components/community/CreatePostDialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import CommunityFeed from '@/components/community/CommunityFeed';
+import SidebarWidgets from '@/components/community/SidebarWidgets';
+import CreatePostFAB from '@/components/community/CreatePostFAB';
+import LeaderboardWidget from '@/components/community/LeaderboardWidget';
+import TrendingWidget from '@/components/community/TrendingWidget';
 
 const Community = () => {
+  const [activeTab, setActiveTab] = useState('feed');
   const {
     posts,
     users,
@@ -23,24 +25,12 @@ const Community = () => {
     getUserPosts
   } = useCommunity();
 
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [userPosts, setUserPosts] = useState<any[]>([]);
-  const [showUserPosts, setShowUserPosts] = useState(false);
-
-  const handleViewPosts = async (userId: string) => {
-    const posts = await getUserPosts(userId);
-    setUserPosts(posts);
-    setSelectedUserId(userId);
-    setShowUserPosts(true);
-  };
-
-  const selectedUser = users.find(user => user.id === selectedUserId);
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-primary p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center text-off-white">Loading community...</div>
+      <div className="min-h-screen bg-primary p-4 flex items-center justify-center">
+        <div className="text-center text-off-white">
+          <div className="animate-spin w-8 h-8 border-2 border-secondary border-t-transparent rounded-full mx-auto mb-4"></div>
+          Loading HisaHub Community...
         </div>
       </div>
     );
@@ -48,124 +38,73 @@ const Community = () => {
 
   return (
     <div className="min-h-screen bg-primary">
-      <div className="max-w-4xl mx-auto p-4">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-off-white mb-2">Community</h1>
-          <p className="text-off-white/80">Connect with other traders and investors</p>
+      {/* Header */}
+      <div className="bg-primary/95 backdrop-blur-md border-b border-secondary/20 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-off-white">HisaHub Community</h1>
+              <p className="text-off-white/80">Your trading social hub</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" className="border-secondary/30">
+                <Bookmark className="w-4 h-4 mr-2" />
+                Saved
+              </Button>
+            </div>
+          </div>
+          
+          {/* Navigation Tabs */}
+          <div className="flex space-x-1 bg-primary/50 p-1 rounded-lg">
+            {[
+              { id: 'feed', label: 'Following', icon: MessageSquare },
+              { id: 'trending', label: 'Trending', icon: TrendingUp },
+              { id: 'discussions', label: 'Discussions', icon: Users },
+              { id: 'signals', label: 'Signals', icon: Signal },
+              { id: 'ai-insights', label: 'AI Insights', icon: Brain },
+              { id: 'mentorship', label: 'Mentorship', icon: GraduationCap },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-secondary text-primary shadow-sm'
+                    : 'text-off-white/70 hover:text-off-white hover:bg-white/5'
+                }`}
+              >
+                <tab.icon className="w-4 h-4 mr-2" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
-
-        <Tabs defaultValue="feed" className="space-y-6">
-          <TabsList className="bg-primary border border-secondary/20">
-            <TabsTrigger 
-              value="feed" 
-              className="text-off-white data-[state=active]:bg-secondary data-[state=active]:text-primary"
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Feed
-            </TabsTrigger>
-            <TabsTrigger 
-              value="discover" 
-              className="text-off-white data-[state=active]:bg-secondary data-[state=active]:text-primary"
-            >
-              <Users className="w-4 h-4 mr-2" />
-              Discover
-            </TabsTrigger>
-            <TabsTrigger 
-              value="trending" 
-              className="text-off-white data-[state=active]:bg-secondary data-[state=active]:text-primary"
-            >
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Trending
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="feed" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-off-white">Recent Posts</h2>
-              <CreatePostDialog onCreatePost={createPost} />
-            </div>
-            
-            <ScrollArea className="h-[600px]">
-              <div className="space-y-4">
-                {posts.length === 0 ? (
-                  <div className="text-center text-off-white/60 py-8">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No posts yet. Be the first to share something!</p>
-                  </div>
-                ) : (
-                  posts.map((post) => (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      onToggleLike={toggleLike}
-                    />
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="discover" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-off-white">Discover Traders</h2>
-              <div className="text-sm text-off-white/60">
-                {users.length} traders to discover
-              </div>
-            </div>
-            
-            <ScrollArea className="h-[600px]">
-              <div className="grid gap-4 md:grid-cols-2">
-                {users.map((user) => (
-                  <UserProfileCard
-                    key={user.id}
-                    user={user}
-                    isFollowed={followedUsers.includes(user.id)}
-                    onFollow={followUser}
-                    onUnfollow={unfollowUser}
-                    onViewPosts={handleViewPosts}
-                  />
-                ))}
-              </div>
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="trending" className="space-y-6">
-            <div className="text-center text-off-white/60 py-8">
-              <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Trending posts feature coming soon!</p>
-            </div>
-          </TabsContent>
-        </Tabs>
       </div>
 
-      {/* User Posts Modal */}
-      <Dialog open={showUserPosts} onOpenChange={setShowUserPosts}>
-        <DialogContent className="bg-primary border-secondary/20 max-w-2xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="text-off-white">
-              Posts by {selectedUser?.first_name} {selectedUser?.last_name}
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[60vh]">
-            <div className="space-y-4">
-              {userPosts.length === 0 ? (
-                <div className="text-center text-off-white/60 py-8">
-                  <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p>This user hasn't posted anything yet.</p>
-                </div>
-              ) : (
-                userPosts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onToggleLike={toggleLike}
-                  />
-                ))
-              )}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Feed - 3 columns */}
+          <div className="lg:col-span-3">
+            <CommunityFeed 
+              activeTab={activeTab}
+              posts={posts}
+              onToggleLike={toggleLike}
+              onCreatePost={createPost}
+            />
+          </div>
+
+          {/* Sidebar Widgets - 1 column */}
+          <div className="lg:col-span-1 space-y-6">
+            <SidebarWidgets />
+            <LeaderboardWidget users={users} />
+            <TrendingWidget />
+          </div>
+        </div>
+      </div>
+
+      {/* Floating Action Button */}
+      <CreatePostFAB onCreatePost={createPost} />
     </div>
   );
 };
