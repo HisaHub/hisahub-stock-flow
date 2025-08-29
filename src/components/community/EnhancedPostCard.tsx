@@ -64,7 +64,7 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
   };
 
   return (
-    <div className="w-full bg-white/5 border border-secondary/20 rounded-xl p-4 lg:p-6 hover:bg-white/10 transition-colors">
+    <div className="w-full mb-3 bg-white/5 border border-secondary/20 rounded-xl p-3.5 hover:bg-white/10 transition-colors">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3 min-w-0 flex-1">
           <Avatar className="h-10 w-10 flex-shrink-0">

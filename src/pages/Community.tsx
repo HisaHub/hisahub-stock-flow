@@ -82,7 +82,7 @@ const Community = () => {
       </div>
 
       {/* Main Content */}
-      <div className="w-full">
+      <div className="w-full px-4 lg:px-0">
         <div className="flex flex-col lg:flex-row lg:max-w-7xl lg:mx-auto">
           {/* Main Feed */}
           <div className="flex-1 lg:max-w-2xl lg:mx-auto">

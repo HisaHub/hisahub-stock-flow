@@ -24,12 +24,12 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({
       case 'feed':
         return (
           <div className="w-full">
-            <div className="px-4 lg:px-0 space-y-4">
+            <div className="space-y-3">
               <div className="hidden lg:flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-off-white">Following Feed</h2>
                 <CreatePostDialog onCreatePost={onCreatePost} />
               </div>
-              <div className="space-y-4 pb-20 lg:pb-4">
+              <div className="space-y-3 pb-20 lg:pb-4">
                 {posts.length === 0 ? (
                   <div className="text-center text-off-white/60 py-12 px-4">
                     <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -53,7 +53,7 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({
       case 'trending':
         return (
           <div className="w-full">
-            <div className="px-4 lg:px-0 space-y-6 pb-20 lg:pb-4">
+            <div className="space-y-6 pb-20 lg:pb-4">
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-6 h-6 text-secondary" />
                 <h2 className="text-xl font-semibold text-off-white">Trending Now</h2>
@@ -82,7 +82,7 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({
               <Users className="w-6 h-6 text-secondary" />
               <h2 className="text-xl font-semibold text-off-white">Active Discussions</h2>
             </div>
-            <div className="px-4 lg:px-0 pb-20 lg:pb-4">
+            <div className="pb-20 lg:pb-4">
               <div className="text-center text-off-white/60 py-12">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Discussion forums coming soon!</p>
@@ -99,7 +99,7 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({
               <Signal className="w-6 h-6 text-secondary" />
               <h2 className="text-xl font-semibold text-off-white">Trading Signals</h2>
             </div>
-            <div className="px-4 lg:px-0 pb-20 lg:pb-4">
+            <div className="pb-20 lg:pb-4">
               <div className="text-center text-off-white/60 py-12">
                 <Signal className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Trading signals feature coming soon!</p>
@@ -112,7 +112,7 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({
       case 'ai-insights':
         return (
           <div className="w-full">
-            <div className="px-4 lg:px-0 space-y-6 pb-20 lg:pb-4">
+            <div className="space-y-6 pb-20 lg:pb-4">
               <div className="flex items-center gap-3">
                 <Brain className="w-6 h-6 text-secondary" />
                 <h2 className="text-xl font-semibold text-off-white">AI Market Insights</h2>
@@ -141,7 +141,7 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({
               <GraduationCap className="w-6 h-6 text-secondary" />
               <h2 className="text-xl font-semibold text-off-white">Mentorship Hub</h2>
             </div>
-            <div className="px-4 lg:px-0 pb-20 lg:pb-4">
+            <div className="pb-20 lg:pb-4">
               <div className="text-center text-off-white/60 py-12">
                 <GraduationCap className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Mentorship program coming soon!</p>
