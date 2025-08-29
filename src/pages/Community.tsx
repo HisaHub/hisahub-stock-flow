@@ -82,10 +82,10 @@ const Community = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Feed - 3 columns */}
-          <div className="lg:col-span-3">
+      <div className="w-full">
+        <div className="flex flex-col lg:flex-row lg:max-w-7xl lg:mx-auto">
+          {/* Main Feed */}
+          <div className="flex-1 lg:max-w-2xl lg:mx-auto">
             <CommunityFeed 
               activeTab={activeTab}
               posts={posts}
@@ -94,11 +94,13 @@ const Community = () => {
             />
           </div>
 
-          {/* Sidebar Widgets - 1 column */}
-          <div className="lg:col-span-1 space-y-6">
-            <SidebarWidgets />
-            <LeaderboardWidget users={users} />
-            <TrendingWidget />
+          {/* Sidebar Widgets - Hidden on mobile, visible on desktop */}
+          <div className="hidden lg:block lg:w-80 lg:pl-6 space-y-6">
+            <div className="sticky top-20">
+              <SidebarWidgets />
+              <LeaderboardWidget users={users} />
+              <TrendingWidget />
+            </div>
           </div>
         </div>
       </div>

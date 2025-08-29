@@ -64,34 +64,32 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
   };
 
   return (
-    <Card className="bg-card border-border hover:border-secondary/30 transition-all duration-200">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-secondary text-primary font-semibold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h4 className="font-medium text-foreground">{displayName}</h4>
-                <Badge variant="secondary" className="text-xs bg-secondary/20">
-                  Trader
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-              </p>
+    <div className="w-full bg-white/5 border border-secondary/20 rounded-xl p-4 lg:p-6 hover:bg-white/10 transition-colors">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3 min-w-0 flex-1">
+          <Avatar className="h-10 w-10 flex-shrink-0">
+            <AvatarFallback className="bg-secondary text-primary font-semibold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-medium text-off-white truncate">{displayName}</h4>
+              <Badge variant="secondary" className="text-xs bg-secondary/20 flex-shrink-0">
+                Trader
+              </Badge>
             </div>
+            <p className="text-sm text-off-white/60 truncate">
+              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+            </p>
           </div>
         </div>
-      </CardHeader>
+      </div>
       
-      <CardContent className="space-y-4">
+      <div className="space-y-4">
         {/* Post Content */}
         <div 
-          className="text-foreground whitespace-pre-wrap"
+          className="text-off-white whitespace-pre-wrap"
           dangerouslySetInnerHTML={{ __html: enhancedContent }}
         />
 
@@ -121,14 +119,14 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
         )}
 
         {/* Engagement Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
+        <div className="flex items-center justify-between pt-3 border-t border-white/10">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onToggleLike(post.id)}
               className={`flex items-center gap-2 hover:bg-red-500/10 ${
-                post.is_liked ? 'text-red-500' : 'text-muted-foreground'
+                post.is_liked ? 'text-red-500' : 'text-off-white/60'
               }`}
             >
               <Heart className={`w-4 h-4 ${post.is_liked ? 'fill-current' : ''}`} />
@@ -138,7 +136,7 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
             <Button 
               variant="ghost" 
               size="sm" 
-              className="flex items-center gap-2 text-muted-foreground hover:bg-blue-500/10 hover:text-blue-500"
+              className="flex items-center gap-2 text-off-white/60 hover:bg-blue-500/10 hover:text-blue-500"
             >
               <MessageCircle className="w-4 h-4" />
               {post.replies_count}
@@ -151,7 +149,7 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
               size="sm"
               onClick={handleBookmark}
               className={`p-2 hover:bg-yellow-500/10 ${
-                isBookmarked ? 'text-yellow-500' : 'text-muted-foreground'
+                isBookmarked ? 'text-yellow-500' : 'text-off-white/60'
               }`}
             >
               <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
@@ -161,15 +159,15 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
               variant="ghost"
               size="sm"
               onClick={handleShare}
-              className="p-2 text-muted-foreground hover:bg-secondary/10 hover:text-secondary"
+              className="p-2 text-off-white/60 hover:bg-secondary/10 hover:text-secondary"
             >
               <Share2 className="w-4 h-4" />
             </Button>
           </div>
         </div>
-      </CardContent>
+      </div>
 
-    </Card>
+    </div>
   );
 };
 
