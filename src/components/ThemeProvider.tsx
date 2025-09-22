@@ -34,13 +34,18 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     localStorage.setItem(storageKey, theme);
     document.documentElement.setAttribute('data-theme', theme);
     
-    if (theme === 'light') {
-      document.documentElement.classList.remove('dark');
-      document.body.style.background = '#F8F9FA';
-    } else {
-      document.documentElement.classList.add('dark');
-      document.body.style.background = '#131b26';
-    }
+    // Force immediate style application
+    requestAnimationFrame(() => {
+      if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.body.style.background = '#F8F9FA !important';
+        document.body.style.color = '#1A1A1A !important';
+      } else {
+        document.documentElement.classList.add('dark');
+        document.body.style.background = '#131b26 !important';
+        document.body.style.color = '#F8F9FA !important';
+      }
+    });
   }, [theme, storageKey]);
 
   const toggleTheme = () => {
