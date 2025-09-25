@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 
 const InvisaAI: React.FC = () => {
   useEffect(() => {
-    // Load Botpress scripts
+    // Load Botpress scripts with exact versions provided by user
     const script1 = document.createElement('script');
-    script1.src = 'https://cdn.botpress.cloud/webchat/v3.3/inject.js';
-    script1.async = true;
+    script1.src = 'https://cdn.botpress.cloud/webchat/v3.2/inject.js';
+    script1.defer = true;
     document.head.appendChild(script1);
 
     const script2 = document.createElement('script');
@@ -15,15 +15,30 @@ const InvisaAI: React.FC = () => {
 
     // Cleanup function
     return () => {
-      document.head.removeChild(script1);
-      document.head.removeChild(script2);
+      // Check if scripts exist before removing to avoid errors
+      if (script1.parentNode) {
+        document.head.removeChild(script1);
+      }
+      if (script2.parentNode) {
+        document.head.removeChild(script2);
+      }
     };
   }, []);
 
   const openChat = () => {
-    // Trigger Botpress webchat open (this depends on how Botpress exposes the API)
-    if ((window as any).botpressWebChat) {
+    // Try different methods to open Botpress chat
+    if (typeof (window as any).botpressWebChat !== 'undefined') {
       (window as any).botpressWebChat.sendEvent({ type: 'show' });
+    } else if (typeof (window as any).bp !== 'undefined') {
+      (window as any).bp('show');
+    } else {
+      // Fallback: try to click the botpress button if it exists
+      const botpressButton = document.querySelector('[data-testid="bp-widget-button"]') || 
+                           document.querySelector('.bp-widget-button') ||
+                           document.querySelector('#bp-web-widget-container button');
+      if (botpressButton) {
+        (botpressButton as HTMLElement).click();
+      }
     }
   };
 
