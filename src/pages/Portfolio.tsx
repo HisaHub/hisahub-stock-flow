@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import BottomNav from "../components/BottomNav";
-import InvisaAI from "../components/InvisaAI";
 import { Menu, TrendingUp, TrendingDown, Download, RefreshCw, Plus, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -417,7 +416,6 @@ const Portfolio: React.FC = () => {
         
       </main>
       
-      <InvisaAI />
       <BottomNav />
     </div>
   );

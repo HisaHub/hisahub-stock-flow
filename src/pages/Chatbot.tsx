@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Send, X } from "lucide-react";
 import BottomNav from "../components/BottomNav";
-import InvisaAI from "../components/InvisaAI";
 import { useLocalAIChat } from "@/hooks/useLocalAIChat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,7 +97,6 @@ const Chatbot: React.FC = () => {
         </div>
       </main>
       
-      <InvisaAI />
       <BottomNav />
     </div>
   );

@@ -10,7 +10,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import BottomNav from "../components/BottomNav";
-import InvisaAI from "../components/InvisaAI";
 import { useTheme } from "../components/ThemeProvider";
 import AdvancedCommunity from "../components/AdvancedCommunity";
 
@@ -190,7 +189,6 @@ const News: React.FC = () => {
         </div>
       </main>
       
-      <InvisaAI />
       <BottomNav />
     </div>
   );

@@ -1,7 +1,6 @@
 
 import React from "react";
 import BottomNav from "../components/BottomNav";
-import InvisaAI from "../components/InvisaAI";
 import AccountSummaryCard from "../components/home/AccountSummaryCard";
 import OpenPositionsCard from "../components/home/OpenPositionsCard";
 import MarketOverviewSection from "../components/home/MarketOverviewSection";
@@ -79,7 +78,6 @@ const Index: React.FC = () => {
         </section>
 
         
-        <InvisaAI />
       </main>
       <BottomNav />
     </div>

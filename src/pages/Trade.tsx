@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
-import InvisaAI from "../components/InvisaAI";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -170,7 +169,6 @@ const Trade: React.FC = () => {
         </div>
       </main>
 
-      <InvisaAI />
       <BottomNav />
     </div>
   );

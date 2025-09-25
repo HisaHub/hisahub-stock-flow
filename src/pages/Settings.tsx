@@ -8,7 +8,6 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
-import InvisaAI from "../components/InvisaAI";
 import { toast } from 'sonner';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import FloatingJoystick from '@/components/FloatingJoystick';
@@ -278,7 +277,6 @@ const Settings: React.FC = () => {
       </div>
 
       <FloatingJoystick activeTab={activeTab} onTabChange={setActiveTab} />
-      <InvisaAI />
       <BottomNav />
     </div>
   );
