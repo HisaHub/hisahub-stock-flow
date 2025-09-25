@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
-import HisaAIButton from "../components/HisaAIButton";
+import InvisaAI from "../components/InvisaAI";
 import { Menu, TrendingUp, TrendingDown, Download, RefreshCw, Plus, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -378,8 +377,7 @@ const Portfolio: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
-      <HisaAIButton />
+    <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors pb-20">
       <main className="flex-1 flex flex-col items-center px-4 py-7 w-full max-w-2xl mx-auto">
         <div className="w-full flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-secondary">Portfolio</h1>
@@ -417,8 +415,9 @@ const Portfolio: React.FC = () => {
           {renderContent()}
         </div>
         
-        <ChatFAB />
       </main>
+      
+      <InvisaAI />
       <BottomNav />
     </div>
   );

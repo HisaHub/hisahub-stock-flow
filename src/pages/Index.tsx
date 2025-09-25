@@ -1,17 +1,44 @@
 
 import React from "react";
-import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
-import HisaAIButton from "../components/HisaAIButton";
+import InvisaAI from "../components/InvisaAI";
 import AccountSummaryCard from "../components/home/AccountSummaryCard";
 import OpenPositionsCard from "../components/home/OpenPositionsCard";
 import MarketOverviewSection from "../components/home/MarketOverviewSection";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { User } from "@supabase/supabase-js";
 
 const Index: React.FC = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Check current auth state
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleStartTrading = () => {
+    if (user) {
+      navigate('/trade');
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-between bg-primary font-sans pb-20">
-      <HisaAIButton />
       <main className="flex-1 flex flex-col px-4 py-6 w-full max-w-6xl mx-auto">
         {/* Header */}
         <section className="w-full mb-6">
@@ -23,12 +50,12 @@ const Index: React.FC = () => {
             <div className="text-off-white/80 mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
               Democratize access to the Nairobi Securities Exchange (NSE) for everyday Kenyans.
             </div>
-            <Link
-              to="/trade"
-              className="w-full max-w-xs block bg-secondary text-primary font-bold px-8 py-3 rounded-xl shadow hover:scale-105 hover:shadow-lg transition text-lg"
+            <button
+              onClick={handleStartTrading}
+              className="w-full max-w-xs bg-secondary text-primary font-bold px-8 py-3 rounded-xl shadow hover:scale-105 hover:shadow-lg transition text-lg"
             >
               Start Trading
-            </Link>
+            </button>
           </div>
         </section>
 
@@ -52,7 +79,7 @@ const Index: React.FC = () => {
         </section>
 
         
-        <ChatFAB />
+        <InvisaAI />
       </main>
       <BottomNav />
     </div>

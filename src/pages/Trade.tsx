@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ChatFAB from "../components/ChatFAB";
 import BottomNav from "../components/BottomNav";
-import HisaAIButton from "../components/HisaAIButton";
+import InvisaAI from "../components/InvisaAI";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -61,8 +60,7 @@ const Trade: React.FC = () => {
   }, [state.stocks, selectedStock]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors">
-      <HisaAIButton />
+    <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors pb-20">
       
       <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col px-2 sm:px-4 py-4">
         {/* Stock Selector and Broker Login Row */}
@@ -172,7 +170,7 @@ const Trade: React.FC = () => {
         </div>
       </main>
 
-      <ChatFAB />
+      <InvisaAI />
       <BottomNav />
     </div>
   );

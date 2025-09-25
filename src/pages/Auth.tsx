@@ -54,7 +54,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       } else {
         toast.success("Login successful!");
         onLogin();
-        navigate('/'); // Redirect to home page
+        // Check if there's a redirect path in localStorage
+        const redirectPath = localStorage.getItem('authRedirectPath');
+        localStorage.removeItem('authRedirectPath');
+        navigate(redirectPath || '/trade');
       }
     } catch (error) {
       toast.error("An unexpected error occurred during login.");
@@ -109,11 +112,17 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         if (data.user && !data.user.email_confirmed_at) {
           toast.success("Account created successfully! You are now logged in.");
           onLogin();
-          navigate('/');
+          // Check if there's a redirect path in localStorage
+          const redirectPath = localStorage.getItem('authRedirectPath');
+          localStorage.removeItem('authRedirectPath');
+          navigate(redirectPath || '/trade');
         } else if (data.user) {
           toast.success("Account created successfully! You are now logged in.");
           onLogin();
-          navigate('/');
+          // Check if there's a redirect path in localStorage
+          const redirectPath = localStorage.getItem('authRedirectPath');
+          localStorage.removeItem('authRedirectPath');
+          navigate(redirectPath || '/trade');
         } else {
           toast.success("Account created successfully! Please check your email for verification.");
         }

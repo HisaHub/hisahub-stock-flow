@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Send, X } from "lucide-react";
 import BottomNav from "../components/BottomNav";
-import HisaAIButton from "../components/HisaAIButton";
+import InvisaAI from "../components/InvisaAI";
 import { useLocalAIChat } from "@/hooks/useLocalAIChat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,6 @@ const Chatbot: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors pb-20">
-      <HisaAIButton />
       <main className="flex-1 flex flex-col px-4 py-10 max-w-4xl mx-auto w-full">
         <h2 className="text-3xl font-bold text-secondary mb-7 text-center" style={{ fontFamily: "'Poppins',sans-serif" }}>
           Chat with Invisa AI
@@ -98,6 +97,8 @@ const Chatbot: React.FC = () => {
           </div>
         </div>
       </main>
+      
+      <InvisaAI />
       <BottomNav />
     </div>
   );

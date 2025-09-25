@@ -16,7 +16,8 @@ import { ArrowLeft, Shield, Plus, Lightbulb, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import HisaAIButton from "../components/HisaAIButton";
+import InvisaAI from "../components/InvisaAI";
+import BottomNav from "../components/BottomNav";
 
 const brokers = [
   {
@@ -160,7 +161,6 @@ const BrokerIntegration: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-primary font-sans">
-      <HisaAIButton />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
@@ -474,6 +474,9 @@ const BrokerIntegration: React.FC = () => {
           </p>
         </div>
       </main>
+      
+      <InvisaAI />
+      <BottomNav />
     </div>
   );
 };

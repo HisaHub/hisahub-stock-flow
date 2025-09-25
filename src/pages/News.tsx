@@ -10,7 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import BottomNav from "../components/BottomNav";
-import HisaAIButton from "../components/HisaAIButton";
+import InvisaAI from "../components/InvisaAI";
 import { useTheme } from "../components/ThemeProvider";
 import AdvancedCommunity from "../components/AdvancedCommunity";
 
@@ -148,7 +148,6 @@ const News: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors pb-20">
-      <HisaAIButton />
       <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col items-center px-4 md:px-8 py-7">
         <div className="w-full flex items-center justify-between mb-5">
           <h2 className="text-3xl font-bold text-secondary flex items-center gap-2">
@@ -190,6 +189,8 @@ const News: React.FC = () => {
           </div>
         </div>
       </main>
+      
+      <InvisaAI />
       <BottomNav />
     </div>
   );
