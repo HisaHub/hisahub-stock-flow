@@ -20,7 +20,6 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { FinancialDataProvider } from "./contexts/FinancialDataContext";
 import SplashScreen from "./components/SplashScreen";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
-import BotpressEmbedding from "./components/BotpressEmbedding";
 
 const queryClient = new QueryClient();
 
@@ -109,8 +108,6 @@ const App = () => {
                 </Routes>
                 {/* Show PWA install prompt only when user is authenticated */}
                 {user && <PWAInstallPrompt />}
-                {/* Botpress webchat embedding */}
-                <BotpressEmbedding />
               </FinancialDataProvider>
             )}
           </BrowserRouter>
