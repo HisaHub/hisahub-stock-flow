@@ -66,34 +66,40 @@ const Trade: React.FC = () => {
         <div className="mb-4 flex flex-col sm:flex-row gap-4">
           {/* Stock Selector */}
           <div className="flex-1">
-            <Select value={selectedStock.symbol} onValueChange={handleStockChange}>
-              <SelectTrigger className="w-full bg-white/10 border-secondary/20 text-off-white">
-                <SelectValue>
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex flex-col items-start">
-                      <span className="font-semibold">{selectedStock.symbol}</span>
-                      <span className="text-xs text-off-white/60">{selectedStock.name}</span>
+            <Select value={selectedStock?.symbol || ''} onValueChange={handleStockChange}>
+              <SelectTrigger className="w-full bg-background/95 backdrop-blur-sm border-border text-foreground hover:bg-background/90">
+                <SelectValue placeholder="Select a stock">
+                  {selectedStock && (
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex flex-col items-start">
+                        <span className="font-semibold">{selectedStock.symbol}</span>
+                        <span className="text-xs text-muted-foreground">{selectedStock.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono">KES {selectedStock.price.toFixed(2)}</span>
+                        <span className={`text-xs ${selectedStock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {selectedStock.change >= 0 ? '+' : ''}{selectedStock.change.toFixed(2)}%
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono">KES {selectedStock.price.toFixed(2)}</span>
-                      <span className={`text-xs ${selectedStock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {selectedStock.change >= 0 ? '+' : ''}{selectedStock.change.toFixed(2)}%
-                      </span>
-                    </div>
-                  </div>
+                  )}
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent className="bg-primary border-secondary/20">
+              <SelectContent className="bg-background/95 backdrop-blur-sm border-border z-50">
                 {state.stocks.map((stock) => (
-                  <SelectItem key={stock.symbol} value={stock.symbol} className="text-off-white focus:bg-white/10">
+                  <SelectItem 
+                    key={stock.symbol} 
+                    value={stock.symbol} 
+                    className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                  >
                     <div className="flex items-center justify-between w-full">
                       <div className="flex flex-col items-start">
                         <span className="font-semibold">{stock.symbol}</span>
-                        <span className="text-xs text-off-white/60">{stock.name}</span>
+                        <span className="text-xs text-muted-foreground">{stock.name}</span>
                       </div>
                       <div className="flex items-center gap-2 ml-4">
                         <span className="font-mono text-sm">KES {stock.price.toFixed(2)}</span>
-                        <span className={`text-xs ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        <span className={`text-xs ${stock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                           {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)}%
                         </span>
                       </div>
@@ -132,12 +138,22 @@ const Trade: React.FC = () => {
             {/* Mobile Tabs for additional content */}
             <div className="lg:hidden">
               <Tabs defaultValue="positions" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 bg-white/10 text-xs">
-                  <TabsTrigger value="positions" className="text-xs">Positions</TabsTrigger>
-                  <TabsTrigger value="watchlist" className="text-xs">Watch</TabsTrigger>
-                  <TabsTrigger value="research" className="text-xs">Research</TabsTrigger>
-                  <TabsTrigger value="alerts" className="text-xs">Alerts</TabsTrigger>
-                  <TabsTrigger value="news" className="text-xs">News</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-5 bg-muted/50 h-12">
+                  <TabsTrigger value="positions" className="text-xs px-2 data-[state=active]:bg-background data-[state=active]:text-foreground">
+                    Positions
+                  </TabsTrigger>
+                  <TabsTrigger value="watchlist" className="text-xs px-2 data-[state=active]:bg-background data-[state=active]:text-foreground">
+                    Watch
+                  </TabsTrigger>
+                  <TabsTrigger value="research" className="text-xs px-2 data-[state=active]:bg-background data-[state=active]:text-foreground">
+                    Research
+                  </TabsTrigger>
+                  <TabsTrigger value="alerts" className="text-xs px-2 data-[state=active]:bg-background data-[state=active]:text-foreground">
+                    Alerts
+                  </TabsTrigger>
+                  <TabsTrigger value="news" className="text-xs px-2 data-[state=active]:bg-background data-[state=active]:text-foreground">
+                    News
+                  </TabsTrigger>
                 </TabsList>
                 <TabsContent value="positions" className="mt-4">
                   <PositionsOrders />
