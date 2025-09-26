@@ -20,6 +20,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { FinancialDataProvider } from "./contexts/FinancialDataContext";
 import SplashScreen from "./components/SplashScreen";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import InvisaAIGlobal from "./components/InvisaAIGlobal";
 
 const queryClient = new QueryClient();
 
@@ -108,6 +109,8 @@ const App = () => {
                 </Routes>
                 {/* Show PWA install prompt only when user is authenticated */}
                 {user && <PWAInstallPrompt />}
+                {/* Global Invisa AI chatbot available on all pages */}
+                <InvisaAIGlobal />
               </FinancialDataProvider>
             )}
           </BrowserRouter>
