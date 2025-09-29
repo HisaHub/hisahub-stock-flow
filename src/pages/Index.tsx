@@ -4,7 +4,6 @@ import BottomNav from "../components/BottomNav";
 import AccountSummaryCard from "../components/home/AccountSummaryCard";
 import OpenPositionsCard from "../components/home/OpenPositionsCard";
 import MarketOverviewSection from "../components/home/MarketOverviewSection";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -13,22 +12,26 @@ import { User } from "@supabase/supabase-js";
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check current auth state
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      setLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const handleStartTrading = () => {
+    console.log('Start Trading clicked, user:', user);
     if (user) {
       navigate('/trade');
     } else {
@@ -58,18 +61,20 @@ const Index: React.FC = () => {
           </div>
         </section>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Left Column - Account Summary */}
-          <div className="lg:col-span-1">
-            <AccountSummaryCard />
+        {/* Main Content Grid - Only show for authenticated users */}
+        {user && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            {/* Left Column - Account Summary */}
+            <div className="lg:col-span-1">
+              <AccountSummaryCard />
+            </div>
+            
+            {/* Right Column - Open Positions */}
+            <div className="lg:col-span-2">
+              <OpenPositionsCard />
+            </div>
           </div>
-          
-          {/* Right Column - Open Positions */}
-          <div className="lg:col-span-2">
-            <OpenPositionsCard />
-          </div>
-        </div>
+        )}
 
         {/* Market Overview Section */}
         <section className="w-full">
