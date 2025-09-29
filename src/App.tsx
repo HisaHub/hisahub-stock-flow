@@ -79,35 +79,32 @@ const App = () => {
                   {/* Public routes - accessible to everyone */}
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth onLogin={handleLogin} />} />
+                  <Route path="/news" element={<News />} />
+                  <Route path="/community" element={<Community />} />
+                  <Route path="*" element={<NotFound />} />
                   
                   {/* Protected routes - only accessible to authenticated users */}
                   {user ? (
                     <>
                       <Route path="/trade" element={<Trade />} />
                       <Route path="/portfolio" element={<Portfolio />} />
-                      <Route path="/news" element={<News />} />
-                      <Route path="/community" element={<Community />} />
                       <Route path="/settings" element={<Settings />} />
                       <Route path="/broker-integration" element={<BrokerIntegration />} />
                       <Route path="/chatbot" element={<Chatbot />} />
-                      <Route path="*" element={<NotFound />} />
                     </>
                   ) : (
                     // Redirect protected routes to auth if not authenticated
                     <>
                       <Route path="/trade" element={<Navigate to="/auth" replace />} />
                       <Route path="/portfolio" element={<Navigate to="/auth" replace />} />
-                      <Route path="/news" element={<Navigate to="/auth" replace />} />
-                      <Route path="/community" element={<Navigate to="/auth" replace />} />
                       <Route path="/settings" element={<Navigate to="/auth" replace />} />
                       <Route path="/broker-integration" element={<Navigate to="/auth" replace />} />
                       <Route path="/chatbot" element={<Navigate to="/auth" replace />} />
-                      <Route path="*" element={<NotFound />} />
                     </>
                   )}
                 </Routes>
-                {/* Show PWA install prompt only when user is authenticated */}
-                {user && <PWAInstallPrompt />}
+                {/* Show PWA install prompt to all users */}
+                <PWAInstallPrompt />
               </FinancialDataProvider>
             )}
           </BrowserRouter>
