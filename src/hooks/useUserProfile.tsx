@@ -14,6 +14,7 @@ export const useUserProfile = () => {
 
   const fetchProfile = async () => {
     try {
+      // Check if user is already authenticated from the global auth state
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -21,34 +22,37 @@ export const useUserProfile = () => {
         return;
       }
 
+      // Use faster single query with error handling
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to avoid errors
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          // Profile doesn't exist, create one
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert({
-              id: user.id,
-              first_name: user.user_metadata?.first_name || null,
-              last_name: user.user_metadata?.last_name || null,
-            })
-            .select()
-            .single();
+        console.error('Error fetching profile:', error);
+        toast.error('Failed to load profile');
+        setLoading(false);
+        return;
+      }
 
-          if (createError) {
-            console.error('Error creating profile:', createError);
-            toast.error('Failed to create user profile');
-          } else {
-            setProfile(newProfile);
-          }
+      if (!data) {
+        // Profile doesn't exist, create one
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            first_name: user.user_metadata?.first_name || null,
+            last_name: user.user_metadata?.last_name || null,
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          toast.error('Failed to create user profile');
         } else {
-          console.error('Error fetching profile:', error);
-          toast.error('Failed to load profile');
+          setProfile(newProfile);
         }
       } else {
         setProfile(data);
@@ -92,7 +96,12 @@ export const useUserProfile = () => {
   };
 
   useEffect(() => {
-    fetchProfile();
+    // Add a small delay to prevent too many rapid API calls
+    const timer = setTimeout(() => {
+      fetchProfile();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return {

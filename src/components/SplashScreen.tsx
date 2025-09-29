@@ -10,12 +10,36 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    // Hide chatbot during splash screen
+    const hideChatbot = () => {
+      const chatbotContainer = document.querySelector('div[id^="bp-web-widget"]');
+      if (chatbotContainer) {
+        (chatbotContainer as HTMLElement).style.display = 'none';
+      }
+    };
+
+    // Show chatbot after splash screen
+    const showChatbot = () => {
+      const chatbotContainer = document.querySelector('div[id^="bp-web-widget"]');
+      if (chatbotContainer) {
+        (chatbotContainer as HTMLElement).style.display = 'block';
+      }
+    };
+
+    hideChatbot();
+
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onComplete, 300); // Wait for fade out animation
+      setTimeout(() => {
+        onComplete();
+        showChatbot(); // Show chatbot after splash completes
+      }, 300); // Wait for fade out animation
     }, 2500);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      showChatbot(); // Ensure chatbot shows if component unmounts
+    };
   }, [onComplete]);
 
   return (
