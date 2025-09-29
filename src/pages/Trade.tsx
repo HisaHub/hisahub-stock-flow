@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { LogIn, MessageCircle } from "lucide-react";
+import { LogIn } from "lucide-react";
 import TradingChart from "../components/trading/TradingChart";
 import StockSummary from "../components/trading/StockSummary";
 import OrderPanel from "../components/trading/OrderPanel";
@@ -19,7 +19,6 @@ import AlertsPanel from "../components/trading/AlertsPanel";
 import NewsFeed from "../components/trading/NewsFeed";
 import WatchlistPanel from "../components/trading/WatchlistPanel";
 import ResearchPanel from "../components/trading/ResearchPanel";
-import AIAssistant from "../components/trading/AIAssistant";
 import { useFinancialData, Stock } from "../contexts/FinancialDataContext";
 
 const Trade: React.FC = () => {
@@ -37,7 +36,6 @@ const Trade: React.FC = () => {
     change: 0.50,
     changePercent: '1.79'
   });
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
 
   const handleStockChange = (stockSymbol: string) => {
     const stock = state.stocks.find(s => s.symbol === stockSymbol);
@@ -170,23 +168,6 @@ const Trade: React.FC = () => {
           </div>
         </div>
       </main>
-
-      {/* Floating AI Chat Button */}
-      <Button
-        onClick={() => setShowAIAssistant(true)}
-        className="fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full bg-secondary hover:bg-secondary/80 text-primary shadow-lg border-2 border-white/20"
-        size="lg"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </Button>
-
-      {/* AI Assistant Modal */}
-      {showAIAssistant && (
-        <AIAssistant 
-          stock={selectedStock} 
-          onClose={() => setShowAIAssistant(false)} 
-        />
-      )}
 
       <BottomNav />
     </div>
