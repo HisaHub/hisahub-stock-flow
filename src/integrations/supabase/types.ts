@@ -182,7 +182,7 @@ export type Database = {
           reviewer_notes: string | null
           status: Database["public"]["Enums"]["kyc_status"] | null
           submitted_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           document_type: string
@@ -192,7 +192,7 @@ export type Database = {
           reviewer_notes?: string | null
           status?: Database["public"]["Enums"]["kyc_status"] | null
           submitted_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           document_type?: string
@@ -202,7 +202,7 @@ export type Database = {
           reviewer_notes?: string | null
           status?: Database["public"]["Enums"]["kyc_status"] | null
           submitted_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
