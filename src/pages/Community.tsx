@@ -38,54 +38,55 @@ const Community = () => {
 
   return (
     <div className="min-h-screen bg-primary">
-      {/* Header */}
-      <div className="bg-primary/95 backdrop-blur-md border-b border-secondary/20 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
+      {/* Fullscreen Header */}
+      <div className="bg-primary/95 backdrop-blur-md sticky top-0 z-40">
+        <div className="w-full px-4 py-3">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-2xl font-bold text-off-white">HisaHub Community</h1>
-              <p className="text-off-white/80">Your trading social hub</p>
+              <h1 className="text-xl font-bold text-off-white">HisaHub Community</h1>
+              <p className="text-sm text-off-white/70">Your trading social hub</p>
             </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" className="border-secondary/30">
-                <Bookmark className="w-4 h-4 mr-2" />
-                Saved
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="text-off-white">
+                <Bookmark className="w-4 h-4" />
               </Button>
             </div>
           </div>
           
-          {/* Navigation Tabs */}
-          <div className="flex space-x-1 bg-primary/50 p-1 rounded-lg">
-            {[
-              { id: 'feed', label: 'Following', icon: MessageSquare },
-              { id: 'trending', label: 'Trending', icon: TrendingUp },
-              { id: 'discussions', label: 'Discussions', icon: Users },
-              { id: 'signals', label: 'Signals', icon: Signal },
-              { id: 'ai-insights', label: 'AI Insights', icon: Brain },
-              { id: 'mentorship', label: 'Mentorship', icon: GraduationCap },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-secondary text-primary shadow-sm'
-                    : 'text-off-white/70 hover:text-off-white hover:bg-white/5'
-                }`}
-              >
-                <tab.icon className="w-4 h-4 mr-2" />
-                {tab.label}
-              </button>
-            ))}
+          {/* Navigation Tabs - Scrollable on mobile */}
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex space-x-1 bg-primary/50 p-1 rounded-lg min-w-max">
+              {[
+                { id: 'feed', label: 'Following', icon: MessageSquare },
+                { id: 'trending', label: 'Trending', icon: TrendingUp },
+                { id: 'discussions', label: 'Discussions', icon: Users },
+                { id: 'signals', label: 'Signals', icon: Signal },
+                { id: 'ai-insights', label: 'AI Insights', icon: Brain },
+                { id: 'mentorship', label: 'Mentorship', icon: GraduationCap },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'bg-secondary text-primary shadow-sm'
+                      : 'text-off-white/70 hover:text-off-white hover:bg-white/5'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4 mr-2" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="w-full px-4 lg:px-0">
-        <div className="flex flex-col lg:flex-row lg:max-w-7xl lg:mx-auto">
-          {/* Main Feed */}
-          <div className="flex-1 lg:max-w-2xl lg:mx-auto">
+      {/* Fullscreen Main Content */}
+      <div className="w-full">
+        <div className="flex flex-col lg:flex-row">
+          {/* Main Feed - Full width on mobile */}
+          <div className="flex-1 lg:max-w-3xl lg:mx-auto">
             <CommunityFeed 
               activeTab={activeTab}
               posts={posts}
@@ -95,12 +96,10 @@ const Community = () => {
           </div>
 
           {/* Sidebar Widgets - Hidden on mobile, visible on desktop */}
-          <div className="hidden lg:block lg:w-80 lg:pl-6 space-y-6">
-            <div className="sticky top-20">
-              <SidebarWidgets />
-              <LeaderboardWidget users={users} />
-              <TrendingWidget />
-            </div>
+          <div className="hidden lg:block lg:w-80 lg:sticky lg:top-32 lg:self-start space-y-4 lg:pr-4">
+            <SidebarWidgets />
+            <LeaderboardWidget users={users} />
+            <TrendingWidget />
           </div>
         </div>
       </div>
