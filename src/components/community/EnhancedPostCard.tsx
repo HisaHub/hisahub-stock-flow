@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Heart, MessageCircle, Bookmark, Share2, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { Heart, Bookmark, Share2, DollarSign } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
+import CommentSection from './CommentSection';
 
 type Post = Database['public']['Tables']['posts']['Row'] & {
   profiles: {
@@ -132,15 +133,6 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
               <Heart className={`w-4 h-4 ${post.is_liked ? 'fill-current' : ''}`} />
               {post.likes_count}
             </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="flex items-center gap-2 text-off-white/60 hover:bg-blue-500/10 hover:text-blue-500"
-            >
-              <MessageCircle className="w-4 h-4" />
-              {post.replies_count}
-            </Button>
           </div>
 
           <div className="flex items-center gap-2">
@@ -165,6 +157,9 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
             </Button>
           </div>
         </div>
+
+        {/* Comment Section */}
+        <CommentSection postId={post.id} initialCommentsCount={post.replies_count || 0} />
       </div>
 
     </div>
