@@ -27,6 +27,14 @@
     <link rel="icon" type="image/png" href="/lovable-uploads/d119c8de-4cb2-4d81-b0c7-5c63f121873d.png" />
     <link rel="apple-touch-icon" href="/lovable-uploads/d119c8de-4cb2-4d81-b0c7-5c63f121873d.png" />
     
+    <!-- Critical CSS for faster LCP -->
+    <style>
+      /* Inline critical font-display styles to prevent FOIT */
+      body { font-display: swap; }
+      /* Prevent layout shift during font load */
+      .text-off-white\/80 { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    </style>
+    
     <!-- Optimized font loading with display=swap -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Roboto+Mono:wght@400;700&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Roboto+Mono:wght@400;700&display=swap" /></noscript>
