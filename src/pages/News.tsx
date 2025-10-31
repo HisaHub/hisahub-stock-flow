@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileText, Newspaper, MessageSquare, Download, Menu } from "lucide-react";
+import { FileText, Newspaper, Settings, Download, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import BottomNav from "../components/BottomNav";
 import { useTheme } from "../components/ThemeProvider";
-import AdvancedCommunity from "../components/AdvancedCommunity";
+import { useNavigate } from "react-router-dom";
 
 const DUMMY_NEWS = [
   { headline: "Safaricom stocks rally as quarterly results impress", date: "2025-05-18" },
@@ -44,6 +44,7 @@ const DUMMY_FINANCIALS = [
 
 const News: React.FC = () => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<CommunityPost[]>([
     { name: "TraderJoe", content: "Excited for upcoming earning releases!", timestamp: Date.now() - 60000 },
     { name: "NSEQueen", content: "Which stock are you bullish on this week?", timestamp: Date.now() - 360000 },
@@ -76,7 +77,7 @@ const News: React.FC = () => {
   const menuItems = [
     { id: "news", label: "NSE Stock News", icon: <Newspaper size={18} /> },
     { id: "articles", label: "Articles", icon: <FileText size={18} /> },
-    { id: "community", label: "Community", icon: <MessageSquare size={18} /> },
+    { id: "settings", label: "Settings", icon: <Settings size={18} /> },
     { id: "financials", label: "Financials", icon: <Download size={18} /> },
   ];
 
@@ -104,10 +105,9 @@ const News: React.FC = () => {
             ))}
           </div>
         );
-      case "community":
-        return (
-          <AdvancedCommunity />
-        );
+      case "settings":
+        navigate('/settings');
+        return null;
       case "financials":
         return (
           <div>
