@@ -780,6 +780,7 @@ export type Database = {
           created_at: string | null
           date_of_birth: string | null
           first_name: string | null
+          has_completed_tour: boolean | null
           id: string
           last_name: string | null
           national_id: string | null
@@ -795,6 +796,7 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           first_name?: string | null
+          has_completed_tour?: boolean | null
           id: string
           last_name?: string | null
           national_id?: string | null
@@ -810,6 +812,7 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           first_name?: string | null
+          has_completed_tour?: boolean | null
           id?: string
           last_name?: string | null
           national_id?: string | null

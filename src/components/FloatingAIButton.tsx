@@ -149,6 +149,7 @@ const FloatingAIButton: React.FC = () => {
     <>
       {/* Floating Button */}
       <div
+        data-tour="ai-assistant"
         className={cn(
           "fixed z-50 w-14 h-14 rounded-full bg-accent shadow-lg cursor-move transition-all duration-200",
           isDragging && "scale-110 shadow-2xl",
@@ -207,8 +208,8 @@ const FloatingAIButton: React.FC = () => {
               </TabsList>
 
               {/* AI Chat Tab */}
-              <TabsContent value="ai" className="flex-1 flex flex-col mt-0">
-                <ScrollArea className="flex-1 p-4">
+              <TabsContent value="ai" className="flex-1 flex flex-col mt-0 h-full overflow-hidden">
+                <ScrollArea className="flex-1 p-4 h-[calc(100vh-280px)] sm:h-[400px]">
                   {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center">
                       <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mb-4">
@@ -294,8 +295,8 @@ const FloatingAIButton: React.FC = () => {
               </TabsContent>
 
               {/* Notifications Tab */}
-              <TabsContent value="notifications" className="flex-1 mt-0">
-                <ScrollArea className="h-full">
+              <TabsContent value="notifications" className="flex-1 mt-0 h-full overflow-hidden">
+                <ScrollArea className="h-[calc(100vh-200px)] sm:h-[480px]">
                   {notifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center p-8">
                       <Bell className="w-12 h-12 text-muted-foreground mb-4" />
