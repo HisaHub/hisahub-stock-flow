@@ -10,6 +10,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { FinancialDataProvider } from "./contexts/FinancialDataContext";
 import SplashScreen from "./components/SplashScreen";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import FloatingAIButton from "./components/FloatingAIButton";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -23,6 +24,7 @@ const Community = lazy(() => import("./pages/Community"));
 const Settings = lazy(() => import("./pages/Settings"));
 const BrokerIntegration = lazy(() => import("./pages/BrokerIntegration"));
 const Chatbot = lazy(() => import("./pages/Chatbot"));
+const Wallet = lazy(() => import("./pages/Wallet"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading component for lazy-loaded routes
@@ -103,6 +105,7 @@ const App = () => {
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/broker-integration" element={<BrokerIntegration />} />
                         <Route path="/chatbot" element={<Chatbot />} />
+                        <Route path="/wallet" element={<Wallet />} />
                       </>
                     ) : (
                       // Redirect protected routes to auth if not authenticated
@@ -112,10 +115,12 @@ const App = () => {
                         <Route path="/settings" element={<Navigate to="/auth" replace />} />
                         <Route path="/broker-integration" element={<Navigate to="/auth" replace />} />
                         <Route path="/chatbot" element={<Navigate to="/auth" replace />} />
+                        <Route path="/wallet" element={<Navigate to="/auth" replace />} />
                       </>
                     )}
                   </Routes>
                 </Suspense>
+                <FloatingAIButton />
                 {/* Show PWA install prompt to all users */}
                 <PWAInstallPrompt />
               </FinancialDataProvider>
