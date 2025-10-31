@@ -43,8 +43,14 @@ export const useBackendData = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Check if backend is configured (not localhost in production)
+  const isBackendConfigured = import.meta.env.VITE_API_BASE_URL && 
+    !import.meta.env.VITE_API_BASE_URL.includes('localhost');
+
   // Fetch stocks from Django backend
   const fetchStocks = async () => {
+    if (!isBackendConfigured) return;
+    
     try {
       const data = await apiClient.get<BackendStock[]>(API_ENDPOINTS.stocks.list);
       setStocks(data);
@@ -56,6 +62,8 @@ export const useBackendData = () => {
 
   // Fetch portfolio from Django backend
   const fetchPortfolio = async () => {
+    if (!isBackendConfigured) return;
+    
     try {
       const data = await apiClient.get<BackendPortfolio>(API_ENDPOINTS.trading.portfolio);
       setPortfolio(data);
@@ -67,6 +75,8 @@ export const useBackendData = () => {
 
   // Fetch orders from Django backend
   const fetchOrders = async () => {
+    if (!isBackendConfigured) return;
+    
     try {
       const data = await apiClient.get<BackendOrder[]>(API_ENDPOINTS.trading.orders);
       setOrders(data);
@@ -167,10 +177,12 @@ export const useBackendData = () => {
     }
   };
 
-  // Initial data fetch
+  // Initial data fetch - only if backend is configured
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (isBackendConfigured) {
+      fetchData();
+    }
+  }, [isBackendConfigured]);
 
   return {
     stocks,

@@ -1,5 +1,6 @@
 // API Configuration for Django Backend
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// Note: If VITE_API_BASE_URL is not set, backend features will be disabled
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 // API endpoints
 export const API_ENDPOINTS = {
