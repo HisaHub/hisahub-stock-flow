@@ -73,31 +73,33 @@ Consider:
         tools: [
           {
             type: "function",
-            name: "analyze_sentiment",
-            description: "Return structured sentiment analysis for a trading post",
-            parameters: {
-              type: "object",
-              properties: {
-                sentiment_label: {
-                  type: "string",
-                  enum: ["bullish", "bearish", "neutral"]
+            function: {
+              name: "analyze_sentiment",
+              description: "Return structured sentiment analysis for a trading post",
+              parameters: {
+                type: "object",
+                properties: {
+                  sentiment_label: {
+                    type: "string",
+                    enum: ["bullish", "bearish", "neutral"]
+                  },
+                  sentiment_score: {
+                    type: "number",
+                    minimum: -1.0,
+                    maximum: 1.0
+                  },
+                  confidence: {
+                    type: "number",
+                    minimum: 0.0,
+                    maximum: 1.0
+                  },
+                  reasoning: {
+                    type: "string"
+                  }
                 },
-                sentiment_score: {
-                  type: "number",
-                  minimum: -1.0,
-                  maximum: 1.0
-                },
-                confidence: {
-                  type: "number",
-                  minimum: 0.0,
-                  maximum: 1.0
-                },
-                reasoning: {
-                  type: "string"
-                }
-              },
-              required: ["sentiment_label", "sentiment_score", "confidence", "reasoning"],
-              additionalProperties: false
+                required: ["sentiment_label", "sentiment_score", "confidence", "reasoning"],
+                additionalProperties: false
+              }
             }
           }
         ],
