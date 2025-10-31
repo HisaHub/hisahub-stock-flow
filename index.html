@@ -80,8 +80,8 @@
     <link rel="preload" href="/src/main.tsx" as="script" crossorigin />
     <link rel="modulepreload" href="/src/main.tsx" />
     
-    <!-- Optimized font loading with display=swap - fully deferred -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Roboto+Mono:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <!-- Non-blocking font loading to eliminate render blocking -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Roboto+Mono:wght@400;700&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Roboto+Mono:wght@400;700&display=swap" /></noscript>
   </head>
   <body>
