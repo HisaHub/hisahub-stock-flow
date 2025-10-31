@@ -2,7 +2,9 @@
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, MessageCircle, ThumbsUp, Clock } from "lucide-react";
+import { TrendingUp, TrendingDown, MessageCircle, ThumbsUp, Clock, Brain, Sparkles, Loader2 } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Stock {
   symbol: string;
@@ -104,8 +106,41 @@ const mockCommunity: CommunityPost[] = [
 ];
 
 const NewsFeed: React.FC<NewsFeedProps> = ({ stock }) => {
-  const [activeTab, setActiveTab] = useState<"news" | "community">("news");
+  const [activeTab, setActiveTab] = useState<"news" | "community" | "ai">("news");
   const [sentimentFilter, setSentimentFilter] = useState<string>("all");
+  const [aiSummary, setAiSummary] = useState<string>('');
+  const [generatingSummary, setGeneratingSummary] = useState(false);
+  const { toast } = useToast();
+
+  const generateAISummary = async () => {
+    setGeneratingSummary(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-news-summarizer', {
+        body: { 
+          stock_symbol: stock.symbol,
+          news_items: mockNews,
+          community_posts: mockCommunity
+        }
+      });
+
+      if (error) throw error;
+      setAiSummary(data.summary);
+      setActiveTab('ai');
+      toast({
+        title: "AI Summary Generated",
+        description: "News & sentiment summarized"
+      });
+    } catch (error) {
+      console.error('AI summary error:', error);
+      toast({
+        title: "Summary Failed",
+        description: "Could not generate AI summary",
+        variant: "destructive"
+      });
+    } finally {
+      setGeneratingSummary(false);
+    }
+  };
 
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
@@ -161,6 +196,20 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ stock }) => {
             className="text-xs"
           >
             Community
+          </Button>
+          <Button
+            size="sm"
+            variant={activeTab === "ai" ? "secondary" : "outline"}
+            onClick={generateAISummary}
+            disabled={generatingSummary}
+            className="text-xs"
+          >
+            {generatingSummary ? (
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+            ) : (
+              <Brain className="w-3 h-3 mr-1" />
+            )}
+            AI Summary
           </Button>
         </div>
       </div>
@@ -226,6 +275,35 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ stock }) => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* AI Summary Tab */}
+      {activeTab === "ai" && (
+        <div className="space-y-4">
+          {aiSummary ? (
+            <>
+              <div className="bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-lg p-4 border border-secondary/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <Brain className="w-5 h-5 text-secondary" />
+                  <h4 className="font-semibold text-off-white">AI-Powered Summary</h4>
+                </div>
+                <p className="text-sm text-off-white/90 leading-relaxed whitespace-pre-line">
+                  {aiSummary}
+                </p>
+              </div>
+              <div className="text-xs text-off-white/40 text-center">
+                AI-generated summary • Always verify information independently
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <Sparkles className="w-12 h-12 mx-auto mb-4 text-secondary opacity-50" />
+              <p className="text-sm text-off-white/60">
+                Click "AI Summary" to generate insights
+              </p>
+            </div>
+          )}
         </div>
       )}
 

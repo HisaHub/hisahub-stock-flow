@@ -9,8 +9,13 @@ import {
   FileText, 
   BarChart3, 
   Calendar,
-  ExternalLink 
+  ExternalLink,
+  Brain,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Stock {
   symbol: string;
@@ -25,6 +30,40 @@ interface ResearchPanelProps {
 
 const ResearchPanel: React.FC<ResearchPanelProps> = ({ stock }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [aiAnalysis, setAiAnalysis] = useState<string>('');
+  const [analyzingAI, setAnalyzingAI] = useState(false);
+  const { toast } = useToast();
+
+  const generateAIAnalysis = async () => {
+    setAnalyzingAI(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-research-assistant', {
+        body: { 
+          stock_symbol: stock.symbol,
+          stock_name: stock.name,
+          current_price: stock.price,
+          change: stock.change,
+          analysis_type: 'comprehensive'
+        }
+      });
+
+      if (error) throw error;
+      setAiAnalysis(data.analysis);
+      toast({
+        title: "AI Analysis Complete",
+        description: `Generated insights for ${stock.symbol}`
+      });
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      toast({
+        title: "Analysis Failed",
+        description: "Could not generate AI insights",
+        variant: "destructive"
+      });
+    } finally {
+      setAnalyzingAI(false);
+    }
+  };
 
   // Mock research data
   const analystRatings = {
@@ -74,9 +113,13 @@ const ResearchPanel: React.FC<ResearchPanelProps> = ({ stock }) => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white/10">
+        <TabsList className="grid w-full grid-cols-4 bg-white/10">
           <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
           <TabsTrigger value="fundamentals" className="text-xs">Fundamentals</TabsTrigger>
+          <TabsTrigger value="ai-insights" className="text-xs">
+            <Brain className="w-3 h-3 mr-1" />
+            AI
+          </TabsTrigger>
           <TabsTrigger value="news" className="text-xs">News</TabsTrigger>
         </TabsList>
 
@@ -140,6 +183,62 @@ const ResearchPanel: React.FC<ResearchPanelProps> = ({ stock }) => {
                 <span className="font-semibold text-off-white">{value}</span>
               </div>
             ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="ai-insights" className="mt-4">
+          <div className="space-y-4">
+            {!aiAnalysis ? (
+              <div className="text-center py-8">
+                <Brain className="w-12 h-12 mx-auto mb-4 text-secondary opacity-50" />
+                <h4 className="font-semibold text-off-white mb-2">AI-Powered Analysis</h4>
+                <p className="text-sm text-off-white/60 mb-4">
+                  Get comprehensive AI insights on {stock.symbol}
+                </p>
+                <Button
+                  onClick={generateAIAnalysis}
+                  disabled={analyzingAI}
+                  className="bg-secondary hover:bg-secondary/90 text-primary"
+                >
+                  {analyzingAI ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Generate AI Analysis
+                    </>
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Brain className="w-4 h-4 text-secondary" />
+                    <h4 className="font-semibold text-off-white">AI Insights</h4>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={generateAIAnalysis}
+                    disabled={analyzingAI}
+                  >
+                    <Sparkles className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div className="bg-white/5 rounded-lg p-4">
+                  <p className="text-sm text-off-white/90 leading-relaxed whitespace-pre-line">
+                    {aiAnalysis}
+                  </p>
+                </div>
+                <div className="text-xs text-off-white/40 text-center">
+                  AI-generated analysis • Use as supplementary research
+                </div>
+              </div>
+            )}
           </div>
         </TabsContent>
 

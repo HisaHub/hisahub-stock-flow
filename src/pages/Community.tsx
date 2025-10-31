@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Plus, TrendingUp, Users, MessageSquare, Brain, GraduationCap, Signal, Bookmark, Award } from 'lucide-react';
+import { Plus, TrendingUp, Users, MessageSquare, Brain, GraduationCap, Signal, Bookmark, Award, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useCommunity } from '@/hooks/useCommunity';
 import { usePostSearch } from '@/hooks/usePostSearch';
 import CommunityFeed from '@/components/community/CommunityFeed';
@@ -19,6 +20,7 @@ import AchievementsPanel from '@/components/community/AchievementsPanel';
 const Community = () => {
   const [activeTab, setActiveTab] = useState('feed');
   const [showSearch, setShowSearch] = useState(false);
+  const navigate = useNavigate();
   
   const {
     posts,
@@ -64,9 +66,19 @@ const Community = () => {
       <div className="bg-primary/95 backdrop-blur-md sticky top-0 z-40">
         <div className="w-full px-4 py-3">
           <div className="flex items-center justify-between mb-3">
-            <div>
-              <h1 className="text-xl font-bold text-off-white">HisaHub Community</h1>
-              <p className="text-sm text-off-white/70">Your trading social hub</p>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/')}
+                className="text-off-white hover:bg-white/10"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold text-off-white">HisaHub Community</h1>
+                <p className="text-sm text-off-white/70">Your trading social hub</p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" className="text-off-white">
