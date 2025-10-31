@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          points: number
+          requirement_type: string
+          requirement_value: number
+          tier: string
+        }
+        Insert: {
+          category: string
+          code: string
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+          points?: number
+          requirement_type: string
+          requirement_value: number
+          tier: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          points?: number
+          requirement_type?: string
+          requirement_value?: number
+          tier?: string
+        }
+        Relationships: []
+      }
       broker_accounts: {
         Row: {
           account_number: string
@@ -629,34 +671,46 @@ export type Database = {
       }
       posts: {
         Row: {
+          ai_analyzed_at: string | null
           content: string
           created_at: string
           id: string
           likes_count: number
           replies_count: number
           repost_count: number
+          sentiment_confidence: number | null
+          sentiment_label: string | null
+          sentiment_score: number | null
           share_count: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          ai_analyzed_at?: string | null
           content: string
           created_at?: string
           id?: string
           likes_count?: number
           replies_count?: number
           repost_count?: number
+          sentiment_confidence?: number | null
+          sentiment_label?: string | null
+          sentiment_score?: number | null
           share_count?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          ai_analyzed_at?: string | null
           content?: string
           created_at?: string
           id?: string
           likes_count?: number
           replies_count?: number
           repost_count?: number
+          sentiment_confidence?: number | null
+          sentiment_label?: string | null
+          sentiment_score?: number | null
           share_count?: number
           updated_at?: string
           user_id?: string
@@ -767,6 +821,35 @@ export type Database = {
         }
         Relationships: []
       }
+      signal_followers: {
+        Row: {
+          created_at: string
+          id: string
+          signal_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          signal_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          signal_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signal_followers_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "trading_signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_prices: {
         Row: {
           close: number | null
@@ -850,6 +933,77 @@ export type Database = {
         }
         Relationships: []
       }
+      trading_signals: {
+        Row: {
+          accuracy_rating: number | null
+          actual_close_price: number | null
+          closed_at: string | null
+          confidence_score: number | null
+          created_at: string
+          entry_price: number
+          expires_at: string | null
+          followers_count: number
+          id: string
+          post_id: string | null
+          reasoning: string | null
+          signal_type: string
+          status: string
+          stop_loss: number | null
+          target_price: number | null
+          ticker: string
+          timeframe: string | null
+          user_id: string
+        }
+        Insert: {
+          accuracy_rating?: number | null
+          actual_close_price?: number | null
+          closed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          entry_price: number
+          expires_at?: string | null
+          followers_count?: number
+          id?: string
+          post_id?: string | null
+          reasoning?: string | null
+          signal_type: string
+          status?: string
+          stop_loss?: number | null
+          target_price?: number | null
+          ticker: string
+          timeframe?: string | null
+          user_id: string
+        }
+        Update: {
+          accuracy_rating?: number | null
+          actual_close_price?: number | null
+          closed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          entry_price?: number
+          expires_at?: string | null
+          followers_count?: number
+          id?: string
+          post_id?: string | null
+          reasoning?: string | null
+          signal_type?: string
+          status?: string
+          stop_loss?: number | null
+          target_price?: number | null
+          ticker?: string
+          timeframe?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trading_signals_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
@@ -927,6 +1081,38 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          progress: number | null
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          progress?: number | null
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          progress?: number | null
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_follows: {
         Row: {
           created_at: string
@@ -962,6 +1148,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_stats: {
+        Row: {
+          accurate_signals: number
+          achievement_points: number
+          current_streak: number
+          last_active_date: string | null
+          longest_streak: number
+          profitable_trades: number
+          reputation_score: number
+          total_likes_received: number
+          total_posts: number
+          total_signals: number
+          total_trades: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accurate_signals?: number
+          achievement_points?: number
+          current_streak?: number
+          last_active_date?: string | null
+          longest_streak?: number
+          profitable_trades?: number
+          reputation_score?: number
+          total_likes_received?: number
+          total_posts?: number
+          total_signals?: number
+          total_trades?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accurate_signals?: number
+          achievement_points?: number
+          current_streak?: number
+          last_active_date?: string | null
+          longest_streak?: number
+          profitable_trades?: number
+          reputation_score?: number
+          total_likes_received?: number
+          total_posts?: number
+          total_signals?: number
+          total_trades?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       watchlist_items: {
         Row: {
@@ -1033,6 +1267,23 @@ export type Database = {
       }
     }
     Views: {
+      trading_leaderboard: {
+        Row: {
+          accurate_signals: number | null
+          achievement_points: number | null
+          badges_count: number | null
+          first_name: string | null
+          last_name: string | null
+          profitable_trades: number | null
+          reputation_score: number | null
+          signal_accuracy: number | null
+          total_signals: number | null
+          total_trades: number | null
+          user_id: string | null
+          win_rate: number | null
+        }
+        Relationships: []
+      }
       trending_hashtags: {
         Row: {
           hashtag: string | null
@@ -1051,6 +1302,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_trading_accuracy: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
       get_recommended_users: {
         Args: { for_user_id: string; limit_count?: number }
         Returns: {
@@ -1063,12 +1318,16 @@ export type Database = {
       search_posts: {
         Args: { search_query: string }
         Returns: {
+          ai_analyzed_at: string | null
           content: string
           created_at: string
           id: string
           likes_count: number
           replies_count: number
           repost_count: number
+          sentiment_confidence: number | null
+          sentiment_label: string | null
+          sentiment_score: number | null
           share_count: number
           updated_at: string
           user_id: string

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Plus, TrendingUp, Users, MessageSquare, Brain, GraduationCap, Signal, Bookmark } from 'lucide-react';
+import { Plus, TrendingUp, Users, MessageSquare, Brain, GraduationCap, Signal, Bookmark, Award } from 'lucide-react';
 import { useCommunity } from '@/hooks/useCommunity';
 import { usePostSearch } from '@/hooks/usePostSearch';
 import CommunityFeed from '@/components/community/CommunityFeed';
@@ -13,6 +13,8 @@ import LeaderboardWidget from '@/components/community/LeaderboardWidget';
 import TrendingWidget from '@/components/community/TrendingWidget';
 import SearchBar from '@/components/community/SearchBar';
 import PeopleRecommendations from '@/components/community/PeopleRecommendations';
+import SignalsFeed from '@/components/community/SignalsFeed';
+import AchievementsPanel from '@/components/community/AchievementsPanel';
 
 const Community = () => {
   const [activeTab, setActiveTab] = useState('feed');
@@ -90,8 +92,9 @@ const Community = () => {
               {[
                 { id: 'feed', label: 'Following', icon: MessageSquare },
                 { id: 'trending', label: 'Trending', icon: TrendingUp },
-                { id: 'discussions', label: 'Discussions', icon: Users },
                 { id: 'signals', label: 'Signals', icon: Signal },
+                { id: 'achievements', label: 'Achievements', icon: Award },
+                { id: 'discussions', label: 'Discussions', icon: Users },
                 { id: 'ai-insights', label: 'AI Insights', icon: Brain },
                 { id: 'mentorship', label: 'Mentorship', icon: GraduationCap },
               ].map((tab) => (
@@ -121,7 +124,11 @@ const Community = () => {
         <div className="flex flex-col lg:flex-row">
           {/* Main Feed - Full width on mobile */}
           <div className="flex-1 lg:max-w-3xl lg:mx-auto">
-            {showSearch && searchResults.length > 0 ? (
+            {activeTab === 'signals' ? (
+              <SignalsFeed />
+            ) : activeTab === 'achievements' ? (
+              <AchievementsPanel />
+            ) : showSearch && searchResults.length > 0 ? (
               <CommunityFeed 
                 activeTab="search"
                 posts={searchResults}

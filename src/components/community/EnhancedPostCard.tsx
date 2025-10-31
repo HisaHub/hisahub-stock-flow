@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Bookmark, Share2, DollarSign, Repeat2 } from 'lucide-react';
+import { Heart, Bookmark, Share2, DollarSign, Repeat2, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
 import CommentSection from './CommentSection';
 import SharePostDialog from './SharePostDialog';
 import QuoteRepostDialog from './QuoteRepostDialog';
+import SentimentBadge from './SentimentBadge';
 import { useBookmarks } from '@/hooks/useBookmarks';
+import { useSentimentAnalysis } from '@/hooks/useSentimentAnalysis';
 
 type Post = Database['public']['Tables']['posts']['Row'] & {
   profiles: {
@@ -17,6 +19,9 @@ type Post = Database['public']['Tables']['posts']['Row'] & {
     last_name: string | null;
   } | null;
   is_liked: boolean;
+  sentiment_label?: 'bullish' | 'bearish' | 'neutral' | null;
+  sentiment_score?: number | null;
+  sentiment_confidence?: number | null;
 };
 
 interface EnhancedPostCardProps {
@@ -28,6 +33,14 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [repostDialogOpen, setRepostDialogOpen] = useState(false);
   const { isBookmarked, toggleBookmark } = useBookmarks();
+  const { analyzing, analyzePost } = useSentimentAnalysis();
+
+  useEffect(() => {
+    // Auto-analyze sentiment if not yet analyzed
+    if (!post.sentiment_label && !analyzing) {
+      analyzePost(post.id, post.content);
+    }
+  }, [post.id]);
   
   const displayName = post.profiles?.first_name && post.profiles?.last_name 
     ? `${post.profiles.first_name} ${post.profiles.last_name}`
@@ -84,12 +97,26 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
                 <Badge variant="secondary" className="text-xs bg-secondary/20 flex-shrink-0">
                   Trader
                 </Badge>
+                {post.sentiment_label && (
+                  <SentimentBadge 
+                    label={post.sentiment_label}
+                    score={post.sentiment_score || undefined}
+                    confidence={post.sentiment_confidence || undefined}
+                    size="sm"
+                  />
+                )}
               </div>
               <p className="text-sm text-off-white/60 truncate">
                 {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
               </p>
             </div>
           </div>
+          
+          {analyzing && (
+            <Button variant="ghost" size="sm" disabled className="text-off-white/60">
+              <Sparkles className="w-4 h-4 animate-pulse" />
+            </Button>
+          )}
         </div>
         
         <div className="space-y-4">
