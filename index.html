@@ -80,8 +80,8 @@
     <link rel="preload" href="/src/main.tsx" as="script" crossorigin />
     <link rel="modulepreload" href="/src/main.tsx" />
     
-    <!-- Optimized font loading with display=swap -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Roboto+Mono:wght@400;700&display=swap" media="print" onload="this.media='all'" />
+    <!-- Optimized font loading with display=swap - fully deferred -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Roboto+Mono:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Roboto+Mono:wght@400;700&display=swap" /></noscript>
   </head>
   <body>
@@ -98,17 +98,27 @@
         });
       }
     </script>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module" defer></script>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Defer Botpress webchat loading
+      // Defer GPT Engineer script until after page is interactive
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const gptScript = document.createElement('script');
+          gptScript.src = 'https://cdn.gpteng.co/gptengineer.js';
+          gptScript.type = 'module';
+          document.body.appendChild(gptScript);
+        }, 2000);
+      });
+    </script>
+    <script>
+      // Defer Botpress webchat loading further to improve TTI
       window.addEventListener('load', function() {
         setTimeout(function() {
           const script = document.createElement('script');
           script.src = 'https://cdn.botpress.cloud/webchat/v3.3/inject.js';
           script.defer = true;
           document.body.appendChild(script);
-        }, 1000);
+        }, 3000);
       });
     </script>
     <script>
