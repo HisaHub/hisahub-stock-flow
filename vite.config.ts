@@ -25,6 +25,12 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('@tanstack')) {
               return 'query-vendor';
             }
+            if (id.includes('lucide-react')) {
+              return 'icons-vendor';
+            }
+            if (id.includes('recharts')) {
+              return 'charts-vendor';
+            }
             return 'vendor';
           }
           // Page-based chunks
@@ -37,7 +43,24 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('/pages/Community')) {
             return 'page-community';
           }
-        }
+          if (id.includes('/pages/News')) {
+            return 'page-news';
+          }
+          if (id.includes('/pages/Settings')) {
+            return 'page-settings';
+          }
+          // Component chunks
+          if (id.includes('/components/trading/')) {
+            return 'components-trading';
+          }
+          if (id.includes('/components/community/')) {
+            return 'components-community';
+          }
+        },
+        // Improve chunking strategy
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
     cssCodeSplit: true,
@@ -46,8 +69,15 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
+        pure_funcs: mode === 'production' ? ['console.log', 'console.info', 'console.debug', 'console.trace'] : [],
+        passes: 2,
+      },
+      mangle: {
+        safari10: true,
       },
     },
+    // Optimize chunk size
+    chunkSizeWarningLimit: 1000,
   },
   server: {
     host: "::",
