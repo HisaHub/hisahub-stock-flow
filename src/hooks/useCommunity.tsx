@@ -16,7 +16,7 @@ type UserProfile = Database['public']['Tables']['profiles']['Row'];
 
 export const useCommunity = () => {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [followedUsers, setFollowedUsers] = useState<string[]>([]);
 

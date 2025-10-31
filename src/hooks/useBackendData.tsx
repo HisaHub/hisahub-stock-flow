@@ -40,7 +40,7 @@ export const useBackendData = () => {
   const [stocks, setStocks] = useState<BackendStock[]>([]);
   const [portfolio, setPortfolio] = useState<BackendPortfolio | null>(null);
   const [orders, setOrders] = useState<BackendOrder[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch stocks from Django backend

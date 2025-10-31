@@ -118,7 +118,7 @@ const initialState: FinancialDataState = {
   holdings: [],
   marketIndices: [],
   transactions: [],
-  isLoading: true,
+  isLoading: false,
   error: null,
   user: null,
   portfolio: null,
