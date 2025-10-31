@@ -231,9 +231,15 @@
   }
   
   /* Better touch targets for mobile */
-  button, .button, [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
+  button, .button, [role="button"], a[role="button"], [role="tab"] {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px;
+  }
+  
+  /* Improved touch spacing */
+  button + button, .button + .button {
+    margin-left: 8px;
   }
   
   /* Better form elements on mobile */
