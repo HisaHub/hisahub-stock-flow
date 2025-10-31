@@ -61,6 +61,12 @@ export default defineConfig(({ mode }) => ({
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
+      },
+      // Enhanced tree-shaking
+      treeshake: {
+        moduleSideEffects: 'no-external',
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false,
       }
     },
     cssCodeSplit: true,
@@ -70,14 +76,32 @@ export default defineConfig(({ mode }) => ({
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
         pure_funcs: mode === 'production' ? ['console.log', 'console.info', 'console.debug', 'console.trace'] : [],
-        passes: 2,
+        passes: 3,
+        dead_code: true,
+        conditionals: true,
+        evaluate: true,
+        booleans: true,
+        loops: true,
+        unused: true,
+        hoist_funs: true,
+        keep_fargs: false,
+        hoist_vars: false,
+        if_return: true,
+        join_vars: true,
+        side_effects: true,
+        warnings: false,
       },
       mangle: {
         safari10: true,
       },
+      format: {
+        comments: false,
+      },
     },
     // Optimize chunk size
     chunkSizeWarningLimit: 1000,
+    // Target modern browsers for smaller bundles
+    target: 'es2020',
   },
   server: {
     host: "::",
