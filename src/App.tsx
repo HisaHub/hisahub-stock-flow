@@ -11,7 +11,6 @@ import SplashScreen from "./components/SplashScreen";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import FloatingAIButton from "./components/FloatingAIButton";
 import OnboardingTour from "./components/OnboardingTour";
-import { Analytics } from "@vercel/analytics/react";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -84,7 +83,6 @@ const App = () => {
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <TooltipProvider>
           <Toaster />
-          <Analytics />
           <BrowserRouter>
             {showSplash ? (
               <SplashScreen onComplete={handleSplashComplete} />
