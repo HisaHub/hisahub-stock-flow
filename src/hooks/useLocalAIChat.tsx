@@ -17,25 +17,13 @@ export const useLocalAIChat = () => {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      // Check if local AI server is configured
-      const localAIUrl = import.meta.env.VITE_LOCAL_AI_URL || '';
-      
-      if (!localAIUrl) {
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content: 'Local AI is not configured. Please use the Invisa AI assistant button instead.' 
-        }]);
-        setLoading(false);
-        return;
-      }
-      
       console.log('Sending request to local AI:', {
-        url: localAIUrl,
+        url: 'http://127.0.0.1:11434/api/generate',
         model: 'finance-chat',
         prompt: `You are Invisa, a helpful and knowledgeable Kenyan financial assistant. ${message}`
       });
 
-      const response = await fetch(localAIUrl, {
+      const response = await fetch('http://127.0.0.1:11434/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -43,52 +43,36 @@ export const useBackendData = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if backend is configured
-  const isBackendConfigured = import.meta.env.VITE_API_BASE_URL && 
-    !import.meta.env.VITE_API_BASE_URL.includes('localhost');
-
   // Fetch stocks from Django backend
   const fetchStocks = async () => {
-    if (!isBackendConfigured) {
-      console.log('Backend not configured, skipping stock fetch');
-      return;
-    }
     try {
       const data = await apiClient.get<BackendStock[]>(API_ENDPOINTS.stocks.list);
       setStocks(data);
     } catch (err) {
       console.error('Error fetching stocks:', err);
-      // Don't set error in production if backend is not available
+      setError('Failed to fetch stocks from backend');
     }
   };
 
   // Fetch portfolio from Django backend
   const fetchPortfolio = async () => {
-    if (!isBackendConfigured) {
-      console.log('Backend not configured, skipping portfolio fetch');
-      return;
-    }
     try {
       const data = await apiClient.get<BackendPortfolio>(API_ENDPOINTS.trading.portfolio);
       setPortfolio(data);
     } catch (err) {
       console.error('Error fetching portfolio:', err);
-      // Don't set error in production if backend is not available
+      setError('Failed to fetch portfolio from backend');
     }
   };
 
   // Fetch orders from Django backend
   const fetchOrders = async () => {
-    if (!isBackendConfigured) {
-      console.log('Backend not configured, skipping orders fetch');
-      return;
-    }
     try {
       const data = await apiClient.get<BackendOrder[]>(API_ENDPOINTS.trading.orders);
       setOrders(data);
     } catch (err) {
       console.error('Error fetching orders:', err);
-      // Don't set error in production if backend is not available
+      setError('Failed to fetch orders from backend');
     }
   };
 
@@ -183,13 +167,9 @@ export const useBackendData = () => {
     }
   };
 
-  // Initial data fetch - only if backend is configured
+  // Initial data fetch
   useEffect(() => {
-    if (isBackendConfigured) {
-      fetchData();
-    } else {
-      console.log('Backend not configured - using Supabase edge functions only');
-    }
+    fetchData();
   }, []);
 
   return {
