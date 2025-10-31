@@ -232,6 +232,43 @@ export const useCommunity = () => {
     fetchPosts();
     fetchUsers();
     fetchFollowedUsers();
+
+    // Set up realtime subscription for posts
+    const postsChannel = supabase
+      .channel('posts_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'posts'
+        },
+        () => {
+          fetchPosts(); // Refresh posts on any change
+        }
+      )
+      .subscribe();
+
+    // Set up realtime subscription for post likes
+    const likesChannel = supabase
+      .channel('likes_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'post_likes'
+        },
+        () => {
+          fetchPosts(); // Refresh to update like counts
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(postsChannel);
+      supabase.removeChannel(likesChannel);
+    };
   }, []);
 
   return {

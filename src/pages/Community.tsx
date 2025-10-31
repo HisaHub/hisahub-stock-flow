@@ -1,18 +1,23 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Plus, TrendingUp, Users, MessageSquare, Brain, GraduationCap, Signal, Bookmark } from 'lucide-react';
 import { useCommunity } from '@/hooks/useCommunity';
+import { usePostSearch } from '@/hooks/usePostSearch';
 import CommunityFeed from '@/components/community/CommunityFeed';
 import SidebarWidgets from '@/components/community/SidebarWidgets';
 import CreatePostFAB from '@/components/community/CreatePostFAB';
 import LeaderboardWidget from '@/components/community/LeaderboardWidget';
 import TrendingWidget from '@/components/community/TrendingWidget';
+import SearchBar from '@/components/community/SearchBar';
+import PeopleRecommendations from '@/components/community/PeopleRecommendations';
 
 const Community = () => {
   const [activeTab, setActiveTab] = useState('feed');
+  const [showSearch, setShowSearch] = useState(false);
+  
   const {
     posts,
     users,
@@ -24,6 +29,21 @@ const Community = () => {
     toggleLike,
     getUserPosts
   } = useCommunity();
+
+  const {
+    searchResults,
+    searching,
+    trendingTickers,
+    trendingHashtags,
+    searchPosts,
+    fetchTrendingTickers,
+    fetchTrendingHashtags
+  } = usePostSearch();
+
+  useEffect(() => {
+    fetchTrendingTickers();
+    fetchTrendingHashtags();
+  }, []);
 
   if (loading) {
     return (
@@ -52,6 +72,17 @@ const Community = () => {
               </Button>
             </div>
           </div>
+
+          {/* Search Bar */}
+          <div className="mb-3">
+            <SearchBar
+              onSearch={(query, filters) => {
+                searchPosts(query, filters);
+                setShowSearch(!!query || filters.tickers.length > 0);
+              }}
+              trendingTickers={trendingTickers}
+            />
+          </div>
           
           {/* Navigation Tabs - Scrollable on mobile */}
           <div className="overflow-x-auto scrollbar-hide">
@@ -66,7 +97,10 @@ const Community = () => {
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setShowSearch(false);
+                  }}
                   className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'bg-secondary text-primary shadow-sm'
@@ -87,16 +121,30 @@ const Community = () => {
         <div className="flex flex-col lg:flex-row">
           {/* Main Feed - Full width on mobile */}
           <div className="flex-1 lg:max-w-3xl lg:mx-auto">
-            <CommunityFeed 
-              activeTab={activeTab}
-              posts={posts}
-              onToggleLike={toggleLike}
-              onCreatePost={createPost}
-            />
+            {showSearch && searchResults.length > 0 ? (
+              <CommunityFeed 
+                activeTab="search"
+                posts={searchResults}
+                onToggleLike={toggleLike}
+                onCreatePost={createPost}
+              />
+            ) : showSearch && !searching ? (
+              <div className="text-center py-12 text-off-white/60">
+                <p>No posts found matching your search</p>
+              </div>
+            ) : (
+              <CommunityFeed 
+                activeTab={activeTab}
+                posts={posts}
+                onToggleLike={toggleLike}
+                onCreatePost={createPost}
+              />
+            )}
           </div>
 
           {/* Sidebar Widgets - Hidden on mobile, visible on desktop */}
           <div className="hidden lg:block lg:w-80 lg:sticky lg:top-32 lg:self-start space-y-4 lg:pr-4">
+            <PeopleRecommendations onFollow={followUser} />
             <SidebarWidgets />
             <LeaderboardWidget users={users} />
             <TrendingWidget />

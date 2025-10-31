@@ -37,7 +37,7 @@ serve(async (req) => {
 
     const portfolioContext = portfolios?.map(p => ({
       name: p.name,
-      holdings: p.holdings?.map(h => ({
+      holdings: p.holdings?.map((h: any) => ({
         stock: h.stocks?.symbol,
         quantity: h.quantity,
         sector: h.stocks?.sector
@@ -135,7 +135,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('AI Assistant error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

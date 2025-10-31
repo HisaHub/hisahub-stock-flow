@@ -77,14 +77,23 @@ serve(async (req) => {
           });
 
         // Update current price in holdings for demo users
-        await supabaseClient
+        const { data: holdings } = await supabaseClient
           .from('holdings')
-          .update({ 
-            current_price: Number(price.toFixed(2)),
-            market_value: supabaseClient.raw('quantity * ?', [price]),
-            unrealized_pnl: supabaseClient.raw('(? - average_price) * quantity', [price])
-          })
+          .select('id, quantity, average_price')
           .eq('stock_id', stock.id);
+
+        if (holdings) {
+          for (const holding of holdings) {
+            await supabaseClient
+              .from('holdings')
+              .update({ 
+                current_price: Number(price.toFixed(2)),
+                market_value: holding.quantity * price,
+                unrealized_pnl: (price - holding.average_price) * holding.quantity
+              })
+              .eq('id', holding.id);
+          }
+        }
       }
     }
 
@@ -120,7 +129,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error updating market data:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

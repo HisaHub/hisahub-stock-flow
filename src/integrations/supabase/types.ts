@@ -444,6 +444,38 @@ export type Database = {
           },
         ]
       }
+      post_bookmarks: {
+        Row: {
+          collection_name: string | null
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          collection_name?: string | null
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          collection_name?: string | null
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_bookmarks_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_comments: {
         Row: {
           content: string
@@ -531,6 +563,70 @@ export type Database = {
           },
         ]
       }
+      post_reposts: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          original_post_id: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          original_post_id: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          original_post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reposts_original_post_id_fkey"
+            columns: ["original_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_shares: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_shares_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           content: string
@@ -538,6 +634,8 @@ export type Database = {
           id: string
           likes_count: number
           replies_count: number
+          repost_count: number
+          share_count: number
           updated_at: string
           user_id: string
         }
@@ -547,6 +645,8 @@ export type Database = {
           id?: string
           likes_count?: number
           replies_count?: number
+          repost_count?: number
+          share_count?: number
           updated_at?: string
           user_id: string
         }
@@ -556,6 +656,8 @@ export type Database = {
           id?: string
           likes_count?: number
           replies_count?: number
+          repost_count?: number
+          share_count?: number
           updated_at?: string
           user_id?: string
         }
@@ -931,10 +1033,55 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      trending_hashtags: {
+        Row: {
+          hashtag: string | null
+          last_used: string | null
+          usage_count: number | null
+        }
+        Relationships: []
+      }
+      trending_tickers: {
+        Row: {
+          last_mentioned: string | null
+          mention_count: number | null
+          ticker: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_recommended_users: {
+        Args: { for_user_id: string; limit_count?: number }
+        Returns: {
+          common_follows_count: number
+          first_name: string
+          last_name: string
+          user_id: string
+        }[]
+      }
+      search_posts: {
+        Args: { search_query: string }
+        Returns: {
+          content: string
+          created_at: string
+          id: string
+          likes_count: number
+          replies_count: number
+          repost_count: number
+          share_count: number
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "posts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       account_status: "active" | "suspended" | "pending_verification" | "closed"

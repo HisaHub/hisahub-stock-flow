@@ -127,6 +127,10 @@ serve(async (req) => {
           });
 
         // Update portfolio cash balance
+        if (!portfolio) {
+          throw new Error('Portfolio not found');
+        }
+        
         const newCashBalance = quantity > 0 
           ? portfolio.cash_balance - totalCost - brokerFee
           : portfolio.cash_balance + totalCost - brokerFee;
@@ -237,7 +241,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Portfolio management error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
