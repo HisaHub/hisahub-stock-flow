@@ -111,14 +111,26 @@
       });
     </script>
     <script>
-      // Defer Botpress webchat loading further to improve TTI
+      // Load Botpress only on user interaction to reduce unused JS on initial load
+      let botpressLoaded = false;
+      const loadBotpress = function() {
+        if (botpressLoaded) return;
+        botpressLoaded = true;
+        const script = document.createElement('script');
+        script.src = 'https://cdn.botpress.cloud/webchat/v3.3/inject.js';
+        script.defer = true;
+        document.body.appendChild(script);
+      };
+      
+      // Load on first user interaction or after 10 seconds of inactivity
+      const events = ['mousedown', 'touchstart', 'keydown', 'scroll'];
+      events.forEach(function(event) {
+        window.addEventListener(event, loadBotpress, { once: true, passive: true });
+      });
+      
+      // Fallback: load after 10 seconds if no interaction
       window.addEventListener('load', function() {
-        setTimeout(function() {
-          const script = document.createElement('script');
-          script.src = 'https://cdn.botpress.cloud/webchat/v3.3/inject.js';
-          script.defer = true;
-          document.body.appendChild(script);
-        }, 3000);
+        setTimeout(loadBotpress, 10000);
       });
     </script>
     <script>
