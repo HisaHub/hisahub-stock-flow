@@ -1,73 +1,171 @@
-# Welcome to your Lovable project
+HisaHub – AI-Powered Stock Trading Platform
 
-## Project info
+HisaHub is a next-generation, AI-powered stock trading platform built to democratize access to financial markets in Kenya and beyond. It integrates real-time market data, multi-broker trading, AI-driven insights, and mobile-first design to help retail investors trade smarter, faster, and more securely.
 
-**URL**: https://lovable.dev/projects/9804dee2-d562-4299-989f-83c25d959f31
+Overview
 
-## How can I edit this code?
+Core Stack:
 
-There are several ways of editing your application.
+Frontend: React + Vite (optimized with useMemo, useCallback, and smart caching)
 
-**Use Lovable**
+Backend: Django REST Framework (atomic transactions, wallet, order, and holdings management)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9804dee2-d562-4299-989f-83c25d959f31) and start prompting.
+Database: PostgreSQL (decimal-safe financial data)
 
-Changes made via Lovable will be committed automatically to this repo.
+Auth: Supabase (OAuth + JWT token system)
 
-**Use your preferred IDE**
+Payments: M-Pesa, PayPal, Stripe (sandbox-ready)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+AI Layer: TensorFlow + Supabase Edge Functions
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Caching & Background Tasks: Redis + Celery
 
-Follow these steps:
+Hosting: AWS Nairobi
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Logging & Monitoring: Sentry integration
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Key Features
 
-# Step 3: Install the necessary dependencies.
-npm i
+Real-Time Market Data
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Live price feeds (Polygon.io, IEX Cloud, or NSE API)
+
+Adaptive charting and analytics
+
+Multi-Broker Integration
+
+Unified trading interface across supported brokers
+
+Wallet and holdings sync in real-time
+
+AI-Powered Assistant ("Hisa")
+
+Personalized portfolio insights
+
+Risk and sentiment analysis
+
+Trade recommendations and alerts
+
+Social & Community Trading
+
+Investor discussions and sentiment aggregation
+
+Community-driven watchlists
+
+Localized Payments
+
+M-Pesa STK, PayPal, and Stripe integration
+
+Sandbox and live modes supported
+
+Security
+
+Supabase authentication
+
+JWT-based API access
+
+Enforced HTTPS and CORS rules
+
+Environment-variable–based secrets
+
+Environment Configuration
+
+Create a .env file at the project root with the following keys:
+
+# Environment
+VITE_TESTING_MODE=true
+VITE_API_BASE_URL=http://localhost:8000
+
+# Supabase
+SUPABASE_URL=<your_supabase_url>
+SUPABASE_ANON_KEY=<your_anon_key>
+
+# Django
+DEBUG=False
+SECRET_KEY=<your_django_secret>
+DATABASE_URL=<your_postgres_connection>
+
+# Payments
+MPESA_KEY=<mpesa_test_key>
+PAYPAL_CLIENT_ID=<paypal_client_id>
+STRIPE_PK=<stripe_publishable_key>
+STRIPE_SK=<stripe_secret_key>
+
+# Market Data
+MARKET_DATA_API_KEY=<polygon_or_iex_key>
+
+Development Setup
+
+Frontend (React/Vite)
+
+cd frontend
+npm install
 npm run dev
-```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Backend (Django)
 
-**Use GitHub Codespaces**
+cd backend
+pip install -r requirements.txt
+python manage.py runserver
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+Access the app at http://localhost:5173 (frontend) and http://localhost:8000 (backend).
 
-This project is built with:
+Testing Modes
+Sandbox Testing
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Use .env file with test credentials
 
-## How can I deploy this project?
+Disable real transactions (VITE_TESTING_MODE=true)
 
-Simply open [Lovable](https://lovable.dev/projects/9804dee2-d562-4299-989f-83c25d959f31) and click on Share -> Publish.
+Use mock data for stock prices
 
-## Can I connect a custom domain to my Lovable project?
+Test:
 
-Yes, you can!
+Wallet balance updates
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Buy/sell order flow
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Payment gateway responses
+
+Live Testing
+
+Switch to production .env values
+
+Enable real-time APIs (Polygon.io or IEX Cloud)
+
+Deploy production database and payment credentials
+
+Monitor logs through Sentry
+
+Ensure DEBUG=False and CORS set to production domain
+
+Pre-Deployment Security Checklist
+
+ Remove all hardcoded API keys
+
+ Disable DEBUG mode
+
+ Enable HTTPS
+
+ Validate .env values
+
+ Verify rate limiting
+
+ Confirm circuit breakers for external APIs
+
+Contributing
+
+Fork the repository
+
+Create a new feature branch
+
+Commit changes with clear messages
+
+Submit a pull request for review
+
+License
+
+© 2025 HisaHub Technologies. All rights reserved.
+Licensed for internal development and testing use only.
