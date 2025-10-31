@@ -58,7 +58,8 @@ const OnboardingTour: React.FC = () => {
       content: (
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Welcome to HisaHub 🎉</h2>
-          <p>Your gateway to smart investing. Let's take a quick tour!</p>
+          <p className="mb-2">Your gateway to smart investing in the Nairobi Securities Exchange.</p>
+          <p className="text-sm text-muted-foreground">Let's walk through your first trade - it only takes a minute!</p>
         </div>
       ),
       placement: 'center',
@@ -66,46 +67,101 @@ const OnboardingTour: React.FC = () => {
     },
     {
       target: '[data-tour="dashboard"]',
-      content: 'Track your investments and view live market performance here.',
+      content: 'This is your Dashboard - track your portfolio value, market performance, and account summary at a glance.',
       placement: 'bottom',
       spotlightClicks: false,
     },
     {
       target: '[data-tour="trading"]',
-      content: 'Execute trades directly with real-time NSE data.',
+      content: 'Click here to access the Trading interface where you can buy and sell stocks. Let\'s start your first trade!',
+      placement: 'top',
+      spotlightClicks: true,
+    },
+    {
+      target: '[data-tour="stock-selector"]',
+      content: 'Select any stock from this dropdown to view its live price, charts, and place orders.',
       placement: 'bottom',
+      spotlightClicks: true,
+    },
+    {
+      target: '[data-tour="stock-chart"]',
+      content: 'View real-time price movements and technical indicators on this interactive chart.',
+      placement: 'top',
       spotlightClicks: false,
     },
     {
       target: '[data-tour="ai-assistant"]',
-      content: 'Ask Invisa AI for insights, price predictions, or portfolio analysis.',
+      content: 'Meet Invisa AI - your personal trading assistant! Ask for stock analysis, market insights, or portfolio recommendations.',
+      placement: 'left',
+      spotlightClicks: true,
+    },
+    {
+      target: '[data-tour="watchlist"]',
+      content: 'Add stocks to your watchlist to monitor their performance without buying. Track your favorites here.',
+      placement: 'top',
+      spotlightClicks: false,
+    },
+    {
+      target: '[data-tour="research"]',
+      content: 'Access detailed research, company fundamentals, financial statements, and analyst ratings.',
+      placement: 'top',
+      spotlightClicks: false,
+    },
+    {
+      target: '[data-tour="order-panel"]',
+      content: 'This is where the magic happens! Place buy or sell orders with market, limit, or stop order types.',
       placement: 'left',
       spotlightClicks: false,
     },
     {
-      target: '[data-tour="community"]',
-      content: 'Engage with other investors, share insights, and learn.',
+      target: '[data-tour="buy-tab"]',
+      content: 'Click the Buy tab to purchase shares. You can also switch to Sell when you want to exit a position.',
       placement: 'bottom',
-      spotlightClicks: false,
+      spotlightClicks: true,
+    },
+    {
+      target: '[data-tour="order-quantity"]',
+      content: 'Enter the number of shares you want to buy. Start small if you\'re learning!',
+      placement: 'bottom',
+      spotlightClicks: true,
+    },
+    {
+      target: '[data-tour="place-order"]',
+      content: 'Review your order details and click this button to place your trade. You\'ll get a confirmation before it\'s final.',
+      placement: 'top',
+      spotlightClicks: true,
     },
     {
       target: '[data-tour="portfolio"]',
-      content: 'Monitor your holdings, performance, and diversification.',
-      placement: 'bottom',
+      content: 'After placing an order, check your Portfolio to see your holdings, performance, and profit/loss.',
+      placement: 'top',
+      spotlightClicks: true,
+    },
+    {
+      target: '[data-tour="positions"]',
+      content: 'View all your open positions here - see quantity, current value, and unrealized gains or losses.',
+      placement: 'top',
+      spotlightClicks: false,
+    },
+    {
+      target: '[data-tour="community"]',
+      content: 'Join the HisaHub community! Share trading ideas, learn from others, and follow top investors.',
+      placement: 'top',
       spotlightClicks: false,
     },
     {
       target: '[data-tour="settings"]',
-      content: 'Manage your account, security, and preferences.',
-      placement: 'bottom',
+      content: 'Manage your profile, connect brokers, set up notifications, and customize your experience.',
+      placement: 'top',
       spotlightClicks: false,
     },
     {
       target: 'body',
       content: (
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-2">You're all set! 🚀</h2>
-          <p>Explore and start investing smartly with HisaHub.</p>
+          <h2 className="text-xl font-bold mb-2">You're ready to trade! 🚀</h2>
+          <p className="mb-2">You now know how to research stocks, place trades, and track your portfolio.</p>
+          <p className="text-sm text-muted-foreground">Start with small amounts, use Invisa AI for guidance, and happy investing!</p>
         </div>
       ),
       placement: 'center',
@@ -135,7 +191,7 @@ const OnboardingTour: React.FC = () => {
       callback={handleJoyrideCallback}
       styles={{
         options: {
-          primaryColor: 'hsl(var(--accent))',
+          primaryColor: '#3B82F6',
           zIndex: 10000,
         },
         tooltip: {
@@ -146,16 +202,23 @@ const OnboardingTour: React.FC = () => {
           padding: '10px 0',
         },
         buttonNext: {
+          backgroundColor: '#3B82F6',
           borderRadius: 8,
-          padding: '8px 16px',
+          padding: '10px 20px',
+          color: '#ffffff',
+          fontSize: '14px',
+          fontWeight: '600',
         },
         buttonBack: {
           borderRadius: 8,
-          padding: '8px 16px',
-          marginRight: 8,
+          padding: '10px 20px',
+          marginRight: 10,
+          color: '#6B7280',
+          fontSize: '14px',
         },
         buttonSkip: {
-          color: 'hsl(var(--muted-foreground))',
+          color: '#9CA3AF',
+          fontSize: '14px',
         },
       }}
       locale={{

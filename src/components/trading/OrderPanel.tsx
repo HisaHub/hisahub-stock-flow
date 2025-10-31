@@ -85,10 +85,10 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
   const { subtotal, fee, total } = calculateTotal();
 
   return (
-    <div className="glass-card animate-fade-in">
+    <div className="glass-card animate-fade-in" data-tour="order-panel">
       <Tabs value={orderSide} onValueChange={(value) => setOrderSide(value as "buy" | "sell")}>
         <TabsList className="grid w-full grid-cols-2 bg-white/10">
-          <TabsTrigger value="buy" className="text-green-400 data-[state=active]:bg-green-500/20">
+          <TabsTrigger value="buy" data-tour="buy-tab" className="text-green-400 data-[state=active]:bg-green-500/20">
             Buy
           </TabsTrigger>
           <TabsTrigger value="sell" className="text-red-400 data-[state=active]:bg-red-500/20">
@@ -239,7 +239,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
     </div>
 
     {/* Quantity Input */}
-    <div className="space-y-2">
+    <div className="space-y-2" data-tour="order-quantity">
       <Label className="text-off-white">Quantity</Label>
       <Input
         type="number"
@@ -310,6 +310,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
 
     {/* Place Order Button */}
     <Button 
+      data-tour="place-order"
       onClick={onPlaceOrder}
       className={`w-full font-bold py-3 ${
         orderSide === 'buy' 

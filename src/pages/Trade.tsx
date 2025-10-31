@@ -76,7 +76,7 @@ const Trade: React.FC = () => {
         {/* Stock Selector and Action Buttons Row */}
         <div className="mb-4 flex gap-2">
           {/* Stock Selector - Compact */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" data-tour="stock-selector">
             <Select value={selectedStock.symbol} onValueChange={handleStockChange}>
               <SelectTrigger className="h-12 bg-card border-secondary/20 text-foreground hover:bg-accent/50 transition-colors">
                 <SelectValue>
@@ -184,7 +184,9 @@ const Trade: React.FC = () => {
           {/* Left Column - Chart and Stock Info */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             <StockSummary stock={selectedStock} />
-            <TradingChart symbol={selectedStock.symbol} />
+            <div data-tour="stock-chart">
+              <TradingChart symbol={selectedStock.symbol} />
+            </div>
           </div>
 
           {/* Right Column - Trading Panel */}
@@ -205,10 +207,14 @@ const Trade: React.FC = () => {
                   <PositionsOrders />
                 </TabsContent>
                 <TabsContent value="watchlist" className="mt-4">
-                  <WatchlistPanel />
+                  <div data-tour="watchlist">
+                    <WatchlistPanel />
+                  </div>
                 </TabsContent>
                 <TabsContent value="research" className="mt-4">
-                  <ResearchPanel stock={selectedStock} />
+                  <div data-tour="research">
+                    <ResearchPanel stock={selectedStock} />
+                  </div>
                 </TabsContent>
                 <TabsContent value="alerts" className="mt-4">
                   <AlertsPanel stock={selectedStock} />
@@ -221,9 +227,15 @@ const Trade: React.FC = () => {
 
             {/* Desktop - Show all panels */}
             <div className="hidden lg:block space-y-6">
-              <PositionsOrders />
-              <WatchlistPanel />
-              <ResearchPanel stock={selectedStock} />
+              <div data-tour="positions">
+                <PositionsOrders />
+              </div>
+              <div data-tour="watchlist">
+                <WatchlistPanel />
+              </div>
+              <div data-tour="research">
+                <ResearchPanel stock={selectedStock} />
+              </div>
               <AlertsPanel stock={selectedStock} />
               <NewsFeed stock={selectedStock} />
             </div>
