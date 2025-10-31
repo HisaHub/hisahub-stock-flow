@@ -12,6 +12,7 @@ import SplashScreen from "./components/SplashScreen";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import FloatingAIButton from "./components/FloatingAIButton";
 import OnboardingTour from "./components/OnboardingTour";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -80,17 +81,18 @@ const App = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
-            {showSplash ? (
-              <SplashScreen onComplete={handleSplashComplete} />
-            ) : (
-              <FinancialDataProvider>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <TooltipProvider>
+            <Toaster />
+            <BrowserRouter>
+              {showSplash ? (
+                <SplashScreen onComplete={handleSplashComplete} />
+              ) : (
+                <FinancialDataProvider>
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
                     {/* Public routes - accessible to everyone */}
                     <Route path="/" element={<Index />} />
                     <Route path="/auth" element={<Auth onLogin={handleLogin} />} />
@@ -131,6 +133,7 @@ const App = () => {
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 

@@ -212,21 +212,26 @@ export const FinancialDataProvider: React.FC<{ children: ReactNode }> = ({ child
 
   // Memoize stocks to prevent unnecessary re-renders
   const stocks = useMemo(() => {
-    if (backendStocks.length > 0) {
-      return backendStocks.map(stock => ({
-        id: stock.id,
-        symbol: stock.symbol,
-        name: stock.name,
-        sector: stock.sector,
-        price: stock.current_price,
-        volume: stock.volume,
-        high: stock.high,
-        low: stock.low,
-        change: stock.change,
-        changePercent: stock.change_percent.toFixed(2)
-      }));
+    try {
+      if (backendStocks.length > 0) {
+        return backendStocks.map(stock => ({
+          id: stock.id,
+          symbol: stock.symbol,
+          name: stock.name,
+          sector: stock.sector,
+          price: stock.current_price,
+          volume: stock.volume,
+          high: stock.high,
+          low: stock.low,
+          change: stock.change,
+          changePercent: stock.change_percent.toFixed(2)
+        }));
+      }
+      return supabaseStocks || [];
+    } catch (error) {
+      console.error('Error processing stocks:', error);
+      return [];
     }
-    return supabaseStocks;
   }, [backendStocks, supabaseStocks]);
 
   // Memoize active portfolio
