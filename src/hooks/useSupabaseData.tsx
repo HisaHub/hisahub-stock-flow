@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 export const useSupabaseData = () => {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [portfolio, setPortfolio] = useState(null);

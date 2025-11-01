@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 // Types for backend data
 export interface BackendStock {
@@ -37,6 +37,7 @@ export interface BackendPortfolio {
 }
 
 export const useBackendData = () => {
+  const { toast } = useToast();
   const [stocks, setStocks] = useState<BackendStock[]>([]);
   const [portfolio, setPortfolio] = useState<BackendPortfolio | null>(null);
   const [orders, setOrders] = useState<BackendOrder[]>([]);

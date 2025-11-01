@@ -1,5 +1,4 @@
-
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -53,10 +52,12 @@ const App = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 App: Starting initialization');
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('🔐 Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -65,13 +66,19 @@ const App = () => {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.email);
+      console.log('🔐 Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+    }).catch((error) => {
+      console.error('❌ Session check failed:', error);
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('🧹 App: Cleaning up');
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (loading) {
@@ -125,7 +132,6 @@ const App = () => {
                 </Suspense>
                 <FloatingAIButton />
                 <OnboardingTour />
-                {/* Show PWA install prompt to all users */}
                 <PWAInstallPrompt />
               </FinancialDataProvider>
             )}
