@@ -8,28 +8,29 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import FloatingJoystick from '@/components/FloatingJoystick';
 import BottomNav from '@/components/BottomNav';
 
 const Settings: React.FC = () => {
+  const { toast } = useToast();
   const { profile, loading, updating, updateProfile } = useUserProfile();
   const [activeTab, setActiveTab] = useState('personal');
 
   const handleUpdateProfile = async (field: string, value: any) => {
     const success = await updateProfile({ [field]: value });
     if (!success) {
-      toast.error('Failed to update profile');
+      toast({ title: "Error", description: "Failed to update profile", variant: "destructive" });
     }
   };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast.error('Failed to log out');
+      toast({ title: "Error", description: "Failed to log out", variant: "destructive" });
     } else {
-      toast.success('Logged out successfully');
+      toast({ title: "Success", description: "Logged out successfully" });
     }
   };
 

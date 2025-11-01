@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 interface AuthProps {
@@ -14,6 +14,7 @@ interface AuthProps {
 }
 
 const Auth: React.FC<AuthProps> = ({ onLogin }) => {
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ 
@@ -31,14 +32,14 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     const { email, password } = loginForm;
 
     if (!email || !password) {
-      toast.error("Please fill in both email and password.");
+      toast({ title: "Error", description: "Please fill in both email and password.", variant: "destructive" });
       setLoading(false);
       return;
     }
 
     const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!isValidEmail) {
-      toast.error("Please enter a valid email address.");
+      toast({ title: "Error", description: "Please enter a valid email address.", variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -50,17 +51,16 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       });
 
       if (error) {
-        toast.error(error.message);
+        toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
-        toast.success("Login successful!");
+        toast({ title: "Success", description: "Login successful!" });
         onLogin();
-        // Check if there's a redirect path in localStorage
         const redirectPath = localStorage.getItem('authRedirectPath');
         localStorage.removeItem('authRedirectPath');
         navigate(redirectPath || '/trade');
       }
     } catch (error) {
-      toast.error("An unexpected error occurred during login.");
+      toast({ title: "Error", description: "An unexpected error occurred during login.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -73,19 +73,19 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     const { name, email, password, confirmPassword } = signupForm;
 
     if (!name || !email || !password || !confirmPassword) {
-      toast.error("Please fill in all fields.");
+      toast({ title: "Error", description: "Please fill in all fields.", variant: "destructive" });
       setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match.");
+      toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
       setLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long.");
+      toast({ title: "Error", description: "Password must be at least 6 characters long.", variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -103,32 +103,29 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
       if (error) {
         if (error.message === "User already registered") {
-          toast.error("An account with this email already exists. Please try logging in instead.");
+          toast({ title: "Error", description: "An account with this email already exists. Please try logging in instead.", variant: "destructive" });
         } else {
-          toast.error(error.message);
+          toast({ title: "Error", description: error.message, variant: "destructive" });
         }
       } else {
-        // If user is immediately available (no email confirmation required)
         if (data.user && !data.user.email_confirmed_at) {
-          toast.success("Account created successfully! You are now logged in.");
+          toast({ title: "Success", description: "Account created successfully! You are now logged in." });
           onLogin();
-          // Check if there's a redirect path in localStorage
           const redirectPath = localStorage.getItem('authRedirectPath');
           localStorage.removeItem('authRedirectPath');
           navigate(redirectPath || '/trade');
         } else if (data.user) {
-          toast.success("Account created successfully! You are now logged in.");
+          toast({ title: "Success", description: "Account created successfully! You are now logged in." });
           onLogin();
-          // Check if there's a redirect path in localStorage
           const redirectPath = localStorage.getItem('authRedirectPath');
           localStorage.removeItem('authRedirectPath');
           navigate(redirectPath || '/trade');
         } else {
-          toast.success("Account created successfully! Please check your email for verification.");
+          toast({ title: "Success", description: "Account created successfully! Please check your email for verification." });
         }
       }
     } catch (error) {
-      toast.error("An unexpected error occurred during signup.");
+      toast({ title: "Error", description: "An unexpected error occurred during signup.", variant: "destructive" });
     } finally {
       setLoading(false);
     }

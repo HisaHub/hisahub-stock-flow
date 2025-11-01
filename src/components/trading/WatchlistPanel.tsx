@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Star, StarOff, Plus, Search, TrendingUp, TrendingDown } from 'lucide-react';
 import { useFinancialData } from '../../contexts/FinancialDataContext';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 const WatchlistPanel: React.FC = () => {
+  const { toast } = useToast();
   const { state } = useFinancialData();
   const [watchlist, setWatchlist] = useState<string[]>(['SCOM', 'KCB']);
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,7 +23,7 @@ const WatchlistPanel: React.FC = () => {
   const addToWatchlist = (symbol: string) => {
     if (!watchlist.includes(symbol)) {
       setWatchlist([...watchlist, symbol]);
-      toast.success(`${symbol} added to watchlist`);
+      toast({ title: "Success", description: `${symbol} added to watchlist` });
       setSearchTerm('');
       setShowAddStock(false);
     }
@@ -30,7 +31,7 @@ const WatchlistPanel: React.FC = () => {
 
   const removeFromWatchlist = (symbol: string) => {
     setWatchlist(watchlist.filter(s => s !== symbol));
-    toast.success(`${symbol} removed from watchlist`);
+    toast({ title: "Success", description: `${symbol} removed from watchlist` });
   };
 
   return (

@@ -1,13 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import type { Database } from '@/integrations/supabase/types';
 
 type UserProfile = Database['public']['Tables']['profiles']['Row'];
 type UserProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
 export const useUserProfile = () => {
+  const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -31,7 +32,7 @@ export const useUserProfile = () => {
 
       if (error) {
         console.error('Error fetching profile:', error);
-        toast.error('Failed to load profile');
+        toast({ title: "Error", description: "Failed to load profile", variant: "destructive" });
         setLoading(false);
         return;
       }
@@ -50,7 +51,7 @@ export const useUserProfile = () => {
 
         if (createError) {
           console.error('Error creating profile:', createError);
-          toast.error('Failed to create user profile');
+          toast({ title: "Error", description: "Failed to create user profile", variant: "destructive" });
         } else {
           setProfile(newProfile);
         }
@@ -59,7 +60,7 @@ export const useUserProfile = () => {
       }
     } catch (error) {
       console.error('Error in fetchProfile:', error);
-      toast.error('Failed to load profile');
+      toast({ title: "Error", description: "Failed to load profile", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -79,16 +80,16 @@ export const useUserProfile = () => {
 
       if (error) {
         console.error('Error updating profile:', error);
-        toast.error('Failed to update profile');
+        toast({ title: "Error", description: "Failed to update profile", variant: "destructive" });
         return false;
       }
 
       setProfile(data);
-      toast.success('Profile updated successfully');
+      toast({ title: "Success", description: "Profile updated successfully" });
       return true;
     } catch (error) {
       console.error('Error in updateProfile:', error);
-      toast.error('Failed to update profile');
+      toast({ title: "Error", description: "Failed to update profile", variant: "destructive" });
       return false;
     } finally {
       setUpdating(false);

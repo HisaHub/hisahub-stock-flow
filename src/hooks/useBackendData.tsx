@@ -110,7 +110,7 @@ export const useBackendData = () => {
       );
 
       setOrders(prev => [newOrder, ...prev]);
-      toast.success(`${side.toUpperCase()} order placed successfully!`);
+      toast({ title: "Success", description: `${side.toUpperCase()} order placed successfully!` });
       
       // Refresh portfolio after order
       await fetchPortfolio();
@@ -118,7 +118,7 @@ export const useBackendData = () => {
       return true;
     } catch (err) {
       console.error('Error placing order:', err);
-      toast.error('Failed to place order');
+      toast({ title: "Error", description: "Failed to place order", variant: "destructive" });
       return false;
     }
   };
@@ -132,7 +132,7 @@ export const useBackendData = () => {
       );
       
       apiClient.setToken(response.token);
-      toast.success('Logged in successfully!');
+      toast({ title: "Success", description: "Logged in successfully!" });
       
       // Fetch user data after login
       await fetchData();
@@ -140,7 +140,7 @@ export const useBackendData = () => {
       return response.user;
     } catch (err) {
       console.error('Login error:', err);
-      toast.error('Login failed');
+      toast({ title: "Error", description: "Login failed", variant: "destructive" });
       return null;
     }
   };
@@ -153,7 +153,7 @@ export const useBackendData = () => {
       setStocks([]);
       setPortfolio(null);
       setOrders([]);
-      toast.success('Logged out successfully!');
+      toast({ title: "Success", description: "Logged out successfully!" });
     } catch (err) {
       console.error('Logout error:', err);
       apiClient.removeToken(); // Remove token anyway

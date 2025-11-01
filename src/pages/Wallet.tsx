@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import BottomNav from '@/components/BottomNav';
 
@@ -22,6 +22,7 @@ interface Transaction {
 }
 
 const Wallet: React.FC = () => {
+  const { toast } = useToast();
   const [balance, setBalance] = useState(0);
   const [depositAmount, setDepositAmount] = useState('');
   const [depositPhone, setDepositPhone] = useState('');
@@ -68,18 +69,18 @@ const Wallet: React.FC = () => {
       ]);
     } catch (error) {
       console.error('Error loading wallet:', error);
-      toast.error('Failed to load wallet data');
+      toast({ title: "Error", description: "Failed to load wallet data", variant: "destructive" });
     }
   };
 
   const handleDeposit = async () => {
     if (!depositAmount || !depositPhone) {
-      toast.error('Please fill in all fields');
+      toast({ title: "Error", description: "Please fill in all fields", variant: "destructive" });
       return;
     }
 
     if (depositPhone.length !== 10 || !depositPhone.startsWith('07')) {
-      toast.error('Please enter a valid M-Pesa number (07XXXXXXXX)');
+      toast({ title: "Error", description: "Please enter a valid M-Pesa number (07XXXXXXXX)", variant: "destructive" });
       return;
     }
 
@@ -88,7 +89,7 @@ const Wallet: React.FC = () => {
     try {
       // TODO: Integrate with Pesahub API for actual M-Pesa STK push
       // For now, show mock success
-      toast.success('Deposit initiated! Check your phone for M-Pesa prompt');
+      toast({ title: "Success", description: "Deposit initiated! Check your phone for M-Pesa prompt" });
 
       // Mock transaction
       const newTransaction: Transaction = {
@@ -114,12 +115,12 @@ const Wallet: React.FC = () => {
           )
         );
         setBalance(prev => prev + parseFloat(depositAmount));
-        toast.success('Deposit completed successfully!');
+        toast({ title: "Success", description: "Deposit completed successfully!" });
       }, 3000);
 
     } catch (error) {
       console.error('Deposit error:', error);
-      toast.error('Failed to process deposit');
+      toast({ title: "Error", description: "Failed to process deposit", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -127,18 +128,18 @@ const Wallet: React.FC = () => {
 
   const handleWithdraw = async () => {
     if (!withdrawAmount || !withdrawPhone) {
-      toast.error('Please fill in all fields');
+      toast({ title: "Error", description: "Please fill in all fields", variant: "destructive" });
       return;
     }
 
     const amount = parseFloat(withdrawAmount);
     if (amount > balance) {
-      toast.error('Insufficient balance');
+      toast({ title: "Error", description: "Insufficient balance", variant: "destructive" });
       return;
     }
 
     if (withdrawPhone.length !== 10 || !withdrawPhone.startsWith('07')) {
-      toast.error('Please enter a valid M-Pesa number (07XXXXXXXX)');
+      toast({ title: "Error", description: "Please enter a valid M-Pesa number (07XXXXXXXX)", variant: "destructive" });
       return;
     }
 
@@ -146,7 +147,7 @@ const Wallet: React.FC = () => {
 
     try {
       // TODO: Integrate with Pesahub API for actual M-Pesa withdrawal
-      toast.success('Withdrawal initiated! Funds will be sent to your M-Pesa');
+      toast({ title: "Success", description: "Withdrawal initiated! Funds will be sent to your M-Pesa" });
 
       const newTransaction: Transaction = {
         id: Date.now().toString(),
@@ -171,12 +172,12 @@ const Wallet: React.FC = () => {
           )
         );
         setBalance(prev => prev - amount);
-        toast.success('Withdrawal completed successfully!');
+        toast({ title: "Success", description: "Withdrawal completed successfully!" });
       }, 3000);
 
     } catch (error) {
       console.error('Withdrawal error:', error);
-      toast.error('Failed to process withdrawal');
+      toast({ title: "Error", description: "Failed to process withdrawal", variant: "destructive" });
     } finally {
       setLoading(false);
     }

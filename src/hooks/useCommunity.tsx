@@ -50,7 +50,7 @@ export const useCommunity = () => {
       setPosts(postsWithLikes);
     } catch (error) {
       console.error('Error fetching posts:', error);
-      toast.error('Failed to load posts');
+      toast({ title: "Error", description: "Failed to load posts", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -99,11 +99,11 @@ export const useCommunity = () => {
       if (error) throw error;
 
       setFollowedUsers(prev => [...prev, userId]);
-      toast.success('User followed successfully');
+      toast({ title: "Success", description: "User followed successfully" });
       return true;
     } catch (error) {
       console.error('Error following user:', error);
-      toast.error('Failed to follow user');
+      toast({ title: "Error", description: "Failed to follow user", variant: "destructive" });
       return false;
     }
   };
@@ -122,11 +122,11 @@ export const useCommunity = () => {
       if (error) throw error;
 
       setFollowedUsers(prev => prev.filter(id => id !== userId));
-      toast.success('User unfollowed successfully');
+      toast({ title: "Success", description: "User unfollowed successfully" });
       return true;
     } catch (error) {
       console.error('Error unfollowing user:', error);
-      toast.error('Failed to unfollow user');
+      toast({ title: "Error", description: "Failed to unfollow user", variant: "destructive" });
       return false;
     }
   };
@@ -142,12 +142,12 @@ export const useCommunity = () => {
 
       if (error) throw error;
 
-      toast.success('Post created successfully');
+      toast({ title: "Success", description: "Post created successfully" });
       await fetchPosts(); // Refresh posts
       return true;
     } catch (error) {
       console.error('Error creating post:', error);
-      toast.error('Failed to create post');
+      toast({ title: "Error", description: "Failed to create post", variant: "destructive" });
       return false;
     }
   };
@@ -191,7 +191,7 @@ export const useCommunity = () => {
 
     } catch (error) {
       console.error('Error toggling like:', error);
-      toast.error('Failed to update like');
+      toast({ title: "Error", description: "Failed to update like", variant: "destructive" });
     }
   };
 

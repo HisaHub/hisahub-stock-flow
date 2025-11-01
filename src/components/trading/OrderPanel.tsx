@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { useToast } from '@/hooks/use-toast';
 
 interface Stock {
   symbol: string;
@@ -32,6 +32,7 @@ interface OrderPanelProps {
 }
 
 const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
+  const { toast } = useToast();
   const [orderType, setOrderType] = useState("market");
   const [quantity, setQuantity] = useState("");
   const [limitPrice, setLimitPrice] = useState("");
@@ -56,17 +57,17 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
 
   const handlePlaceOrder = () => {
     if (!quantity || parseFloat(quantity) <= 0) {
-      toast.error("Please enter a valid quantity");
+      toast({ title: "Error", description: "Please enter a valid quantity", variant: "destructive" });
       return;
     }
     
     if (orderType === "limit" && (!limitPrice || parseFloat(limitPrice) <= 0)) {
-      toast.error("Please enter a valid limit price");
+      toast({ title: "Error", description: "Please enter a valid limit price", variant: "destructive" });
       return;
     }
 
     if (orderType === "stop" && (!stopPrice || parseFloat(stopPrice) <= 0)) {
-      toast.error("Please enter a valid stop price");
+      toast({ title: "Error", description: "Please enter a valid stop price", variant: "destructive" });
       return;
     }
 
@@ -75,7 +76,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
 
   const confirmOrder = () => {
     const { total } = calculateTotal();
-    toast.success(`${orderSide.toUpperCase()} order placed for ${quantity} shares of ${stock.symbol} via ${defaultBroker.name} - Total: KES ${total.toFixed(2)}`);
+    toast({ title: "Success", description: `${orderSide.toUpperCase()} order placed for ${quantity} shares of ${stock.symbol} via ${defaultBroker.name} - Total: KES ${total.toFixed(2)}` });
     setShowConfirmation(false);
     setQuantity("");
     setLimitPrice("");

@@ -44,7 +44,7 @@ const PWAInstallPrompt: React.FC = () => {
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
       setShowInstallPrompt(false);
-      toast.success('HisaHub installed successfully! You can now access it from your home screen.');
+      toast({ title: "Success", description: "HisaHub installed successfully! You can now access it from your home screen." });
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -64,16 +64,16 @@ const PWAInstallPrompt: React.FC = () => {
       const { outcome } = await deferredPrompt.userChoice;
       
       if (outcome === 'accepted') {
-        toast.success('Installing HisaHub...');
+        toast({ title: "Success", description: "Installing HisaHub..." });
       } else {
-        toast.info('Installation cancelled. You can install later from your browser menu.');
+        toast({ title: "Info", description: "Installation cancelled. You can install later from your browser menu." });
       }
       
       setDeferredPrompt(null);
       setShowInstallPrompt(false);
     } catch (error) {
       console.error('Installation failed:', error);
-      toast.error('Installation failed. Please try again.');
+      toast({ title: "Error", description: "Installation failed. Please try again.", variant: "destructive" });
     }
   };
 
