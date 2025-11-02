@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => ({
     sourcemap: true,
     rollupOptions: {
       output: {
+        format: 'es',
         manualChunks: (id) => {
           // Vendor chunks for better caching
           if (id.includes('node_modules')) {
@@ -149,7 +150,10 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,mjs,css,html,ico,png,svg}'],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/nkekijcefghncihokotz\.supabase\.co\/.*/i,
