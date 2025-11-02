@@ -68,10 +68,72 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
   const tickers = extractTickers(post.content);
   const hashtags = extractHashtags(post.content);
 
-  // Enhanced content with clickable tickers and hashtags
-  const enhancedContent = post.content
-    .replace(/\$([A-Z]{2,5})/g, '<span class="ticker-tag">$$$1</span>')
-    .replace(/#(\w+)/g, '<span class="hashtag-tag">#$1</span>');
+  // Safe content rendering with React components (XSS protection)
+  const renderSafeContent = (content: string) => {
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    
+    // Find all tickers and hashtags with their positions
+    const matches: Array<{ index: number; length: number; type: 'ticker' | 'hashtag'; text: string }> = [];
+    
+    // Match tickers
+    const tickerRegex = /\$([A-Z]{2,5})/g;
+    let match;
+    while ((match = tickerRegex.exec(content)) !== null) {
+      matches.push({ 
+        index: match.index, 
+        length: match[0].length, 
+        type: 'ticker', 
+        text: match[0] 
+      });
+    }
+    
+    // Match hashtags
+    const hashtagRegex = /#(\w+)/g;
+    while ((match = hashtagRegex.exec(content)) !== null) {
+      matches.push({ 
+        index: match.index, 
+        length: match[0].length, 
+        type: 'hashtag', 
+        text: match[0] 
+      });
+    }
+    
+    // Sort by position
+    matches.sort((a, b) => a.index - b.index);
+    
+    // Build safe JSX
+    matches.forEach((m, i) => {
+      // Add text before match
+      if (m.index > lastIndex) {
+        parts.push(content.substring(lastIndex, m.index));
+      }
+      
+      // Add styled match
+      if (m.type === 'ticker') {
+        parts.push(
+          <span key={`ticker-${i}`} className="ticker-tag font-semibold text-green-500">
+            {m.text}
+          </span>
+        );
+      } else {
+        parts.push(
+          <span key={`hashtag-${i}`} className="hashtag-tag font-semibold text-blue-500">
+            {m.text}
+          </span>
+        );
+      }
+      
+      lastIndex = m.index + m.length;
+    });
+    
+    // Add remaining text
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex));
+    }
+    
+    return parts.length > 0 ? parts : content;
+  };
 
   const handleShare = () => {
     setShareDialogOpen(true);
@@ -120,11 +182,10 @@ const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({ post, onToggleLike 
         </div>
         
         <div className="space-y-4">
-          {/* Post Content */}
-          <div 
-            className="text-off-white whitespace-pre-wrap"
-            dangerouslySetInnerHTML={{ __html: enhancedContent }}
-          />
+          {/* Post Content - Safe rendering without XSS vulnerability */}
+          <div className="text-off-white whitespace-pre-wrap">
+            {renderSafeContent(post.content)}
+          </div>
 
           {/* Tickers and Hashtags */}
           {(tickers.length > 0 || hashtags.length > 0) && (

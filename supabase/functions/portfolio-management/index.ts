@@ -14,12 +14,36 @@ serve(async (req) => {
   }
 
   try {
+    // SECURITY FIX: Extract user_id from JWT token instead of request body
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: { headers: { Authorization: authHeader } }
+      }
     );
 
-    const { action, user_id, portfolio_id, stock_symbol, quantity, order_type = 'market' } = await req.json();
+    // Verify JWT and get authenticated user
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const user_id = user.id; // Use authenticated user ID, not from request body
+
+    const { action, portfolio_id, stock_symbol, quantity, order_type = 'market' } = await req.json();
 
     switch (action) {
       case 'create_portfolio':
