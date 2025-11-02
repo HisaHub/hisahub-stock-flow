@@ -10,9 +10,13 @@ export default defineConfig(({ mode }) => ({
     sourcemap: true,
     rollupOptions: {
       output: {
-        format: 'esm',
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
+        format: 'es',
+        entryFileNames: (chunkInfo) => {
+          return 'assets/[name]-[hash].js';
+        },
+        chunkFileNames: (chunkInfo) => {
+          return 'assets/[name]-[hash].js';
+        },
         assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: (id) => {
           // Vendor chunks for better caching
@@ -120,8 +124,11 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' &&
     componentTagger(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       includeAssets: ['/lovable-uploads/d119c8de-4cb2-4d81-b0c7-5c63f121873d.png'],
+      devOptions: {
+        enabled: false
+      },
       manifest: {
         name: 'HisaHub - AI-Powered NSE Trading Platform',
         short_name: 'HisaHub',
@@ -150,10 +157,12 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globIgnores: ['**/*.mjs'],
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
         navigateFallback: null,
+        navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/nkekijcefghncihokotz\.supabase\.co\/.*/i,
