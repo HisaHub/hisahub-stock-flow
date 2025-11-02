@@ -10,7 +10,10 @@ export default defineConfig(({ mode }) => ({
     sourcemap: true,
     rollupOptions: {
       output: {
-        format: 'es',
+        format: 'esm',
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: (id) => {
           // Vendor chunks for better caching
           if (id.includes('node_modules')) {
@@ -57,11 +60,7 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('/components/community/')) {
             return 'components-community';
           }
-        },
-        // Improve chunking strategy
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        }
       },
       // Enhanced tree-shaking
       treeshake: {
@@ -150,10 +149,11 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,mjs,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        navigateFallback: null,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/nkekijcefghncihokotz\.supabase\.co\/.*/i,
