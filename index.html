@@ -90,6 +90,20 @@
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script type="module" src="/src/main.tsx"></script>
     <script>
+      // Enhanced error catching for main app
+      window.addEventListener('error', function(e) {
+        console.error('Global error caught:', e.error || e.message);
+        // Show user-friendly error if React fails to mount
+        if (e.message && e.message.includes('Failed to fetch')) {
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#131b26;color:#F8F9FA;font-family:sans-serif;text-align:center;"><div><h1>Connection Error</h1><p>Please check your internet connection and refresh.</p><button onclick="location.reload()" style="margin-top:20px;padding:10px 20px;background:#FFC000;border:none;border-radius:8px;cursor:pointer;">Refresh</button></div></div>';
+        }
+      });
+      
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('Unhandled promise rejection:', e.reason);
+      });
+    </script>
+    <script>
       // Register service worker AFTER app loads
       window.addEventListener('load', function() {
         if ('serviceWorker' in navigator) {
@@ -100,6 +114,7 @@
         }
       });
     </script>
+    <!-- DISABLED FOR TESTING - Uncomment after verifying app works
     <script>
       // Defer GPT Engineer script until after page is interactive
       window.addEventListener('load', function() {
@@ -111,6 +126,8 @@
         }, 2000);
       });
     </script>
+    -->
+    <!-- DISABLED FOR TESTING - Uncomment after verifying app works
     <script>
       // Load Botpress only on user interaction to reduce unused JS on initial load
       let botpressLoaded = false;
@@ -134,6 +151,7 @@
         setTimeout(loadBotpress, 10000);
       });
     </script>
+    -->
     <script>
       // Re-enable animations after page becomes interactive
       window.addEventListener('load', function() {
