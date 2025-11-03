@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/:path((?!assets|lovable-uploads|.*\\.(js|css|png|jpg|svg|woff2?|ico)).*)",
-      "destination": "/"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [

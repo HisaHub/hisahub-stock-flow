@@ -89,31 +89,13 @@
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script>
-      // Clear any stale service workers and caches
+      // Register service worker after page load
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-          }
-        });
-        
-        // Clear caches
-        if ('caches' in window) {
-          caches.keys().then(function(names) {
-            for (let name of names) {
-              caches.delete(name);
-            }
-          });
-        }
-        
-        // Register new service worker after cleaning
         window.addEventListener('load', function() {
-          setTimeout(function() {
-            const script = document.createElement('script');
-            script.src = '/registerSW.js';
-            script.defer = true;
-            document.body.appendChild(script);
-          }, 1000);
+          const script = document.createElement('script');
+          script.src = '/registerSW.js';
+          script.defer = true;
+          document.body.appendChild(script);
         });
       }
     </script>
