@@ -6,6 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: '/',
   build: {
     sourcemap: true,
     rollupOptions: {
@@ -78,23 +79,10 @@ export default defineConfig(({ mode }) => ({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: mode === 'production',
+        drop_console: false,
         drop_debugger: mode === 'production',
-        pure_funcs: mode === 'production' ? ['console.log', 'console.info', 'console.debug', 'console.trace'] : [],
-        passes: 3,
-        dead_code: true,
-        conditionals: true,
-        evaluate: true,
-        booleans: true,
-        loops: true,
-        unused: true,
-        hoist_funs: true,
-        keep_fargs: false,
-        hoist_vars: false,
-        if_return: true,
-        join_vars: true,
-        side_effects: true,
-        warnings: false,
+        pure_funcs: [],
+        passes: 1,
       },
       mangle: {
         safari10: true,
@@ -157,12 +145,10 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        globIgnores: ['**/*.mjs'],
         cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
+        skipWaiting: false,
+        clientsClaim: false,
         navigateFallback: null,
-        navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/nkekijcefghncihokotz\.supabase\.co\/.*/i,

@@ -88,18 +88,18 @@
   <body>
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script>
-      // Register service worker after page load
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          const script = document.createElement('script');
-          script.src = '/registerSW.js';
-          script.defer = true;
-          document.body.appendChild(script);
-        });
-      }
-    </script>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Register service worker AFTER app loads
+      window.addEventListener('load', function() {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/registerSW.js')
+            .catch(function(err) {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        }
+      });
+    </script>
     <script>
       // Defer GPT Engineer script until after page is interactive
       window.addEventListener('load', function() {
