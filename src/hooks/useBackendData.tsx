@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 // Types for backend data
 export interface BackendStock {
@@ -37,21 +37,14 @@ export interface BackendPortfolio {
 }
 
 export const useBackendData = () => {
-  const { toast } = useToast();
   const [stocks, setStocks] = useState<BackendStock[]>([]);
   const [portfolio, setPortfolio] = useState<BackendPortfolio | null>(null);
   const [orders, setOrders] = useState<BackendOrder[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Check if backend is configured (not localhost in production)
-  const isBackendConfigured = import.meta.env.VITE_API_BASE_URL && 
-    !import.meta.env.VITE_API_BASE_URL.includes('localhost');
 
   // Fetch stocks from Django backend
   const fetchStocks = async () => {
-    if (!isBackendConfigured) return;
-    
     try {
       const data = await apiClient.get<BackendStock[]>(API_ENDPOINTS.stocks.list);
       setStocks(data);
@@ -63,8 +56,6 @@ export const useBackendData = () => {
 
   // Fetch portfolio from Django backend
   const fetchPortfolio = async () => {
-    if (!isBackendConfigured) return;
-    
     try {
       const data = await apiClient.get<BackendPortfolio>(API_ENDPOINTS.trading.portfolio);
       setPortfolio(data);
@@ -76,8 +67,6 @@ export const useBackendData = () => {
 
   // Fetch orders from Django backend
   const fetchOrders = async () => {
-    if (!isBackendConfigured) return;
-    
     try {
       const data = await apiClient.get<BackendOrder[]>(API_ENDPOINTS.trading.orders);
       setOrders(data);
@@ -110,7 +99,7 @@ export const useBackendData = () => {
       );
 
       setOrders(prev => [newOrder, ...prev]);
-      toast({ title: "Success", description: `${side.toUpperCase()} order placed successfully!` });
+      toast.success(`${side.toUpperCase()} order placed successfully!`);
       
       // Refresh portfolio after order
       await fetchPortfolio();
@@ -118,7 +107,7 @@ export const useBackendData = () => {
       return true;
     } catch (err) {
       console.error('Error placing order:', err);
-      toast({ title: "Error", description: "Failed to place order", variant: "destructive" });
+      toast.error('Failed to place order');
       return false;
     }
   };
@@ -132,7 +121,7 @@ export const useBackendData = () => {
       );
       
       apiClient.setToken(response.token);
-      toast({ title: "Success", description: "Logged in successfully!" });
+      toast.success('Logged in successfully!');
       
       // Fetch user data after login
       await fetchData();
@@ -140,7 +129,7 @@ export const useBackendData = () => {
       return response.user;
     } catch (err) {
       console.error('Login error:', err);
-      toast({ title: "Error", description: "Login failed", variant: "destructive" });
+      toast.error('Login failed');
       return null;
     }
   };
@@ -153,7 +142,7 @@ export const useBackendData = () => {
       setStocks([]);
       setPortfolio(null);
       setOrders([]);
-      toast({ title: "Success", description: "Logged out successfully!" });
+      toast.success('Logged out successfully!');
     } catch (err) {
       console.error('Logout error:', err);
       apiClient.removeToken(); // Remove token anyway
@@ -178,12 +167,10 @@ export const useBackendData = () => {
     }
   };
 
-  // Initial data fetch - only if backend is configured
+  // Initial data fetch
   useEffect(() => {
-    if (isBackendConfigured) {
-      fetchData();
-    }
-  }, [isBackendConfigured]);
+    fetchData();
+  }, []);
 
   return {
     stocks,

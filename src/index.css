@@ -231,15 +231,9 @@
   }
   
   /* Better touch targets for mobile */
-  button, .button, [role="button"], a[role="button"], [role="tab"] {
-    min-height: 48px;
-    min-width: 48px;
-    padding: 12px;
-  }
-  
-  /* Improved touch spacing */
-  button + button, .button + .button {
-    margin-left: 8px;
+  button, .button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
   }
   
   /* Better form elements on mobile */
@@ -249,21 +243,5 @@
   
   .glass-card {
     @apply mx-2 px-4 py-3;
-  }
-  
-  /* Optimize rendering for better LCP */
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-in;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 }

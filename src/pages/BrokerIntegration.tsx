@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Shield, Plus, Lightbulb, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "../components/BottomNav";
 
@@ -54,7 +54,6 @@ const brokers = [
 ];
 
 const BrokerIntegration: React.FC = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [selectedBroker, setSelectedBroker] = useState<string>("");
   const [hasAccount, setHasAccount] = useState<boolean | null>(null);
@@ -82,7 +81,7 @@ const BrokerIntegration: React.FC = () => {
 
   const handleBrokerLogin = async () => {
     if (!selectedBroker || !loginData.cdsNumber) {
-      toast({ title: "Error", description: "Please select a broker and enter your CDS number", variant: "destructive" });
+      toast.error("Please select a broker and enter your CDS number");
       return;
     }
 
@@ -90,7 +89,7 @@ const BrokerIntegration: React.FC = () => {
     // Simulate API call
     setTimeout(() => {
       setLinkedBrokers(prev => [...prev, selectedBroker]);
-      toast({ title: "Success", description: `Successfully linked ${selectedBrokerData?.name}` });
+      toast.success(`Successfully linked ${selectedBrokerData?.name}`);
       setIsLoading(false);
       setSelectedBroker("");
       setHasAccount(null);
@@ -100,7 +99,7 @@ const BrokerIntegration: React.FC = () => {
 
   const handleKycSubmit = async () => {
     if (!selectedBroker || !kycData.fullName || !kycData.idNumber) {
-      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -108,7 +107,7 @@ const BrokerIntegration: React.FC = () => {
     // Simulate KYC submission and account creation
     setTimeout(() => {
       setLinkedBrokers(prev => [...prev, selectedBroker]);
-      toast({ title: "Success", description: `Account created and linked with ${selectedBrokerData?.name}` });
+      toast.success(`Account created and linked with ${selectedBrokerData?.name}`);
       setIsLoading(false);
       setSelectedBroker("");
       setHasAccount(null);
@@ -131,7 +130,7 @@ const BrokerIntegration: React.FC = () => {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
-        toast({ title: "Error", description: "Please log in to activate demo mode", variant: "destructive" });
+        toast.error("Please log in to activate demo mode");
         setIsLoading(false);
         return;
       }
@@ -146,14 +145,14 @@ const BrokerIntegration: React.FC = () => {
 
       if (error) {
         console.error('Demo portfolio creation error:', error);
-        toast({ title: "Error", description: "Failed to create demo portfolio", variant: "destructive" });
+        toast.error("Failed to create demo portfolio");
       } else {
-        toast({ title: "Success", description: "Demo account activated! You now have KES 10,000 to practice trading." });
+        toast.success("Demo account activated! You now have KES 10,000 to practice trading.");
         navigate("/trade");
       }
     } catch (error) {
       console.error('Error activating demo account:', error);
-      toast({ title: "Error", description: "An error occurred while activating demo account", variant: "destructive" });
+      toast.error("An error occurred while activating demo account");
     } finally {
       setIsLoading(false);
     }

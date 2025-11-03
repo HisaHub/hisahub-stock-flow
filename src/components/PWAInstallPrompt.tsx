@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, X, Smartphone } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -14,7 +14,6 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const PWAInstallPrompt: React.FC = () => {
-  const { toast } = useToast();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -44,7 +43,7 @@ const PWAInstallPrompt: React.FC = () => {
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
       setShowInstallPrompt(false);
-      toast({ title: "Success", description: "HisaHub installed successfully! You can now access it from your home screen." });
+      toast.success('HisaHub installed successfully! You can now access it from your home screen.');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -64,16 +63,16 @@ const PWAInstallPrompt: React.FC = () => {
       const { outcome } = await deferredPrompt.userChoice;
       
       if (outcome === 'accepted') {
-        toast({ title: "Success", description: "Installing HisaHub..." });
+        toast.success('Installing HisaHub...');
       } else {
-        toast({ title: "Info", description: "Installation cancelled. You can install later from your browser menu." });
+        toast.info('Installation cancelled. You can install later from your browser menu.');
       }
       
       setDeferredPrompt(null);
       setShowInstallPrompt(false);
     } catch (error) {
       console.error('Installation failed:', error);
-      toast({ title: "Error", description: "Installation failed. Please try again.", variant: "destructive" });
+      toast.error('Installation failed. Please try again.');
     }
   };
 

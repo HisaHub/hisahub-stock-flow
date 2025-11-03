@@ -42,8 +42,8 @@ const Index: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col justify-between bg-primary font-sans pb-20">
       <main className="flex-1 flex flex-col px-4 py-6 w-full max-w-6xl mx-auto">
-        {/* Header - Critical content for LCP */}
-        <section className="w-full mb-6" style={{ contentVisibility: 'auto' }}>
+        {/* Header */}
+        <section className="w-full mb-6">
           <div className="glass-card flex flex-col items-center text-center animate-fade-in">
             <div className="rounded-lg border-4 border-secondary p-3 mb-4 flex justify-center items-center">
               <span className="font-extrabold text-secondary text-4xl" style={{ fontFamily: "'Poppins',sans-serif" }}>H</span>
@@ -61,9 +61,9 @@ const Index: React.FC = () => {
           </div>
         </section>
 
-        {/* Main Content Grid - Deferred rendering for better initial load */}
+        {/* Main Content Grid - Only show for authenticated users */}
         {user && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6" style={{ contentVisibility: 'auto' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             {/* Left Column - Account Summary */}
             <div className="lg:col-span-1">
               <AccountSummaryCard />
@@ -77,7 +77,7 @@ const Index: React.FC = () => {
         )}
 
         {/* Market Overview Section */}
-        <section className="w-full" style={{ contentVisibility: 'auto' }}>
+        <section className="w-full">
           <h2 className="text-xl font-bold text-off-white mb-4">Market Overview</h2>
           <MarketOverviewSection />
         </section>

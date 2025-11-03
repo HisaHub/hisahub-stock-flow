@@ -19,7 +19,7 @@ export const useAIChat = (userId: string | null) => {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const response = await supabase.functions.invoke('ai-chat', {
+      const response = await supabase.functions.invoke('ai-assistant', {
         body: {
           message,
           user_id: userId,

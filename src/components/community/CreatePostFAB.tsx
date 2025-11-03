@@ -3,14 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, PenTool, Camera, BarChart3, MessageSquare, Brain } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface CreatePostFABProps {
   onCreatePost: (content: string) => Promise<boolean>;
 }
 
 const CreatePostFAB: React.FC<CreatePostFABProps> = ({ onCreatePost }) => {
-  const { toast } = useToast();
   const [isMainOpen, setIsMainOpen] = useState(false);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [postContent, setPostContent] = useState('');
@@ -28,7 +27,7 @@ const CreatePostFAB: React.FC<CreatePostFABProps> = ({ onCreatePost }) => {
       setPostContent('');
       setIsPostDialogOpen(false);
       setIsMainOpen(false);
-      toast({ title: "Success", description: "Post shared successfully!" });
+      toast.success('Post shared successfully!');
     }
   };
 
@@ -47,7 +46,7 @@ const CreatePostFAB: React.FC<CreatePostFABProps> = ({ onCreatePost }) => {
       label: 'Share Trade',
       color: 'bg-green-500 hover:bg-green-600',
       action: () => {
-        toast({ title: "Info", description: "Trade sharing coming soon!" });
+        toast.info('Trade sharing coming soon!');
         setIsMainOpen(false);
       }
     },
@@ -56,7 +55,7 @@ const CreatePostFAB: React.FC<CreatePostFABProps> = ({ onCreatePost }) => {
       label: 'Ask AI',
       color: 'bg-purple-500 hover:bg-purple-600',
       action: () => {
-        toast({ title: "Info", description: "AI assistant coming soon!" });
+        toast.info('AI assistant coming soon!');
         setIsMainOpen(false);
       }
     },
@@ -65,7 +64,7 @@ const CreatePostFAB: React.FC<CreatePostFABProps> = ({ onCreatePost }) => {
       label: 'Share Chart',
       color: 'bg-orange-500 hover:bg-orange-600',
       action: () => {
-        toast({ title: "Info", description: "Chart sharing coming soon!" });
+        toast.info('Chart sharing coming soon!');
         setIsMainOpen(false);
       }
     }

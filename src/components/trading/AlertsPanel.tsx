@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Plus, Trash2 } from "lucide-react";
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 
 interface Stock {
   symbol: string;
@@ -30,7 +30,6 @@ interface Alert {
 }
 
 const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
-  const { toast } = useToast();
   const [alerts, setAlerts] = useState<Alert[]>([
     {
       id: 1,
@@ -59,7 +58,7 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
 
   const addAlert = () => {
     if (!newAlertPrice || parseFloat(newAlertPrice) <= 0) {
-      toast({ title: "Error", description: "Please enter a valid price", variant: "destructive" });
+      toast.error("Please enter a valid price");
       return;
     }
 
@@ -70,7 +69,7 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
       (newAlertType === "above" && price <= currentPrice) ||
       (newAlertType === "below" && price >= currentPrice)
     ) {
-      toast({ title: "Error", description: `Price must be ${newAlertType} current price of KES ${currentPrice.toFixed(2)}`, variant: "destructive" });
+      toast.error(`Price must be ${newAlertType} current price of KES ${currentPrice.toFixed(2)}`);
       return;
     }
 
@@ -87,7 +86,7 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
     setAlerts([...alerts, newAlert]);
     setNewAlertPrice("");
     setShowAddForm(false);
-    toast({ title: "Success", description: `Alert set for ${stock.symbol} ${newAlertType} KES ${price.toFixed(2)}` });
+    toast.success(`Alert set for ${stock.symbol} ${newAlertType} KES ${price.toFixed(2)}`);
   };
 
   const toggleAlert = (id: number) => {
@@ -98,7 +97,7 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
 
   const deleteAlert = (id: number) => {
     setAlerts(alerts.filter(alert => alert.id !== id));
-    toast({ title: "Success", description: "Alert deleted" });
+    toast.success("Alert deleted");
   };
 
   const stockAlerts = alerts.filter(alert => alert.symbol === stock.symbol);

@@ -118,7 +118,7 @@ const initialState: FinancialDataState = {
   holdings: [],
   marketIndices: [],
   transactions: [],
-  isLoading: false,
+  isLoading: true,
   error: null,
   user: null,
   portfolio: null,
@@ -212,26 +212,21 @@ export const FinancialDataProvider: React.FC<{ children: ReactNode }> = ({ child
 
   // Memoize stocks to prevent unnecessary re-renders
   const stocks = useMemo(() => {
-    try {
-      if (backendStocks.length > 0) {
-        return backendStocks.map(stock => ({
-          id: stock.id,
-          symbol: stock.symbol,
-          name: stock.name,
-          sector: stock.sector,
-          price: stock.current_price,
-          volume: stock.volume,
-          high: stock.high,
-          low: stock.low,
-          change: stock.change,
-          changePercent: stock.change_percent.toFixed(2)
-        }));
-      }
-      return supabaseStocks || [];
-    } catch (error) {
-      console.error('Error processing stocks:', error);
-      return [];
+    if (backendStocks.length > 0) {
+      return backendStocks.map(stock => ({
+        id: stock.id,
+        symbol: stock.symbol,
+        name: stock.name,
+        sector: stock.sector,
+        price: stock.current_price,
+        volume: stock.volume,
+        high: stock.high,
+        low: stock.low,
+        change: stock.change,
+        changePercent: stock.change_percent.toFixed(2)
+      }));
     }
+    return supabaseStocks;
   }, [backendStocks, supabaseStocks]);
 
   // Memoize active portfolio

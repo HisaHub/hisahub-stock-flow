@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 
 type Post = Database['public']['Tables']['posts']['Row'] & {
@@ -15,9 +15,8 @@ type Post = Database['public']['Tables']['posts']['Row'] & {
 type UserProfile = Database['public']['Tables']['profiles']['Row'];
 
 export const useCommunity = () => {
-  const { toast } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [followedUsers, setFollowedUsers] = useState<string[]>([]);
 
@@ -50,7 +49,7 @@ export const useCommunity = () => {
       setPosts(postsWithLikes);
     } catch (error) {
       console.error('Error fetching posts:', error);
-      toast({ title: "Error", description: "Failed to load posts", variant: "destructive" });
+      toast.error('Failed to load posts');
     } finally {
       setLoading(false);
     }
@@ -99,11 +98,11 @@ export const useCommunity = () => {
       if (error) throw error;
 
       setFollowedUsers(prev => [...prev, userId]);
-      toast({ title: "Success", description: "User followed successfully" });
+      toast.success('User followed successfully');
       return true;
     } catch (error) {
       console.error('Error following user:', error);
-      toast({ title: "Error", description: "Failed to follow user", variant: "destructive" });
+      toast.error('Failed to follow user');
       return false;
     }
   };
@@ -122,11 +121,11 @@ export const useCommunity = () => {
       if (error) throw error;
 
       setFollowedUsers(prev => prev.filter(id => id !== userId));
-      toast({ title: "Success", description: "User unfollowed successfully" });
+      toast.success('User unfollowed successfully');
       return true;
     } catch (error) {
       console.error('Error unfollowing user:', error);
-      toast({ title: "Error", description: "Failed to unfollow user", variant: "destructive" });
+      toast.error('Failed to unfollow user');
       return false;
     }
   };
@@ -142,12 +141,12 @@ export const useCommunity = () => {
 
       if (error) throw error;
 
-      toast({ title: "Success", description: "Post created successfully" });
+      toast.success('Post created successfully');
       await fetchPosts(); // Refresh posts
       return true;
     } catch (error) {
       console.error('Error creating post:', error);
-      toast({ title: "Error", description: "Failed to create post", variant: "destructive" });
+      toast.error('Failed to create post');
       return false;
     }
   };
@@ -191,7 +190,7 @@ export const useCommunity = () => {
 
     } catch (error) {
       console.error('Error toggling like:', error);
-      toast({ title: "Error", description: "Failed to update like", variant: "destructive" });
+      toast.error('Failed to update like');
     }
   };
 

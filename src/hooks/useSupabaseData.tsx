@@ -1,11 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const useSupabaseData = () => {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [portfolio, setPortfolio] = useState(null);
 
@@ -63,7 +62,7 @@ export const useSupabaseData = () => {
 
         if (createError) {
           console.error('Error creating profile:', createError);
-          toast({ title: "Error", description: "Failed to create user profile", variant: "destructive" });
+          toast.error('Failed to create user profile');
           setLoading(false);
           return;
         }
@@ -93,10 +92,10 @@ export const useSupabaseData = () => {
 
         if (error) {
           console.error('Error creating portfolio:', error);
-          toast({ title: "Error", description: "Failed to create portfolio", variant: "destructive" });
+          toast.error('Failed to create portfolio');
         } else {
           setPortfolio(newPortfolio);
-          toast({ title: "Success", description: "Welcome to HisaHub! Your demo portfolio has been created with KES 10,000." });
+          toast.success('Welcome to HisaHub! Your demo portfolio has been created with KES 10,000.');
         }
       } else {
         setPortfolio(portfolios[0]);
@@ -104,7 +103,7 @@ export const useSupabaseData = () => {
 
     } catch (error) {
       console.error('Error fetching user data:', error);
-      toast({ title: "Error", description: "Failed to load user data", variant: "destructive" });
+      toast.error('Failed to load user data');
     } finally {
       setLoading(false);
     }
@@ -127,11 +126,11 @@ export const useSupabaseData = () => {
 
       if (response.error) throw response.error;
 
-      toast({ title: "Success", description: `Successfully ${quantity > 0 ? 'bought' : 'sold'} ${Math.abs(quantity)} shares of ${stockSymbol}` });
+      toast.success(`Successfully ${quantity > 0 ? 'bought' : 'sold'} ${Math.abs(quantity)} shares of ${stockSymbol}`);
       return true;
     } catch (error) {
       console.error('Error placing order:', error);
-      toast({ title: "Error", description: error.message || "Failed to place order", variant: "destructive" });
+      toast.error(error.message || 'Failed to place order');
       return false;
     }
   };

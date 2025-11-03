@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 
 interface Stock {
   symbol: string;
@@ -32,7 +32,6 @@ interface OrderPanelProps {
 }
 
 const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
-  const { toast } = useToast();
   const [orderType, setOrderType] = useState("market");
   const [quantity, setQuantity] = useState("");
   const [limitPrice, setLimitPrice] = useState("");
@@ -57,17 +56,17 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
 
   const handlePlaceOrder = () => {
     if (!quantity || parseFloat(quantity) <= 0) {
-      toast({ title: "Error", description: "Please enter a valid quantity", variant: "destructive" });
+      toast.error("Please enter a valid quantity");
       return;
     }
     
     if (orderType === "limit" && (!limitPrice || parseFloat(limitPrice) <= 0)) {
-      toast({ title: "Error", description: "Please enter a valid limit price", variant: "destructive" });
+      toast.error("Please enter a valid limit price");
       return;
     }
 
     if (orderType === "stop" && (!stopPrice || parseFloat(stopPrice) <= 0)) {
-      toast({ title: "Error", description: "Please enter a valid stop price", variant: "destructive" });
+      toast.error("Please enter a valid stop price");
       return;
     }
 
@@ -76,7 +75,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
 
   const confirmOrder = () => {
     const { total } = calculateTotal();
-    toast({ title: "Success", description: `${orderSide.toUpperCase()} order placed for ${quantity} shares of ${stock.symbol} via ${defaultBroker.name} - Total: KES ${total.toFixed(2)}` });
+    toast.success(`${orderSide.toUpperCase()} order placed for ${quantity} shares of ${stock.symbol} via ${defaultBroker.name} - Total: KES ${total.toFixed(2)}`);
     setShowConfirmation(false);
     setQuantity("");
     setLimitPrice("");
@@ -86,10 +85,10 @@ const OrderPanel: React.FC<OrderPanelProps> = ({ stock }) => {
   const { subtotal, fee, total } = calculateTotal();
 
   return (
-    <div className="glass-card animate-fade-in" data-tour="order-panel">
+    <div className="glass-card animate-fade-in">
       <Tabs value={orderSide} onValueChange={(value) => setOrderSide(value as "buy" | "sell")}>
         <TabsList className="grid w-full grid-cols-2 bg-white/10">
-          <TabsTrigger value="buy" data-tour="buy-tab" className="text-green-400 data-[state=active]:bg-green-500/20">
+          <TabsTrigger value="buy" className="text-green-400 data-[state=active]:bg-green-500/20">
             Buy
           </TabsTrigger>
           <TabsTrigger value="sell" className="text-red-400 data-[state=active]:bg-red-500/20">
@@ -240,7 +239,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
     </div>
 
     {/* Quantity Input */}
-    <div className="space-y-2" data-tour="order-quantity">
+    <div className="space-y-2">
       <Label className="text-off-white">Quantity</Label>
       <Input
         type="number"
@@ -311,7 +310,6 @@ const OrderForm: React.FC<OrderFormProps> = ({
 
     {/* Place Order Button */}
     <Button 
-      data-tour="place-order"
       onClick={onPlaceOrder}
       className={`w-full font-bold py-3 ${
         orderSide === 'buy' 

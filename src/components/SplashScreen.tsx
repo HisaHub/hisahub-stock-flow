@@ -28,46 +28,45 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 
     hideChatbot();
 
-    // Reduced splash duration from 2500ms to 600ms for better LCP performance
     const timer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(() => {
         onComplete();
-        showChatbot();
-      }, 200); // Reduced fade out time
-    }, 600); // Reduced from 2500ms to significantly improve LCP
+        showChatbot(); // Show chatbot after splash completes
+      }, 300); // Wait for fade out animation
+    }, 2500);
 
     return () => {
       clearTimeout(timer);
-      showChatbot();
+      showChatbot(); // Ensure chatbot shows if component unmounts
     };
   }, [onComplete]);
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-primary transition-opacity duration-200 ${
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-primary transition-opacity duration-300 ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
     >
-      <div className="flex flex-col items-center space-y-4">
+      <div className="flex flex-col items-center space-y-6">
         <div className="animate-pulse">
-          <Logo size={64} />
+          <Logo size={80} />
         </div>
         
-        <div className="text-center space-y-1">
+        <div className="text-center space-y-2">
           <h1 
-            className="text-3xl font-bold text-secondary"
+            className="text-4xl font-bold text-secondary"
             style={{ fontFamily: "'Poppins', sans-serif" }}
           >
             HisaHub
           </h1>
-          <p className="text-off-white/80 text-base">
+          <p className="text-off-white/80 text-lg">
             Your Gateway to Smart Trading
           </p>
         </div>
 
-        {/* Simplified loading animation */}
-        <div className="flex space-x-2 mt-4">
+        {/* Loading animation */}
+        <div className="flex space-x-2 mt-8">
           <div className="w-2 h-2 bg-secondary rounded-full animate-bounce"></div>
           <div className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
           <div className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>

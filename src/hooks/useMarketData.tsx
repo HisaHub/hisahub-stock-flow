@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const useMarketData = () => {
   const [stocks, setStocks] = useState([]);
   const [marketIndices, setMarketIndices] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchMarketData();

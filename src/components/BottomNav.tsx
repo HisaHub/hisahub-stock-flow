@@ -4,10 +4,10 @@ import { Home, PieChart, LineChart, Settings, MessageSquare, Newspaper } from "l
 import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
-  { name: "Home", to: "/", icon: <Home size={24} strokeWidth={2.3} />, tour: "dashboard" },
-  { name: "Trade", to: "/trade", icon: <LineChart size={24} strokeWidth={2.3} />, tour: "trading" },
-  { name: "Portfolio", to: "/portfolio", icon: <PieChart size={24} strokeWidth={2.3} />, tour: "portfolio" },
-  { name: "Community", to: "/community", icon: <MessageSquare size={24} strokeWidth={2.3} />, tour: "community" },
+  { name: "Home", to: "/", icon: <Home size={24} strokeWidth={2.3} /> },
+  { name: "Trade", to: "/trade", icon: <LineChart size={24} strokeWidth={2.3} /> },
+  { name: "Portfolio", to: "/portfolio", icon: <PieChart size={24} strokeWidth={2.3} /> },
+  { name: "Community", to: "/community", icon: <MessageSquare size={24} strokeWidth={2.3} /> },
   { name: "News", to: "/news", icon: <Newspaper size={24} strokeWidth={2.3} /> },
 ];
 
@@ -29,7 +29,6 @@ const BottomNav: React.FC = () => {
           <Link
             key={item.name}
             to={item.to}
-            data-tour={item.tour}
             className={`flex flex-col items-center justify-center gap-0.5 px-3 pt-2 pb-1 rounded-lg transition
               ${isActive ? "bg-secondary/90 text-primary font-bold shadow" : "text-secondary hover:bg-secondary/10"}
               focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2`}

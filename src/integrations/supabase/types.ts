@@ -95,13 +95,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "broker_accounts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       chat_messages: {
@@ -171,13 +164,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chat_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -297,13 +283,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "kyc_documents_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       market_data: {
@@ -374,13 +353,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -471,13 +443,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "orders_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       portfolios: {
@@ -518,13 +483,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "portfolios_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -644,13 +602,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -772,13 +723,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "posts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       price_alerts: {
@@ -827,13 +771,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "price_alerts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       profiles: {
@@ -843,7 +780,6 @@ export type Database = {
           created_at: string | null
           date_of_birth: string | null
           first_name: string | null
-          has_completed_tour: boolean | null
           id: string
           last_name: string | null
           national_id: string | null
@@ -859,7 +795,6 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           first_name?: string | null
-          has_completed_tour?: boolean | null
           id: string
           last_name?: string | null
           national_id?: string | null
@@ -875,7 +810,6 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           first_name?: string | null
-          has_completed_tour?: boolean | null
           id?: string
           last_name?: string | null
           national_id?: string | null
@@ -1145,13 +1079,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "transactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       user_achievements: {
@@ -1214,25 +1141,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "user_follows_follower_id_fkey"
-            columns: ["follower_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "user_follows_following_id_fkey"
             columns: ["following_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_follows_following_id_fkey"
-            columns: ["following_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1350,13 +1263,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "watchlists_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "trading_leaderboard"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
     }
@@ -1380,8 +1286,8 @@ export type Database = {
       }
       trending_hashtags: {
         Row: {
+          hashtag: string | null
           last_used: string | null
-          matches: string[] | null
           usage_count: number | null
         }
         Relationships: []
@@ -1389,8 +1295,8 @@ export type Database = {
       trending_tickers: {
         Row: {
           last_mentioned: string | null
-          matches: string[] | null
           mention_count: number | null
+          ticker: string | null
         }
         Relationships: []
       }

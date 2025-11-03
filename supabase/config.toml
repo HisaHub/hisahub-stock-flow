@@ -1,13 +1,10 @@
 project_id = "nkekijcefghncihokotz"
 
 [functions.analyze-sentiment]
-verify_jwt = true
+verify_jwt = false
 
 [functions.ai-research-assistant]
-verify_jwt = true
+verify_jwt = false
 
 [functions.ai-news-summarizer]
-verify_jwt = true
-
-[functions.ai-chat]
-verify_jwt = true
+verify_jwt = false

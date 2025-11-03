@@ -7,11 +7,11 @@ const Sidebar: React.FC = () => {
   return (
     <div className="sidebar">
       <nav>
-        <a href="/" data-tour="dashboard"><Home size={20} /></a>
-        <a href="/trade" data-tour="trading"><TrendingUp size={20} /></a>
-        <a href="/portfolio" data-tour="portfolio"><PieChart size={20} /></a>
-        <a href="/community" data-tour="community"><Users size={20} /></a>
-        <a href="/settings" data-tour="settings"><Settings size={20} /></a>
+        <a href="/"><Home size={20} /></a>
+        <a href="/trade"><TrendingUp size={20} /></a>
+        <a href="/portfolio"><PieChart size={20} /></a>
+        <a href="/community"><Users size={20} /></a>
+        <a href="/settings"><Settings size={20} /></a>
       </nav>
     </div>
   );

@@ -10,17 +10,6 @@ export const useLocalAIChat = () => {
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
 
-    // Check if local AI is configured
-    const localAIUrl = import.meta.env.VITE_LOCAL_AI_URL;
-    if (!localAIUrl) {
-      toast({
-        title: "Local AI Not Configured",
-        description: "Please configure VITE_LOCAL_AI_URL in your environment variables to use local AI chat.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setLoading(true);
     
     // Add user message to UI immediately
@@ -29,12 +18,12 @@ export const useLocalAIChat = () => {
 
     try {
       console.log('Sending request to local AI:', {
-        url: `${localAIUrl}/api/generate`,
+        url: 'http://127.0.0.1:11434/api/generate',
         model: 'finance-chat',
         prompt: `You are Invisa, a helpful and knowledgeable Kenyan financial assistant. ${message}`
       });
 
-      const response = await fetch(`${localAIUrl}/api/generate`, {
+      const response = await fetch('http://127.0.0.1:11434/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
