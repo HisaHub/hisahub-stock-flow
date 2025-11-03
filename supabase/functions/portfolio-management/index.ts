@@ -2,11 +2,36 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schemas
+const PlaceOrderSchema = z.object({
+  action: z.literal('place_order'),
+  portfolio_id: z.string().uuid('Invalid portfolio ID'),
+  stock_symbol: z.string().regex(/^[A-Z]{2,5}$/, 'Invalid stock symbol format'),
+  quantity: z.number().int().min(-1000000).max(1000000).refine(val => val !== 0, 'Quantity cannot be zero'),
+  order_type: z.enum(['market', 'limit']).optional().default('market')
+});
+
+const GetPortfolioSchema = z.object({
+  action: z.literal('get_portfolio_summary'),
+  portfolio_id: z.string().uuid('Invalid portfolio ID')
+});
+
+const CreatePortfolioSchema = z.object({
+  action: z.literal('create_portfolio')
+});
+
+const RequestSchema = z.discriminatedUnion('action', [
+  PlaceOrderSchema,
+  GetPortfolioSchema,
+  CreatePortfolioSchema
+]);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -43,9 +68,11 @@ serve(async (req) => {
 
     const user_id = user.id; // Use authenticated user ID, not from request body
 
-    const { action, portfolio_id, stock_symbol, quantity, order_type = 'market' } = await req.json();
+    // Parse and validate input
+    const body = await req.json();
+    const validatedInput = RequestSchema.parse(body);
 
-    switch (action) {
+    switch (validatedInput.action) {
       case 'create_portfolio':
         const { data: newPortfolio } = await supabaseClient
           .from('portfolios')
@@ -64,7 +91,9 @@ serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
 
-      case 'place_order':
+      case 'place_order': {
+        const { portfolio_id, stock_symbol, quantity, order_type } = validatedInput;
+
         // Get stock information
         const { data: stock } = await supabaseClient
           .from('stocks')
@@ -214,8 +243,11 @@ serve(async (req) => {
           JSON.stringify({ success: true, order }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
 
-      case 'get_portfolio_summary':
+      case 'get_portfolio_summary': {
+        const { portfolio_id } = validatedInput;
+
         const { data: holdings } = await supabaseClient
           .from('holdings')
           .select(`
@@ -257,12 +289,21 @@ serve(async (req) => {
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
-
-      default:
-        throw new Error('Invalid action');
+      }
     }
 
   } catch (error) {
+    // Handle validation errors
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input',
+          details: error.errors
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.error('Portfolio management error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),

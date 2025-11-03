@@ -1,10 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const SentimentRequestSchema = z.object({
+  post_id: z.string().uuid('Invalid post ID format'),
+  content: z.string()
+    .min(1, 'Content cannot be empty')
+    .max(5000, 'Content too long (max 5000 characters)')
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,7 +21,10 @@ serve(async (req) => {
   }
 
   try {
-    const { post_id, content } = await req.json();
+    // Parse and validate input
+    const body = await req.json();
+    const validatedInput = SentimentRequestSchema.parse(body);
+    const { post_id, content } = validatedInput;
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -138,9 +150,9 @@ Consider:
       sentiment = JSON.parse(toolCall.function.arguments);
     } else {
       // Fallback: try to parse from content
-      const content = choice?.message?.content || '';
+      const contentText = choice?.message?.content || '';
       try {
-        sentiment = JSON.parse(content);
+        sentiment = JSON.parse(contentText);
       } catch {
         console.error('Failed to parse sentiment from AI response');
         throw new Error('Invalid AI response format');
@@ -174,6 +186,17 @@ Consider:
     );
 
   } catch (error) {
+    // Handle validation errors
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input',
+          details: error.errors
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.error('Sentiment analysis error:', error);
     return new Response(
       JSON.stringify({ 
