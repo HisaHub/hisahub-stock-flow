@@ -386,13 +386,17 @@ export const FinancialDataProvider: React.FC<{ children: ReactNode }> = ({ child
     }
   }, [refetchBackendData, updateMarketData, loadPortfolioData]);
 
-  // Optimized place order function
+  // Optimized place order function with better error handling
   const placeOrder = useCallback(async (
     symbol: string, 
     quantity: number, 
     orderType = 'market',
     side: 'buy' | 'sell' = 'buy'
-  ) => {
+  ): Promise<boolean> => {
+    // Set loading state
+    dispatch({ type: 'SET_LOADING', payload: true });
+    clearError();
+    
     let success = false;
     
     try {
@@ -403,28 +407,42 @@ export const FinancialDataProvider: React.FC<{ children: ReactNode }> = ({ child
         orderType as 'market' | 'limit',
         side
       );
+      
+      if (success) {
+        console.log(`Order placed successfully via backend: ${side} ${quantity} ${symbol}`);
+      }
     } catch (error) {
-      console.warn('Backend order failed, trying Supabase:', error);
+      console.warn('Backend order failed, trying Supabase fallback:', error);
+      
       try {
         // Fallback to Supabase with adjusted quantity for sell orders
         const adjustedQuantity = side === 'sell' ? -quantity : quantity;
         success = await supabasePlaceOrder(symbol, adjustedQuantity, orderType);
+        
+        if (success) {
+          console.log(`Order placed successfully via Supabase: ${side} ${quantity} ${symbol}`);
+        }
       } catch (supabaseError) {
-        console.error('Supabase order also failed:', supabaseError);
+        console.error('Both backend and Supabase orders failed:', supabaseError);
         dispatch({
           type: 'SET_ERROR',
-          payload: 'Failed to place order'
+          payload: `Failed to place ${side} order for ${symbol}. Please try again.`
         });
+        success = false;
       }
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
     
     if (success) {
-      // Refresh data after successful order
-      await refreshData();
+      // Refresh data after successful order (don't await to improve UX)
+      refreshData().catch(err => 
+        console.error('Error refreshing data after order:', err)
+      );
     }
     
     return success;
-  }, [backendPlaceOrder, supabasePlaceOrder, refreshData]);
+  }, [backendPlaceOrder, supabasePlaceOrder, refreshData, clearError]);
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue: FinancialDataContextType = useMemo(() => ({
