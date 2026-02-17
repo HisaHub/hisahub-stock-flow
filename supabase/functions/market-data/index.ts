@@ -50,7 +50,7 @@ serve(async (req) => {
           high: Number(item.high),
           low: Number(item.low),
           open: Number(item.open),
-          volume: item.volume ? Number(item.volume) : Math.floor(Math.random() * 500000),
+          volume: item.volume ? Number(item.volume) : null,
           timestamp: item.date
         };
       } catch (e) {

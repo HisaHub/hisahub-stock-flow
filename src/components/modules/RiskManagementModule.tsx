@@ -13,9 +13,11 @@ const RiskManagementModule: React.FC = () => {
   const calculateRisk = () => {
     const value = parseFloat(portfolioValue);
     if (value > 0) {
-      let baseScore = Math.min(8, Math.max(1, Math.floor(value / 500000) + 2));
-      let marketVolatility = Math.random() * 2;
-      let finalScore = Math.min(10, Math.max(1, baseScore + marketVolatility));
+      const baseScore = Math.min(8, Math.max(1, Math.floor(value / 500000) + 2));
+      // Use deterministic volatility estimate (placeholder). For full accuracy,
+      // this should be derived from live market indices; currently set to 0.
+      const marketVolatility = 0;
+      const finalScore = Math.min(10, Math.max(1, baseScore + marketVolatility));
       setRiskScore(Math.round(finalScore));
     }
   };
