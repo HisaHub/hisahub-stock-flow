@@ -65,20 +65,8 @@ serve(async (req) => {
         if (latestPrice) {
           price = latestPrice.price;
         } else {
-          // Generate realistic demo prices for Kenyan stocks
-          const demoPrices: { [key: string]: number } = {
-            'SCOM': 28.50,
-            'EQTY': 45.75,
-            'KCB': 38.25,
-            'COOP': 12.85,
-            'BAT': 550.00,
-            'EABL': 146.00,
-            'ABSA': 14.20,
-            'DTBK': 95.50,
-            'SCBK': 180.00,
-            'NBK': 8.45
-          };
-          price = demoPrices[stock_symbol] || 25.00;
+          // No live price available — reject trade rather than using demo prices
+          throw new Error('No live price available for this stock');
         }
 
         // Check portfolio balance for buy orders
@@ -207,22 +195,30 @@ serve(async (req) => {
           .single();
 
         let totalValue = portfolioInfo?.cash_balance || 0;
-        const processedHoldings = holdings?.map(holding => {
-          // Add realistic price fluctuations for demo
-          const priceVariation = (Math.random() - 0.5) * 0.1; // ±5% variation
-          const currentPrice = holding.current_price * (1 + priceVariation);
+        // Compute holding values from latest prices in `stock_prices` table.
+        const processedHoldings = [];
+        for (const holding of holdings || []) {
+          // Fetch latest price for the holding's stock
+          const { data: latest } = await supabaseClient
+            .from('stock_prices')
+            .select('price')
+            .eq('stock_id', holding.stock_id)
+            .order('timestamp', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          const currentPrice = latest?.price ?? holding.current_price ?? 0;
           const marketValue = holding.quantity * currentPrice;
           const unrealizedPnL = marketValue - (holding.quantity * holding.average_price);
-          
           totalValue += marketValue;
 
-          return {
+          processedHoldings.push({
             ...holding,
             current_price: Number(currentPrice.toFixed(2)),
             market_value: Number(marketValue.toFixed(2)),
             unrealized_pnl: Number(unrealizedPnL.toFixed(2))
-          };
-        }) || [];
+          });
+        }
 
         return new Response(
           JSON.stringify({ 

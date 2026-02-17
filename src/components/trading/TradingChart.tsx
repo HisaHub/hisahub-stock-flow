@@ -24,55 +24,9 @@ interface TradingChartProps {
 
 const timeframes = ['1D', '1W', '1M', '3M', '1Y'];
 
-// Enhanced mock data generator with OHLC data for candlesticks
-const generateMockData = (days: number) => {
-  const data = [];
-  let basePrice = 22.70;
-  let rsi = 50;
-  let macdLine = 0;
-  let signalLine = 0;
-  
-  for (let i = 0; i < days; i++) {
-    const change = (Math.random() - 0.5) * 2;
-    const open = basePrice;
-    basePrice += change;
-    const close = basePrice;
-    const high = Math.max(open, close) + Math.random() * 1;
-    const low = Math.min(open, close) - Math.random() * 1;
-    
-    // Calculate RSI (simplified)
-    rsi = Math.max(0, Math.min(100, rsi + (Math.random() - 0.5) * 10));
-    
-    // Calculate MACD (simplified)
-    macdLine += (Math.random() - 0.5) * 0.5;
-    signalLine = signalLine * 0.9 + macdLine * 0.1;
-    
-    // Calculate Bollinger Bands (simplified)
-    const sma = basePrice;
-    const upperBand = sma + 2;
-    const lowerBand = sma - 2;
-    
-    data.push({
-      time: new Date(Date.now() - (days - i) * 24 * 60 * 60 * 1000).toLocaleDateString(),
-      price: Number(basePrice.toFixed(2)),
-      open: Number(open.toFixed(2)),
-      high: Number(high.toFixed(2)),
-      low: Number(low.toFixed(2)),
-      close: Number(close.toFixed(2)),
-      volume: Math.floor(Math.random() * 1000000),
-      rsi: Number(rsi.toFixed(2)),
-      macdLine: Number(macdLine.toFixed(3)),
-      signalLine: Number(signalLine.toFixed(3)),
-      histogram: Number((macdLine - signalLine).toFixed(3)),
-      sma: Number(sma.toFixed(2)),
-      upperBand: Number(upperBand.toFixed(2)),
-      lowerBand: Number(lowerBand.toFixed(2)),
-      // Candlestick color based on open vs close
-      fill: close >= open ? "#22C55E" : "#EF4444"
-    });
-  }
-  return data;
-};
+// TradingChart now exclusively uses historical OHLC data from Supabase.
+// No mock data generator is included — when no historical rows exist the
+// chart will show a "No data" state and prompt for a refresh.
 
 const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('1D');
@@ -154,8 +108,8 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
           }
         }
 
-        // Use fetched data when available, otherwise fallback to mock generator
-        const newData = recentData && recentData.length > 0 ? recentData : generateMockData(limit > 365 ? 365 : limit);
+        // Use fetched data when available. Do NOT fall back to generated mock data.
+        const newData = recentData && recentData.length > 0 ? recentData : [];
         setChartData(newData);
 
         // Calculate support and resistance levels
@@ -169,11 +123,10 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
         }
       } catch (e) {
         console.error('Error fetching historical prices:', e);
-        const fallback = generateMockData(30);
-        setChartData(fallback);
-        const prices = fallback.map(d => d.price);
-        setSupportLevel(Math.min(...prices) * 1.02);
-        setResistanceLevel(Math.max(...prices) * 0.98);
+        // On error, clear chart data so UI shows no-data state.
+        setChartData([]);
+        setSupportLevel(null);
+        setResistanceLevel(null);
       }
     };
 

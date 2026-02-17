@@ -63,8 +63,23 @@ export const useMarketData = () => {
           volume: stock.stock_prices[0]?.volume || 0,
           high: stock.stock_prices[0]?.high || 0,
           low: stock.stock_prices[0]?.low || 0,
-          change: Math.random() * 2 - 1, // Simulated change
-          changePercent: (Math.random() * 4 - 2).toFixed(2)
+          // Compute change from the two most recent price points when available
+          change: (() => {
+            const recent = stock.stock_prices || [];
+            const latest = recent[0]?.price;
+            const previous = recent[1]?.price;
+            if (latest != null && previous != null) return Number((latest - previous).toFixed(2));
+            return 0;
+          })(),
+          changePercent: (() => {
+            const recent = stock.stock_prices || [];
+            const latest = recent[0]?.price;
+            const previous = recent[1]?.price;
+            if (latest != null && previous != null && previous !== 0) {
+              return (( (latest - previous) / previous) * 100).toFixed(2);
+            }
+            return '0.00';
+          })()
         }));
         
         setStocks(processedStocks);

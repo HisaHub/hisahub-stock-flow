@@ -82,37 +82,25 @@ serve(async (req) => {
       }
 
       if (stock) {
-        // Prefer Marketstack data when available
+        // Prefer Marketstack data when available. Do not simulate prices here.
         const ms = await fetchFromMarketstack(stockInfo.symbol).catch(() => null);
-        let price: number, high: number, low: number, volume: number, open: number;
-
-        if (ms) {
-          price = ms.price;
-          high = ms.high;
-          low = ms.low;
-          volume = ms.volume;
-          open = ms.open;
-        } else {
-          // Fallback: simulate realistic price movement
-          const priceChange = (Math.random() - 0.5) * stockInfo.volatility * 2;
-          price = Math.max(0.01, stockInfo.basePrice * (1 + priceChange));
-          volume = Math.floor(Math.random() * 500000) + 50000;
-          high = price * (1 + Math.random() * 0.02);
-          low = price * (1 - Math.random() * 0.02);
-          open = Number((price * 0.998).toFixed(2));
+        if (!ms) {
+          // Skip inserting price if external data unavailable
+          continue;
         }
 
-        // Insert new price data
+        // Insert new price data from Marketstack
         await supabaseClient
           .from('stock_prices')
           .insert({
             stock_id: stock.id,
-            price: Number(price.toFixed(2)),
-            volume,
-            high: Number(high.toFixed(2)),
-            low: Number(low.toFixed(2)),
-            open: Number(open.toFixed(2)),
-            close: Number(price.toFixed(2))
+            price: Number(ms.price.toFixed(2)),
+            volume: ms.volume,
+            high: Number(ms.high.toFixed(2)),
+            low: Number(ms.low.toFixed(2)),
+            open: Number(ms.open.toFixed(2)),
+            close: Number(ms.price.toFixed(2)),
+            timestamp: ms.timestamp
           });
 
         // Update current price in holdings for demo users
@@ -143,22 +131,9 @@ serve(async (req) => {
       { symbol: 'NSE25', name: 'NSE 25 Share Index', baseValue: 3420.80 }
     ];
 
-    for (const index of indices) {
-      const changePercent = (Math.random() - 0.5) * 2; // ±1% change
-      const newValue = index.baseValue * (1 + changePercent / 100);
-      const changeValue = newValue - index.baseValue;
-      
-      await supabaseClient
-        .from('market_data')
-        .upsert({
-          symbol: index.symbol,
-          name: index.name,
-          value: Number(newValue.toFixed(2)),
-          change_value: Number(changeValue.toFixed(2)),
-          change_percent: Number(changePercent.toFixed(2)),
-          timestamp: new Date().toISOString()
-        }, { onConflict: 'symbol' });
-    }
+    // Note: Index updates require a reliable external source. This function
+    // currently focuses on inserting stock prices from Marketstack. Index
+    // updates are skipped to avoid simulated values.
 
     return new Response(
       JSON.stringify({ success: true, message: 'Market data updated with realistic movements' }),
