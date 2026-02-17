@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, MessageCircle, ThumbsUp, Clock, Brain, Sparkles, Loader2 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 
 interface Stock {
   symbol: string;
@@ -112,14 +113,37 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ stock }) => {
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const { toast } = useToast();
 
+  const [newsItems, setNewsItems] = React.useState<NewsItem[]>(mockNews);
+  const [communityPosts, setCommunityPosts] = React.useState<CommunityPost[]>(mockCommunity);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { data: newsData } = await supabase.from('news').select('*').order('published_at', { ascending: false }).limit(10);
+        if (newsData) setNewsItems(newsData as any);
+      } catch (err) {
+        console.debug('Could not load news from DB', err);
+      }
+
+      try {
+        const { data: posts } = await supabase.from('community_posts').select('*').order('created_at', { ascending: false }).limit(10);
+        if (posts) setCommunityPosts(posts as any);
+      } catch (err) {
+        console.debug('Could not load community posts', err);
+      }
+    };
+
+    load();
+  }, []);
+
   const generateAISummary = async () => {
     setGeneratingSummary(true);
     try {
       const { data, error } = await supabase.functions.invoke('ai-news-summarizer', {
         body: { 
           stock_symbol: stock.symbol,
-          news_items: mockNews,
-          community_posts: mockCommunity
+          news_items: newsItems,
+          community_posts: communityPosts
         }
       });
 
@@ -168,13 +192,9 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ stock }) => {
     }
   };
 
-  const filteredNews = sentimentFilter === "all" 
-    ? mockNews 
-    : mockNews.filter(item => item.sentiment === sentimentFilter);
+  const filteredNews = sentimentFilter === "all" ? newsItems : newsItems.filter(item => item.sentiment === sentimentFilter);
 
-  const filteredCommunity = sentimentFilter === "all"
-    ? mockCommunity
-    : mockCommunity.filter(post => post.sentiment === sentimentFilter);
+  const filteredCommunity = sentimentFilter === "all" ? communityPosts : communityPosts.filter(post => post.sentiment === sentimentFilter);
 
   return (
     <div className="glass-card animate-fade-in">

@@ -12,44 +12,17 @@ interface LeaderboardWidgetProps {
 }
 
 const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({ users }) => {
-  // Mock leaderboard data - in real app, this would be calculated based on engagement metrics
-  const leaderboardData = [
-    { 
-      user: users[0] || { first_name: 'John', last_name: 'Trader', id: '1' },
-      score: 2850,
-      badge: 'Market Guru',
-      posts: 45,
-      followers: 128
-    },
-    { 
-      user: users[1] || { first_name: 'Sarah', last_name: 'Analyst', id: '2' },
-      score: 2340,
-      badge: 'Top Analyst',
-      posts: 38,
-      followers: 95
-    },
-    { 
-      user: users[2] || { first_name: 'Mike', last_name: 'Expert', id: '3' },
-      score: 2120,
-      badge: 'Rising Star',
-      posts: 32,
-      followers: 76
-    },
-    { 
-      user: users[3] || { first_name: 'Lisa', last_name: 'Pro', id: '4' },
-      score: 1890,
-      badge: 'Active Trader',
-      posts: 28,
-      followers: 64
-    },
-    { 
-      user: users[4] || { first_name: 'Alex', last_name: 'Smith', id: '5' },
-      score: 1650,
-      badge: 'Mentor',
-      posts: 24,
-      followers: 52
-    }
-  ];
+  // Build leaderboard entries from provided `users` prop. If engagement metrics
+  // exist on the profile rows (posts_count, followers_count, xp), use them;
+  // otherwise fall back to sensible defaults and show an empty state when no
+  // users are provided.
+  const leaderboardData = (users || []).slice(0, 10).map((u, idx) => ({
+    user: u,
+    score: (u as any).xp || ((u as any).posts_count || 0) * 10 + ((u as any).followers_count || 0) * 2,
+    badge: (u as any).badge || (idx === 0 ? 'Market Guru' : idx === 1 ? 'Top Analyst' : 'Contributor'),
+    posts: (u as any).posts_count || 0,
+    followers: (u as any).followers_count || 0
+  }));
 
   const getRankIcon = (index: number) => {
     switch (index) {

@@ -36,19 +36,28 @@ const Portfolio: React.FC = () => {
   console.log("Portfolio page holdings:", holdings);
   console.log("Portfolio data:", portfolioData);
 
-  // Mock data for sections not yet implemented with real data
-  const allocationData = [
-    { name: "Banking", value: 17154, color: "#FFBF00" },
-    { name: "Telecommunications", value: 5255.50, color: "#00C851" },
-    { name: "Beverages", value: 6682.50, color: "#FF4444" },
-    { name: "Others", value: 3158.34, color: "#33B5E5" },
-  ];
+  // Compute allocation from holdings grouped by sector when available
+  const allocationMap: Record<string, { value: number; color?: string }> = {};
+  holdings.forEach(h => {
+    const sector = (h.stocks && h.stocks.sector) || (h.sector) || 'Others';
+    if (!allocationMap[sector]) allocationMap[sector] = { value: 0, color: undefined };
+    allocationMap[sector].value += Number(h.value || 0);
+  });
 
-  const dividends = [
-    { symbol: "EQTY", amount: 200.00, exDate: "2025-05-10", payDate: "2025-05-25", status: "Upcoming" },
-    { symbol: "COOP", amount: 150.00, exDate: "2025-04-15", payDate: "2025-04-30", status: "Paid" },
-    { symbol: "KCB", amount: 180.00, exDate: "2025-06-01", payDate: "2025-06-15", status: "Announced" },
-  ];
+  const allocationData = Object.entries(allocationMap).map(([name, info], idx) => ({
+    name,
+    value: info.value,
+    color: ['#FFBF00', '#00C851', '#FF4444', '#33B5E5'][idx % 4]
+  }));
+
+  // Derive dividends from transactions of type DIVIDEND when available
+  const dividends = transactions.filter(tx => tx.type && tx.type.toUpperCase() === 'DIVIDEND').map(tx => ({
+    symbol: tx.symbol,
+    amount: Number(tx.total || tx.amount || 0),
+    exDate: tx.ex_date || tx.date || '',
+    payDate: tx.pay_date || '',
+    status: tx.status || 'Unknown'
+  }));
 
   const performanceData = [
     { date: "Jan", value: 95000 },

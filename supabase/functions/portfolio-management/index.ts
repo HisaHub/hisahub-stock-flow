@@ -23,14 +23,16 @@ serve(async (req) => {
 
     switch (action) {
       case 'create_portfolio':
+        // Expect `name` and optional `initial_balance` and `is_demo` in request body
+        const { name = 'Portfolio', initial_balance = 0, is_demo = false } = await req.json();
         const { data: newPortfolio } = await supabaseClient
           .from('portfolios')
           .insert({
             user_id,
-            name: 'Demo Portfolio',
-            is_default: true,
-            cash_balance: 10000, // KES 10,000 demo balance
-            is_demo: true
+            name,
+            is_default: false,
+            cash_balance: Number(initial_balance) || 0,
+            is_demo: Boolean(is_demo)
           })
           .select()
           .single();

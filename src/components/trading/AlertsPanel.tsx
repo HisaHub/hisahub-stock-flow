@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from '@/integrations/supabase/client';
 
 interface Stock {
   symbol: string;
@@ -30,31 +31,27 @@ interface Alert {
 }
 
 const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
-  const [alerts, setAlerts] = useState<Alert[]>([
-    {
-      id: 1,
-      symbol: "SCOM",
-      type: "above",
-      price: 25.00,
-      isActive: true,
-      method: "push",
-      createdAt: "2024-01-10"
-    },
-    {
-      id: 2,
-      symbol: "SCOM", 
-      type: "below",
-      price: 20.00,
-      isActive: false,
-      method: "sms",
-      createdAt: "2024-01-08"
-    }
-  ]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
 
   const [newAlertPrice, setNewAlertPrice] = useState("");
   const [newAlertType, setNewAlertType] = useState<"above" | "below">("above");
   const [newAlertMethod, setNewAlertMethod] = useState<"push" | "sms" | "email">("push");
   const [showAddForm, setShowAddForm] = useState(false);
+
+  useEffect(() => {
+    const loadAlerts = async () => {
+      try {
+        const { data, error } = await supabase.from('alerts').select('*').eq('symbol', stock.symbol);
+        if (error) throw error;
+        setAlerts((data || []) as Alert[]);
+      } catch (err) {
+        // If alerts table doesn't exist or fetch fails, keep empty list
+        console.debug('Could not load alerts:', err);
+      }
+    };
+
+    if (stock && stock.symbol) loadAlerts();
+  }, [stock]);
 
   const addAlert = () => {
     if (!newAlertPrice || parseFloat(newAlertPrice) <= 0) {
@@ -83,20 +80,45 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
       createdAt: new Date().toISOString().split('T')[0]
     };
 
-    setAlerts([...alerts, newAlert]);
+    // Try to persist to Supabase, but fall back to local state if table missing
+    (async () => {
+      try {
+        const { data, error } = await supabase.from('alerts').insert([{ ...newAlert }]).select();
+        if (error) throw error;
+        setAlerts(prev => [...prev, ...(data || [newAlert])]);
+      } catch (err) {
+        setAlerts(prev => [...prev, newAlert]);
+        console.debug('Persisting alert failed, using local state', err);
+      }
+    })();
     setNewAlertPrice("");
     setShowAddForm(false);
     toast.success(`Alert set for ${stock.symbol} ${newAlertType} KES ${price.toFixed(2)}`);
   };
 
   const toggleAlert = (id: number) => {
-    setAlerts(alerts.map(alert => 
-      alert.id === id ? { ...alert, isActive: !alert.isActive } : alert
-    ));
+    const updated = alerts.map(alert => alert.id === id ? { ...alert, isActive: !alert.isActive } : alert);
+    setAlerts(updated);
+    (async () => {
+      try {
+        const alert = updated.find(a => a.id === id);
+        if (!alert) return;
+        await supabase.from('alerts').update({ isActive: alert.isActive }).eq('id', id);
+      } catch (err) {
+        console.debug('Failed to update alert active state', err);
+      }
+    })();
   };
 
   const deleteAlert = (id: number) => {
     setAlerts(alerts.filter(alert => alert.id !== id));
+    (async () => {
+      try {
+        await supabase.from('alerts').delete().eq('id', id);
+      } catch (err) {
+        console.debug('Failed to delete alert from DB', err);
+      }
+    })();
     toast.success("Alert deleted");
   };
 

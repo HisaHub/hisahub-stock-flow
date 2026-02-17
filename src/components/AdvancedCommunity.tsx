@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Heart, MessageCircle, Share2, TrendingUp, TrendingDown, Plus, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useTheme } from "./ThemeProvider";
+import { supabase } from '@/integrations/supabase/client';
+import { useFinancialData } from '@/contexts/FinancialDataContext';
 
 interface User {
   id: string;
@@ -42,58 +44,14 @@ interface Post {
   tickers?: string[];
 }
 
-const MOCK_USER: User = {
-  id: "user1",
-  username: "TraderJoe",
-  tier: "Active Trader"
-};
-
-const MOCK_POSTS: Post[] = [
-  {
-    id: "1",
-    userId: "user1",
-    username: "TraderJoe",
-    content: "Just bought more $SCOM on this dip. Their Q4 earnings look promising and the PE ratio is attractive at current levels. Anyone else bullish on telco stocks? 📈",
-    timestamp: Date.now() - 3600000,
-    upvotes: 12,
-    downvotes: 2,
-    likes: 8,
-    userHasUpvoted: false,
-    userHasDownvoted: false,
-    userHasLiked: false,
-    tickers: ["SCOM"],
-    replies: [
-      {
-        id: "r1",
-        userId: "user2",
-        username: "NSEQueen",
-        content: "Agreed! SCOM has been oversold. Good entry point.",
-        timestamp: Date.now() - 3000000,
-        likes: 3,
-        userHasLiked: false,
-        replies: []
-      }
-    ]
-  },
-  {
-    id: "2",
-    userId: "user3",
-    username: "MarketMaven",
-    content: "PSA: Remember to diversify your portfolio! Don't put all your eggs in one basket. The NSE has been volatile lately but that creates opportunities for smart money. 🧠💰",
-    timestamp: Date.now() - 7200000,
-    upvotes: 25,
-    downvotes: 1,
-    likes: 15,
-    userHasUpvoted: true,
-    userHasDownvoted: false,
-    userHasLiked: true,
-    replies: []
-  }
-];
+// Posts are loaded from Supabase `community_posts` (if available). Structure
+// mapped into the `Post` interface above. If Supabase isn't available, the
+// component will render an empty feed and allow creating local posts.
 
 const AdvancedCommunity: React.FC = () => {
   const { theme } = useTheme();
-  const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
+  const { state: financialState } = useFinancialData();
+  const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [replyContent, setReplyContent] = useState("");
@@ -124,27 +82,54 @@ const AdvancedCommunity: React.FC = () => {
   };
 
   const handleCreatePost = () => {
-    if (newPostContent.trim()) {
-      const tickers = extractTickers(newPostContent);
-      const newPost: Post = {
-        id: Date.now().toString(),
-        userId: MOCK_USER.id,
-        username: MOCK_USER.username,
-        content: newPostContent,
-        timestamp: Date.now(),
-        upvotes: 0,
-        downvotes: 0,
-        likes: 0,
-        userHasUpvoted: false,
-        userHasDownvoted: false,
-        userHasLiked: false,
-        tickers,
-        replies: []
-      };
-      setPosts([newPost, ...posts]);
-      setNewPostContent("");
-      setIsCreatePostOpen(false);
-    }
+    if (!newPostContent.trim()) return;
+    const tickers = extractTickers(newPostContent);
+    const currentUser = financialState.user || { id: 'anon', username: 'You', tier: 'New Member' };
+
+    const newPost: Post = {
+      id: Date.now().toString(),
+      userId: currentUser.id,
+      username: currentUser.username || 'You',
+      content: newPostContent,
+      timestamp: Date.now(),
+      upvotes: 0,
+      downvotes: 0,
+      likes: 0,
+      userHasUpvoted: false,
+      userHasDownvoted: false,
+      userHasLiked: false,
+      tickers,
+      replies: []
+    };
+
+    // Try to persist to Supabase; otherwise use local state as fallback
+    (async () => {
+      try {
+        const { data, error } = await supabase.from('community_posts').insert([{
+          user_id: newPost.userId,
+          username: newPost.username,
+          content: newPost.content,
+          tickers: newPost.tickers,
+          created_at: new Date().toISOString()
+        }]).select();
+        if (!error && data && data.length > 0) {
+          const created = data[0];
+          setPosts(prev => [{
+            ...newPost,
+            id: created.id?.toString() || newPost.id,
+            timestamp: new Date(created.created_at).getTime()
+          }, ...prev]);
+        } else {
+          setPosts(prev => [newPost, ...prev]);
+        }
+      } catch (err) {
+        console.debug('Failed to persist post to Supabase', err);
+        setPosts(prev => [newPost, ...prev]);
+      }
+    })();
+
+    setNewPostContent("");
+    setIsCreatePostOpen(false);
   };
 
   const handleVote = (postId: string, voteType: 'up' | 'down') => {
@@ -196,32 +181,76 @@ const AdvancedCommunity: React.FC = () => {
   };
 
   const handleReply = (postId: string) => {
-    if (replyContent.trim()) {
-      const newReply: Reply = {
-        id: Date.now().toString(),
-        userId: MOCK_USER.id,
-        username: MOCK_USER.username,
-        content: replyContent,
-        timestamp: Date.now(),
-        likes: 0,
-        userHasLiked: false,
-        replies: []
-      };
+    if (!replyContent.trim()) return;
+    const currentUser = financialState.user || { id: 'anon', username: 'You' };
+    const newReply: Reply = {
+      id: Date.now().toString(),
+      userId: currentUser.id,
+      username: currentUser.username || 'You',
+      content: replyContent,
+      timestamp: Date.now(),
+      likes: 0,
+      userHasLiked: false,
+      replies: []
+    };
 
-      setPosts(posts.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            replies: [...post.replies, newReply]
-          };
+    (async () => {
+      try {
+        // Try to insert reply into DB if possible
+        const { data, error } = await supabase.from('community_replies').insert([{
+          post_id: postId,
+          user_id: newReply.userId,
+          username: newReply.username,
+          content: newReply.content,
+          created_at: new Date().toISOString()
+        }]).select();
+        if (!error && data && data.length > 0) {
+          const created = data[0];
+          const replyWithId = { ...newReply, id: created.id?.toString() || newReply.id, timestamp: new Date(created.created_at).getTime() };
+          setPosts(prev => prev.map(p => p.id === postId ? { ...p, replies: [...p.replies, replyWithId] } : p));
+        } else {
+          setPosts(prev => prev.map(p => p.id === postId ? { ...p, replies: [...p.replies, newReply] } : p));
         }
-        return post;
-      }));
+      } catch (err) {
+        console.debug('Failed to persist reply', err);
+        setPosts(prev => prev.map(p => p.id === postId ? { ...p, replies: [...p.replies, newReply] } : p));
+      }
+    })();
 
-      setReplyContent("");
-      setActiveReplyPost(null);
-    }
+    setReplyContent("");
+    setActiveReplyPost(null);
   };
+
+  // Load posts from Supabase on mount
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        const { data } = await supabase.from('community_posts').select('id, user_id, username, content, tickers, created_at').order('created_at', { ascending: false }).limit(50);
+        if (data) {
+          const mapped: Post[] = data.map((r: any) => ({
+            id: r.id?.toString() || Date.now().toString(),
+            userId: r.user_id,
+            username: r.username,
+            content: r.content,
+            timestamp: new Date(r.created_at).getTime(),
+            upvotes: r.upvotes || 0,
+            downvotes: r.downvotes || 0,
+            likes: r.likes || 0,
+            userHasUpvoted: false,
+            userHasDownvoted: false,
+            userHasLiked: false,
+            tickers: r.tickers || [],
+            replies: []
+          }));
+          setPosts(mapped);
+        }
+      } catch (err) {
+        console.debug('Could not load community posts', err);
+      }
+    };
+
+    loadPosts();
+  }, []);
 
   const renderReply = (reply: Reply, depth: number = 0) => (
     <div key={reply.id} className={`ml-${Math.min(depth * 4, 12)} mt-3`}>

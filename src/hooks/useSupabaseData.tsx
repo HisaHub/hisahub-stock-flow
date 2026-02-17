@@ -71,34 +71,19 @@ export const useSupabaseData = () => {
         throw profileError;
       }
 
-      // Get or create default demo portfolio
+      // Get existing portfolios for the user. Do NOT auto-create a demo
+      // portfolio here; portfolio creation should be an explicit user action
+      // (e.g., via broker integration or onboarding). If none exist, leave
+      // the portfolio `null` so the UI can prompt the user to create one.
       let { data: portfolios } = await supabase
         .from('portfolios')
         .select('*')
         .eq('user_id', userId);
 
-      if (!portfolios || portfolios.length === 0) {
-        const { data: newPortfolio, error } = await supabase
-          .from('portfolios')
-          .insert({
-            user_id: userId,
-            name: 'Demo Portfolio',
-            is_default: true,
-            cash_balance: 10000, // KES 10,000 demo balance
-            total_value: 10000
-          })
-          .select()
-          .single();
-
-        if (error) {
-          console.error('Error creating portfolio:', error);
-          toast.error('Failed to create portfolio');
-        } else {
-          setPortfolio(newPortfolio);
-          toast.success('Welcome to HisaHub! Your demo portfolio has been created with KES 10,000.');
-        }
-      } else {
+      if (portfolios && portfolios.length > 0) {
         setPortfolio(portfolios[0]);
+      } else {
+        setPortfolio(null);
       }
 
     } catch (error) {

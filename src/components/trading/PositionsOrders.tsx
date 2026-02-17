@@ -15,29 +15,9 @@ const PositionsOrders: React.FC = () => {
   const totalUnrealizedPnL = state.holdings.reduce((sum, pos) => sum + pos.profitLoss, 0);
   const totalUnrealizedPnLPercent = state.portfolioData.dailyChangePercent;
 
-  // Mock orders data - in real app this would come from context too
-  const mockOrders = [
-    {
-      id: 1,
-      symbol: "KCB",
-      type: "Buy",
-      orderType: "Limit",
-      quantity: 75,
-      price: 37.50,
-      status: "Pending",
-      timestamp: "2024-01-15 10:30:00"
-    },
-    {
-      id: 2,
-      symbol: "COOP",
-      type: "Sell",
-      orderType: "Market",
-      quantity: 200,
-      price: 12.85,
-      status: "Filled",
-      timestamp: "2024-01-15 09:15:00"
-    }
-  ];
+  // Use transactions from context for orders/history
+  const orders = state.transactions.filter(tx => tx.status && tx.status !== 'Completed' && tx.status !== 'Paid');
+  const history = state.transactions;
 
   return (
     <div className="glass-card animate-fade-in">
@@ -114,46 +94,48 @@ const PositionsOrders: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="orders" className="mt-4 space-y-2">
-          {mockOrders.map((order) => (
-            <div key={order.id} className="bg-white/5 rounded-lg p-3">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <span className="font-semibold text-off-white">{order.symbol}</span>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={order.type === 'Buy' ? 'default' : 'destructive'} className="text-xs">
-                      {order.type}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {order.orderType}
-                    </Badge>
+          {orders.length === 0 ? (
+            <div className="text-sm text-off-white/60">No open orders</div>
+          ) : (
+            orders.map((order) => (
+              <div key={order.id} className="bg-white/5 rounded-lg p-3">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <span className="font-semibold text-off-white">{order.symbol}</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant={order.type === 'BUY' ? 'default' : 'destructive'} className="text-xs">
+                        {order.type}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {order.order_type || order.orderType || 'Market'}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Badge 
+                    variant={order.status === 'Filled' ? 'default' : order.status === 'Pending' ? 'secondary' : 'destructive'}
+                    className="text-xs"
+                  >
+                    {order.status}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-off-white/60">Qty: </span>
+                    <span className="text-off-white">{order.quantity}</span>
+                  </div>
+                  <div>
+                    <span className="text-off-white/60">Price: </span>
+                    <span className="text-off-white">KES {Number(order.price).toFixed(2)}</span>
                   </div>
                 </div>
-                <Badge 
-                  variant={order.status === 'Filled' ? 'default' : order.status === 'Pending' ? 'secondary' : 'destructive'}
-                  className="text-xs"
-                >
-                  {order.status}
-                </Badge>
+                <p className="text-xs text-off-white/60 mt-2">{order.date || order.timestamp || order.created_at}</p>
               </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-off-white/60">Qty: </span>
-                  <span className="text-off-white">{order.quantity}</span>
-                </div>
-                <div>
-                  <span className="text-off-white/60">Price: </span>
-                  <span className="text-off-white">KES {order.price.toFixed(2)}</span>
-                </div>
-              </div>
-              
-              <p className="text-xs text-off-white/60 mt-2">{order.timestamp}</p>
-            </div>
-          ))}
+            ))
+          )}
         </TabsContent>
 
         <TabsContent value="history" className="mt-4 space-y-2">
-          {state.transactions.slice(0, 5).map((trade) => (
+          {history.slice(0, 5).map((trade) => (
             <div key={trade.id} className="bg-white/5 rounded-lg p-3">
               <div className="flex justify-between items-start mb-2">
                 <div>
@@ -162,9 +144,8 @@ const PositionsOrders: React.FC = () => {
                     {trade.type}
                   </Badge>
                 </div>
-                <span className="text-off-white font-semibold">KES {trade.total.toLocaleString()}</span>
+                <span className="text-off-white font-semibold">KES {Number(trade.total).toLocaleString()}</span>
               </div>
-              
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <span className="text-off-white/60">Qty: </span>
@@ -172,10 +153,9 @@ const PositionsOrders: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-off-white/60">Price: </span>
-                  <span className="text-off-white">KES {trade.price.toFixed(2)}</span>
+                  <span className="text-off-white">KES {Number(trade.price).toFixed(2)}</span>
                 </div>
               </div>
-              
               <p className="text-xs text-off-white/60 mt-2">{trade.date}</p>
             </div>
           ))}

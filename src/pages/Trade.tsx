@@ -111,13 +111,27 @@ const Trade: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 flex-1">
           {/* Left Column - Chart and Stock Info */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <StockSummary stock={selectedStock} />
-            <TradingChart symbol={selectedStock?.symbol ?? ''} />
+            {selectedStock ? (
+              <>
+                <StockSummary stock={selectedStock} />
+                <TradingChart symbol={selectedStock.symbol} />
+              </>
+            ) : (
+              <div className="glass-card animate-fade-in p-6 text-center text-off-white/60">
+                No stock selected or market data unavailable
+              </div>
+            )}
           </div>
 
           {/* Right Column - Trading Panel */}
           <div className="space-y-4 sm:space-y-6">
-            <OrderPanel stock={selectedStock} />
+            {selectedStock ? (
+              <OrderPanel stock={selectedStock} />
+            ) : (
+              <div className="glass-card animate-fade-in p-4 text-center text-off-white/60">
+                Select a stock to place orders
+              </div>
+            )}
             
             {/* Mobile Tabs for additional content */}
             <div className="lg:hidden">
@@ -136,24 +150,24 @@ const Trade: React.FC = () => {
                   <WatchlistPanel />
                 </TabsContent>
                 <TabsContent value="research" className="mt-4">
-                  <ResearchPanel stock={selectedStock} />
+                  {selectedStock ? <ResearchPanel stock={selectedStock} /> : <div className="text-sm text-off-white/60">No stock selected</div>}
                 </TabsContent>
                 <TabsContent value="alerts" className="mt-4">
-                  <AlertsPanel stock={selectedStock} />
+                  {selectedStock ? <AlertsPanel stock={selectedStock} /> : <div className="text-sm text-off-white/60">No stock selected</div>}
                 </TabsContent>
                 <TabsContent value="news" className="mt-4">
-                  <NewsFeed stock={selectedStock} />
+                  {selectedStock ? <NewsFeed stock={selectedStock} /> : <div className="text-sm text-off-white/60">No stock selected</div>}
                 </TabsContent>
               </Tabs>
             </div>
 
             {/* Desktop - Show all panels */}
-            <div className="hidden lg:block space-y-6">
+              <div className="hidden lg:block space-y-6">
               <PositionsOrders />
               <WatchlistPanel />
-              <ResearchPanel stock={selectedStock} />
-              <AlertsPanel stock={selectedStock} />
-              <NewsFeed stock={selectedStock} />
+              {selectedStock ? <ResearchPanel stock={selectedStock} /> : <div className="text-sm text-off-white/60">No stock selected</div>}
+              {selectedStock ? <AlertsPanel stock={selectedStock} /> : <div className="text-sm text-off-white/60">No stock selected</div>}
+              {selectedStock ? <NewsFeed stock={selectedStock} /> : <div className="text-sm text-off-white/60">No stock selected</div>}
             </div>
           </div>
         </div>
