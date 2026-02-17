@@ -64,8 +64,8 @@ const Trade: React.FC = () => {
                       <span className="font-semibold">{selectedStock?.symbol ?? '—'}</span>
                       <span className="text-xs text-off-white/60">{selectedStock?.name ?? ''}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono">KES {selectedStock ? selectedStock.price.toFixed(2) : '--'}</span>
+                      <div className="flex items-center gap-2">
+                      <span className="font-mono">{selectedStock ? (selectedStock.currency ?? 'KES') + ' ' + selectedStock.price.toFixed(2) : '--'}</span>
                       <span className={`text-xs ${selectedStock && selectedStock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {selectedStock ? `${selectedStock.change >= 0 ? '+' : ''}${selectedStock.change.toFixed(2)}%` : ''}
                       </span>
@@ -82,9 +82,9 @@ const Trade: React.FC = () => {
                         <span className="text-xs text-off-white/60">{stock.name}</span>
                       </div>
                       <div className="flex items-center gap-2 ml-4">
-                        <span className="font-mono text-sm">KES {stock.price.toFixed(2)}</span>
+                        <span className="font-mono text-sm">{(stock.currency ?? 'KES')} {Number(stock.price || 0).toFixed(2)}</span>
                         <span className={`text-xs ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)}%
+                          {stock.change >= 0 ? '+' : ''}{Number(stock.change || 0).toFixed(2)}%
                         </span>
                       </div>
                     </div>

@@ -88,7 +88,7 @@ const RiskManagementModule: React.FC = () => {
             <span className="font-bold text-green-600">1.8</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm">NSE Volatility</span>
+            <span className="text-sm">Market Volatility</span>
             <span className="font-bold text-purple-600">15.2%</span>
           </div>
         </div>

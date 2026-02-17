@@ -24,6 +24,7 @@ import { useFinancialData } from "../contexts/FinancialDataContext";
 
 const Portfolio: React.FC = () => {
   const { state } = useFinancialData();
+  const portfolioCurrency = state.portfolio?.currency ?? 'KES';
   const [activeSection, setActiveSection] = useState("overview");
   const [sortBy, setSortBy] = useState("value");
   const [filterType, setFilterType] = useState("all");
@@ -83,14 +84,11 @@ const Portfolio: React.FC = () => {
           <span className="text-off-white/60 text-sm">Total Portfolio Value</span>
           <RefreshCw size={16} className="text-secondary animate-spin" />
         </div>
-        <div className="text-3xl font-bold text-off-white mb-2">
-          KES {portfolioData.totalValue.toLocaleString()}
-        </div>
         <div className="flex items-center gap-4">
           <div className={`flex items-center gap-1 ${portfolioData.dailyChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {portfolioData.dailyChange >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
             <span className="font-semibold">
-              {portfolioData.dailyChange >= 0 ? '+' : ''}KES {Math.abs(portfolioData.dailyChange).toLocaleString()}
+              {portfolioData.dailyChange >= 0 ? '+' : ''}{portfolioCurrency} {Math.abs(Number(portfolioData.dailyChange) || 0).toLocaleString()}
             </span>
             <span>({portfolioData.dailyChangePercent >= 0 ? '+' : ''}{portfolioData.dailyChangePercent}%)</span>
           </div>
@@ -161,15 +159,15 @@ const Portfolio: React.FC = () => {
                 <div className="font-semibold text-off-white text-lg">{holding.symbol}</div>
                 <div className="text-xs text-neutral">{holding.name}</div>
                 <div className="text-xs text-off-white/60 mt-1">
-                  {holding.quantity} shares @ KES {holding.avgPrice}
+                  {holding.quantity} shares @ {holding.currency ?? holding.stocks?.currency ?? portfolioCurrency} {Number(holding.avgPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               </div>
               <div className="text-right">
                 <div className="font-bold text-lg text-off-white">
-                  KES {holding.value.toLocaleString()}
+                  {holding.currency ?? holding.stocks?.currency ?? portfolioCurrency} {Number(holding.value || 0).toLocaleString()}
                 </div>
                 <div className="text-sm text-off-white/60">
-                  KES {holding.currentPrice.toFixed(2)}
+                  {holding.currency ?? holding.stocks?.currency ?? portfolioCurrency} {Number(holding.currentPrice || 0).toFixed(2)}
                 </div>
               </div>
             </div>
@@ -178,7 +176,7 @@ const Portfolio: React.FC = () => {
               <div className={`flex items-center gap-1 ${holding.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {holding.profitLoss >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                 <span className="font-semibold text-sm">
-                  {holding.profitLoss >= 0 ? '+' : ''}KES {Math.abs(holding.profitLoss).toFixed(2)}
+                  {holding.profitLoss >= 0 ? '+' : ''}{holding.currency ?? holding.stocks?.currency ?? portfolioCurrency} {Math.abs(Number(holding.profitLoss) || 0).toFixed(2)}
                 </span>
                 <span className="text-xs">
                   ({holding.profitLossPercent >= 0 ? '+' : ''}{holding.profitLossPercent.toFixed(2)}%)
@@ -235,7 +233,7 @@ const Portfolio: React.FC = () => {
                 <span className="text-off-white text-sm">{item.name}</span>
               </div>
               <div className="text-off-white font-semibold text-sm">
-                KES {item.value.toLocaleString()}
+                {portfolioCurrency} {Number(item.value || 0).toLocaleString()}
               </div>
             </div>
           ))}
@@ -276,13 +274,13 @@ const Portfolio: React.FC = () => {
                 <span className="font-semibold text-off-white">{tx.symbol}</span>
               </div>
               <div className="text-xs text-off-white/60">
-                {tx.quantity} shares @ KES {tx.price}
+                {tx.quantity} shares @ {tx.currency ?? portfolioCurrency} {Number(tx.price || 0).toLocaleString()}
               </div>
               <div className="text-xs text-neutral">{tx.date}</div>
             </div>
             <div className="text-right">
               <div className="font-semibold text-off-white">
-                KES {tx.total.toLocaleString()}
+                {tx.currency ?? portfolioCurrency} {Number(tx.total || 0).toLocaleString()}
               </div>
               <div className={`text-xs ${tx.status === 'Completed' || tx.status === 'Paid' ? 'text-green-400' : 'text-yellow-400'}`}>
                 {tx.status}
@@ -298,7 +296,7 @@ const Portfolio: React.FC = () => {
     <div className="space-y-4">
       <div className="glass-card p-4">
         <h3 className="font-semibold text-off-white mb-2">Total Dividend Income</h3>
-        <div className="text-2xl font-bold text-green-400 mb-2">KES 530.00</div>
+        <div className="text-2xl font-bold text-green-400 mb-2">{portfolioCurrency} 530.00</div>
         <div className="text-xs text-off-white/60">This year</div>
       </div>
       
@@ -313,7 +311,7 @@ const Portfolio: React.FC = () => {
               </div>
               <div className="text-right">
                 <div className="font-semibold text-off-white">
-                  KES {dividend.amount.toFixed(2)}
+                  {portfolioCurrency} {Number(dividend.amount || 0).toFixed(2)}
                 </div>
                 <div className={`text-xs ${
                   dividend.status === 'Paid' ? 'text-green-400' :
