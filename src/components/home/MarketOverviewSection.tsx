@@ -1,7 +1,8 @@
 
-import React, { useRef, useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useRef, useState } from 'react';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useFinancialData } from '@/contexts/FinancialDataContext';
 
 const MarketOverviewSection: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -9,14 +10,8 @@ const MarketOverviewSection: React.FC = () => {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  const marketData = [
-    { symbol: 'SCOM', name: 'Safaricom', price: 42.50, change: 2.1, changePercent: 5.2 },
-    { symbol: 'EQTY', name: 'Equity Group', price: 58.75, change: -1.25, changePercent: -2.1 },
-    { symbol: 'KCB', name: 'KCB Group', price: 45.00, change: 0.75, changePercent: 1.7 },
-    { symbol: 'COOP', name: 'Co-operative Bank', price: 14.80, change: -0.20, changePercent: -1.3 },
-    { symbol: 'ABSA', name: 'Absa Bank Kenya', price: 12.45, change: 0.15, changePercent: 1.2 },
-    { symbol: 'DTBK', name: 'Diamond Trust Bank', price: 7.50, change: 0.25, changePercent: 3.4 },
-  ];
+  const { state } = useFinancialData();
+  const marketData = state.stocks ?? [];
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -71,7 +66,7 @@ const MarketOverviewSection: React.FC = () => {
       onTouchEnd={handleTouchEnd}
     >
       {marketData.map((stock) => (
-        <Card key={stock.symbol} className="min-w-[280px] bg-white/5 border-white/10 flex-shrink-0 select-none">
+        <Card key={stock.symbol || stock.id} className="min-w-[280px] bg-white/5 border-white/10 flex-shrink-0 select-none">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg text-white flex items-center justify-between">
               <div>
@@ -79,10 +74,10 @@ const MarketOverviewSection: React.FC = () => {
                 <div className="text-sm font-normal text-gray-300">{stock.name}</div>
               </div>
               <div className="text-right">
-                <div className="text-xl font-bold">KES {stock.price.toFixed(2)}</div>
-                <div className={`flex items-center text-sm ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {stock.change >= 0 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
-                  {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)} ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(1)}%)
+                <div className="text-xl font-bold">{(stock.price || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div className={`flex items-center text-sm ${Number(stock.change) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {Number(stock.change) >= 0 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
+                  {Number(stock.change) >= 0 ? '+' : ''}{Number(stock.change || 0).toFixed(2)} ({Number(stock.changePercent || 0) >= 0 ? '+' : ''}{Number(stock.changePercent || 0).toFixed(2)}%)
                 </div>
               </div>
             </CardTitle>
