@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from "react";
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -77,7 +78,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('1D');
   const [chartType, setChartType] = useState<'line' | 'candlestick'>('line');
   const [isDarkTheme, setIsDarkTheme] = useState(true);
-  const [chartData, setChartData] = useState(generateMockData(30));
+  const [chartData, setChartData] = useState<any[]>([]);
   const [activeIndicators, setActiveIndicators] = useState<string[]>([]);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [supportLevel, setSupportLevel] = useState<number | null>(null);
@@ -101,18 +102,82 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
   ];
 
   useEffect(() => {
-    // Simulate data update when timeframe changes
-    const days = selectedTimeframe === '1D' ? 24 : 
-                 selectedTimeframe === '1W' ? 7 : 
-                 selectedTimeframe === '1M' ? 30 : 
-                 selectedTimeframe === '3M' ? 90 : 365;
-    const newData = generateMockData(days);
-    setChartData(newData);
-    
-    // Calculate support and resistance levels
-    const prices = newData.map(d => d.price);
-    setSupportLevel(Math.min(...prices) * 1.02);
-    setResistanceLevel(Math.max(...prices) * 0.98);
+    // Fetch historical OHLC/volume data from Supabase for the given symbol
+    const fetchHistorical = async () => {
+      if (!symbol) return;
+
+      // Determine number of records to fetch based on timeframe
+      const limit = selectedTimeframe === '1D' ? 48 :
+                    selectedTimeframe === '1W' ? 56 :
+                    selectedTimeframe === '1M' ? 120 :
+                    selectedTimeframe === '3M' ? 360 : 730;
+
+      try {
+        // Find stock id by symbol
+        const { data: stock, error: stockErr } = await supabase
+          .from('stocks')
+          .select('id')
+          .eq('symbol', symbol)
+          .maybeSingle();
+
+        if (stockErr) throw stockErr;
+
+        let recentData: any[] | null = null;
+
+        if (stock && stock.id) {
+          const { data: prices, error: pricesErr } = await supabase
+            .from('stock_prices')
+            .select('open,high,low,close,price,volume,timestamp')
+            .eq('stock_id', stock.id)
+            .order('timestamp', { ascending: true })
+            .limit(limit);
+
+          if (!pricesErr && prices && prices.length > 0) {
+            recentData = prices.map((p: any) => ({
+              time: p.timestamp ? new Date(p.timestamp).toLocaleString() : '',
+              price: Number(p.close ?? p.price ?? 0),
+              open: Number(p.open ?? p.price ?? 0),
+              high: Number(p.high ?? p.price ?? 0),
+              low: Number(p.low ?? p.price ?? 0),
+              close: Number(p.close ?? p.price ?? 0),
+              volume: Number(p.volume ?? 0),
+              // placeholders for indicators; will be computed client-side if needed
+              rsi: 50,
+              macdLine: 0,
+              signalLine: 0,
+              histogram: 0,
+              sma: Number(p.close ?? p.price ?? 0),
+              upperBand: Number(p.close ?? p.price ?? 0) + 2,
+              lowerBand: Number(p.close ?? p.price ?? 0) - 2,
+              fill: (p.close ?? p.price ?? 0) >= (p.open ?? p.price ?? 0) ? '#22C55E' : '#EF4444'
+            }));
+          }
+        }
+
+        // Use fetched data when available, otherwise fallback to mock generator
+        const newData = recentData && recentData.length > 0 ? recentData : generateMockData(limit > 365 ? 365 : limit);
+        setChartData(newData);
+
+        // Calculate support and resistance levels
+        const pricesArr = newData.map(d => d.price);
+        if (pricesArr.length > 0) {
+          setSupportLevel(Math.min(...pricesArr) * 1.02);
+          setResistanceLevel(Math.max(...pricesArr) * 0.98);
+        } else {
+          setSupportLevel(null);
+          setResistanceLevel(null);
+        }
+      } catch (e) {
+        console.error('Error fetching historical prices:', e);
+        const fallback = generateMockData(30);
+        setChartData(fallback);
+        const prices = fallback.map(d => d.price);
+        setSupportLevel(Math.min(...prices) * 1.02);
+        setResistanceLevel(Math.max(...prices) * 0.98);
+      }
+    };
+
+    fetchHistorical();
   }, [selectedTimeframe, symbol]);
 
   const toggleIndicator = (indicatorId: string) => {
