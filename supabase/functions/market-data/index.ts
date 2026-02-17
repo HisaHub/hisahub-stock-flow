@@ -13,13 +13,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
+    try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Realistic Kenyan stock data with proper price movements
+    const MARKETSTACK_KEY = Deno.env.get('MARKETSTACK_API_KEY') ?? '';
+
+    // Realistic Kenyan stock data with proper price movements (preferred: Marketstack)
     const kenyaStocks = [
       { symbol: 'SCOM', basePrice: 28.50, volatility: 0.03 },
       { symbol: 'EQTY', basePrice: 45.75, volatility: 0.025 },
@@ -33,6 +35,30 @@ serve(async (req) => {
       { symbol: 'NBK', basePrice: 8.45, volatility: 0.03 }
     ];
     
+    // Helper: try to fetch recent EOD data for a symbol from Marketstack
+    async function fetchFromMarketstack(symbol: string) {
+      if (!MARKETSTACK_KEY) return null;
+      try {
+        const url = `https://api.marketstack.com/v1/eod?access_key=${encodeURIComponent(MARKETSTACK_KEY)}&symbols=${encodeURIComponent(symbol)}&limit=1`;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const json = await res.json();
+        const item = json.data && json.data.length ? json.data[0] : null;
+        if (!item) return null;
+        return {
+          price: Number(item.close),
+          high: Number(item.high),
+          low: Number(item.low),
+          open: Number(item.open),
+          volume: item.volume ? Number(item.volume) : Math.floor(Math.random() * 500000),
+          timestamp: item.date
+        };
+      } catch (e) {
+        console.error('Marketstack fetch error for', symbol, e);
+        return null;
+      }
+    }
+
     for (const stockInfo of kenyaStocks) {
       // Get or create stock
       let { data: stock } = await supabaseClient
@@ -56,13 +82,26 @@ serve(async (req) => {
       }
 
       if (stock) {
-        // Generate realistic price movement
-        const priceChange = (Math.random() - 0.5) * stockInfo.volatility * 2;
-        const price = Math.max(0.01, stockInfo.basePrice * (1 + priceChange));
-        const volume = Math.floor(Math.random() * 500000) + 50000;
-        const high = price * (1 + Math.random() * 0.02);
-        const low = price * (1 - Math.random() * 0.02);
-        
+        // Prefer Marketstack data when available
+        const ms = await fetchFromMarketstack(stockInfo.symbol).catch(() => null);
+        let price: number, high: number, low: number, volume: number, open: number;
+
+        if (ms) {
+          price = ms.price;
+          high = ms.high;
+          low = ms.low;
+          volume = ms.volume;
+          open = ms.open;
+        } else {
+          // Fallback: simulate realistic price movement
+          const priceChange = (Math.random() - 0.5) * stockInfo.volatility * 2;
+          price = Math.max(0.01, stockInfo.basePrice * (1 + priceChange));
+          volume = Math.floor(Math.random() * 500000) + 50000;
+          high = price * (1 + Math.random() * 0.02);
+          low = price * (1 - Math.random() * 0.02);
+          open = Number((price * 0.998).toFixed(2));
+        }
+
         // Insert new price data
         await supabaseClient
           .from('stock_prices')
@@ -72,7 +111,7 @@ serve(async (req) => {
             volume,
             high: Number(high.toFixed(2)),
             low: Number(low.toFixed(2)),
-            open: Number((price * 0.998).toFixed(2)),
+            open: Number(open.toFixed(2)),
             close: Number(price.toFixed(2))
           });
 
