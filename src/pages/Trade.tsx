@@ -24,24 +24,16 @@ import { useFinancialData, Stock } from "../contexts/FinancialDataContext";
 const Trade: React.FC = () => {
   const navigate = useNavigate();
   const { state } = useFinancialData();
-  const [selectedStock, setSelectedStock] = useState<Stock>(state.stocks[0] || {
-    id: '',
-    symbol: 'SCOM',
-    name: 'Safaricom PLC',
-    sector: 'Technology',
-    price: 28.50,
-    volume: 1000000,
-    high: 29.00,
-    low: 28.00,
-    change: 0.50,
-    changePercent: '1.79'
-  });
+  // Track selected symbol rather than a mocked Stock object
+  const [selectedSymbol, setSelectedSymbol] = useState<string>(state.stocks?.[0]?.symbol || '');
+
+  // Derive selected stock from live state
+  const selectedStock = React.useMemo(() => {
+    return state.stocks.find(s => s.symbol === selectedSymbol) || state.stocks?.[0] || null;
+  }, [state.stocks, selectedSymbol]);
 
   const handleStockChange = (stockSymbol: string) => {
-    const stock = state.stocks.find(s => s.symbol === stockSymbol);
-    if (stock) {
-      setSelectedStock(stock);
-    }
+    setSelectedSymbol(stockSymbol);
   };
 
   const handleBrokerLogin = () => {
@@ -49,14 +41,12 @@ const Trade: React.FC = () => {
   };
 
   // Update selected stock when prices change
+  // Ensure selected symbol defaults to first available stock when data loads
   React.useEffect(() => {
-    if (state.stocks.length > 0 && selectedStock) {
-      const updatedStock = state.stocks.find(s => s.symbol === selectedStock.symbol);
-      if (updatedStock) {
-        setSelectedStock(updatedStock);
-      }
+    if ((!selectedSymbol || selectedSymbol === '') && state.stocks.length > 0) {
+      setSelectedSymbol(state.stocks[0].symbol);
     }
-  }, [state.stocks, selectedStock]);
+  }, [state.stocks, selectedSymbol]);
 
   return (
     <div className="min-h-screen flex flex-col bg-primary font-sans transition-colors pb-20">
@@ -66,18 +56,18 @@ const Trade: React.FC = () => {
         <div className="mb-4 flex flex-col sm:flex-row gap-4">
           {/* Stock Selector */}
           <div className="flex-1">
-            <Select value={selectedStock.symbol} onValueChange={handleStockChange}>
+            <Select value={selectedSymbol} onValueChange={handleStockChange}>
               <SelectTrigger className="w-full bg-white/10 border-secondary/20 text-off-white">
                 <SelectValue>
                   <div className="flex items-center justify-between w-full">
                     <div className="flex flex-col items-start">
-                      <span className="font-semibold">{selectedStock.symbol}</span>
-                      <span className="text-xs text-off-white/60">{selectedStock.name}</span>
+                      <span className="font-semibold">{selectedStock?.symbol ?? '—'}</span>
+                      <span className="text-xs text-off-white/60">{selectedStock?.name ?? ''}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono">KES {selectedStock.price.toFixed(2)}</span>
-                      <span className={`text-xs ${selectedStock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {selectedStock.change >= 0 ? '+' : ''}{selectedStock.change.toFixed(2)}%
+                      <span className="font-mono">KES {selectedStock ? selectedStock.price.toFixed(2) : '--'}</span>
+                      <span className={`text-xs ${selectedStock && selectedStock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {selectedStock ? `${selectedStock.change >= 0 ? '+' : ''}${selectedStock.change.toFixed(2)}%` : ''}
                       </span>
                     </div>
                   </div>
@@ -122,7 +112,7 @@ const Trade: React.FC = () => {
           {/* Left Column - Chart and Stock Info */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             <StockSummary stock={selectedStock} />
-            <TradingChart symbol={selectedStock.symbol} />
+            <TradingChart symbol={selectedStock?.symbol ?? ''} />
           </div>
 
           {/* Right Column - Trading Panel */}
