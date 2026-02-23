@@ -5,10 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, Medal, Award, TrendingUp } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
-type UserProfile = Database['public']['Tables']['profiles']['Row'];
+type SafeUserProfile = Pick<Database['public']['Tables']['profiles']['Row'], 'id' | 'first_name' | 'last_name' | 'role' | 'account_status' | 'created_at' | 'updated_at'>;
 
 interface LeaderboardWidgetProps {
-  users: UserProfile[];
+  users: SafeUserProfile[];
 }
 
 const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({ users }) => {
