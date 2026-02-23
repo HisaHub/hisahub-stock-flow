@@ -1,260 +1,159 @@
 
-# HisaHub Export Plan
 
-## Overview
+# Comprehensive Fix Plan: Build Errors + Live Data Integration
 
-This plan outlines how to export the complete HisaHub trading and portfolio architecture to another application. The export will include all source files, database schema, edge functions, styling, and integration documentation needed to recreate the full functionality.
+## Problem Summary
+
+The app has **21 TypeScript build errors** across 3 files, plus multiple components still using hardcoded mock data instead of live Supabase data. The `MARKETSTACK_API_KEY` secret also needs to be added to Supabase (only `LOVABLE_API_KEY` exists currently).
 
 ---
 
-## Export Structure
+## Phase 1: Fix TypeScript Build Errors
 
-The export will be organized into a single comprehensive markdown file (`HISAHUB_COMPLETE_EXPORT.md`) containing all components with clear section headers for easy navigation and copy-paste integration.
+### 1.1 Fix `FinancialDataContext.tsx` -- Update interfaces to match DB schema
 
-```text
-HISAHUB_COMPLETE_EXPORT.md
-|
-+-- 1. DATABASE SCHEMA (SQL)
-|   +-- Custom types (enums)
-|   +-- 15 tables with relationships
-|   +-- RLS policies
-|   +-- Indexes and triggers
-|   +-- Sample data
-|
-+-- 2. PAGES (2 files)
-|   +-- Trade.tsx - Full trading interface
-|   +-- Portfolio.tsx - Portfolio management
-|
-+-- 3. TRADING COMPONENTS (9 files)
-|   +-- TradingChart.tsx - Interactive charts with indicators
-|   +-- OrderPanel.tsx - Buy/Sell order placement
-|   +-- StockSummary.tsx - Stock info display
-|   +-- PositionsOrders.tsx - Open positions
-|   +-- WatchlistPanel.tsx - Watchlists
-|   +-- AlertsPanel.tsx - Price alerts
-|   +-- NewsFeed.tsx - Stock news
-|   +-- ResearchPanel.tsx - Analysis tools
-|   +-- AIAssistant.tsx - AI trading helper
-|
-+-- 4. DATA LAYER (6 files)
-|   +-- FinancialDataContext.tsx - Central state
-|   +-- useSupabaseData.tsx - Supabase integration
-|   +-- useMarketData.tsx - Real-time prices
-|   +-- useBackendData.tsx - Django backend
-|   +-- useTrading.tsx - Trading operations
-|   +-- useAIChat.tsx - AI chat hook
-|
-+-- 5. API LAYER (1 file)
-|   +-- api.ts - HTTP client with caching
-|
-+-- 6. EDGE FUNCTIONS (4 files)
-|   +-- portfolio-management/index.ts
-|   +-- market-data/index.ts
-|   +-- ai-assistant/index.ts
-|   +-- ai-news-summarizer/index.ts
-|
-+-- 7. DESIGN SYSTEM (3 files)
-|   +-- tailwind.config.ts
-|   +-- index.css
-|   +-- Glass-card patterns
-|
-+-- 8. SHARED COMPONENTS
-|   +-- BottomNav.tsx
-|   +-- ThemeProvider.tsx
-|   +-- UI components (list)
-|
-+-- 9. INTEGRATION GUIDE
-    +-- Step-by-step setup
-    +-- Dependencies
-    +-- Environment variables
-    +-- Supabase configuration
+The root cause of most errors is that the `Stock`, `Holding`, and `Transaction` interfaces are missing fields that exist in the database or are used by components.
+
+**Changes:**
+- Add `currency` to `Stock` interface (exists in `stocks` table)
+- Add `currency` and `sector` to `Holding` interface
+- Expand `stocks` optional type to include `sector` and `currency`
+- Update `Transaction` interface to include `amount`, `order_type`, `created_at`, and `currency` (all exist in DB schema)
+- Add `ADD_FUNDS` reducer case so `AccountSummaryCard` deposit/withdraw buttons work
+
+### 1.2 Fix `PositionsOrders.tsx` -- Use correct Transaction fields
+
+**4 errors** referencing `order_type`, `orderType`, `timestamp`, `created_at` which don't exist on `Transaction`.
+
+**Changes:**
+- Replace `order.order_type || order.orderType` with `order.order_type` (now added to interface)
+- Replace `order.timestamp || order.created_at` with `order.created_at` (now added to interface)
+
+### 1.3 Fix `Portfolio.tsx` -- Use correct field paths
+
+**17 errors** referencing `sector`, `currency`, `amount`, `ex_date`, `pay_date` on wrong types.
+
+**Changes:**
+- Line 43: Change `h.stocks.sector` and `h.sector` to use the new `sector` field on Holding
+- Lines 57-59: Replace `tx.amount` with `tx.total` (which exists), remove `tx.ex_date` and `tx.pay_date` (don't exist in DB)
+- Lines 162-283: Replace all `holding.currency ?? holding.stocks?.currency` and `tx.currency` with the new fields from the updated interfaces
+
+### 1.4 Fix `Trade.tsx` -- Use currency from Stock
+
+**2 errors** referencing `stock.currency`.
+
+**Changes:**
+- Lines 68, 85: `stock.currency` will work after adding `currency` to the `Stock` interface
+
+---
+
+## Phase 2: Fix Market Data Edge Function + Add Fallback
+
+### 2.1 Fix `supabase/functions/market-data/index.ts`
+
+The previous security fix already corrected the `price` variable bug. Now add a **fallback price generator** so the app shows data even when the Marketstack API key is missing or the API fails:
+
+- When `fetchFromMarketstack` returns null, generate a realistic price using the stock's `basePrice` and `volatility` with a random walk
+- Also insert market index data (NSE20, NASI, NSE25) into the `market_data` table
+- Deploy the updated function
+
+### 2.2 Fix `useMarketData.tsx` -- Fetch 2 prices for change calculation
+
+Currently fetches only 1 `stock_prices` record per stock but tries to compute change from 2 -- always returns 0.
+
+**Changes:**
+- Change `.limit(1, { foreignTable: 'stock_prices' })` to `.limit(2, { foreignTable: 'stock_prices' })`
+- Include `currency` and `sector` from the `stocks` table in the select query
+- This enables real change/changePercent calculations
+
+---
+
+## Phase 3: Replace Mock Data with Live Data
+
+### 3.1 `OpenPositionsCard.tsx` -- Replace hardcoded positions
+
+Currently has 3 hardcoded positions (SCOM, EQTY, KCB). Replace with live `state.holdings` from `FinancialDataContext`.
+
+**Changes:**
+- Import and use `useFinancialData`
+- Replace `positions` array with `state.holdings` mapped to the display format
+- Show "No open positions" empty state when holdings array is empty
+
+### 3.2 `News.tsx` -- Replace DUMMY data with live data
+
+Currently uses `DUMMY_NEWS`, `DUMMY_ARTICLES`, `DUMMY_FINANCIALS` arrays.
+
+**Changes:**
+- Import `useFinancialData` context
+- Replace `DUMMY_FINANCIALS` with `state.stocks` mapped to show symbol, name, price, and change
+- Update CSV download to export live stock data
+- Keep `DUMMY_NEWS` and `DUMMY_ARTICLES` as static content (no news table exists in DB)
+
+### 3.3 `MarketOverviewSection.tsx` -- Add market indices
+
+Currently only shows stocks. Add a section for market indices (NSE20, NASI, NSE25) from `state.marketIndices`.
+
+**Changes:**
+- Display `state.marketIndices` in a separate row below stocks
+- Show index name, value, change, and change percent
+
+### 3.4 `Portfolio.tsx` -- Remove hardcoded performance values
+
+**Changes:**
+- Replace hardcoded dividend total `KES 530.00` with computed sum from dividend transactions
+- Replace hardcoded performance metrics (Total Return 30.8%, etc.) with computed values based on portfolio data, or show "N/A"
+- Keep `performanceData` chart array as-is (last value already uses live `portfolioData.totalValue`)
+
+---
+
+## Phase 4: Propagate Live Data Through Data Layer
+
+### 4.1 `FinancialDataContext.tsx` -- Enhanced SET_HOLDINGS transform
+
+When transforming holdings, propagate `sector` and `currency` from the joined `stocks` data:
+
+```
+sector: holding.stocks?.sector || 'Other',
+currency: holding.stocks?.currency || 'KES',
 ```
 
----
+### 4.2 `useMarketData.tsx` -- Include new fields in processed stocks
 
-## What Will Be Exported
+Add `currency` and `sector` to the processed stock objects so they flow through the entire app.
 
-### 1. Database Schema (Complete SQL)
-- **15 tables**: profiles, kyc_documents, broker_accounts, stocks, stock_prices, portfolios, holdings, orders, transactions, watchlists, watchlist_items, price_alerts, notifications, chat_sessions, chat_messages, market_data
-- **8 custom enum types**: user_role, account_status, order_type, order_status, order_side, broker_name, kyc_status, notification_type
-- **Row Level Security policies** for all user-owned data
-- **Performance indexes** for common queries
-- **Triggers** for automatic timestamp updates
-- **Sample stock data** for NSE (Safaricom, Equity, KCB, etc.)
+### 4.3 `FinancialDataContext.tsx` -- Update stock mapping
 
-### 2. Core Pages
-- **Trade.tsx** (176 lines): Stock selector, chart view, order panel, tabbed mobile interface
-- **Portfolio.tsx** (424 lines): Overview, holdings, allocation, transactions, dividends, performance charts
-
-### 3. Trading Components
-| Component | Lines | Features |
-|-----------|-------|----------|
-| TradingChart.tsx | 532 | Line/candlestick charts, RSI, MACD, Bollinger Bands, support/resistance, drawing tools |
-| OrderPanel.tsx | 326 | Market/limit/stop orders, broker fee calculation, confirmation modal |
-| StockSummary.tsx | 74 | Price display, watchlist toggle, key metrics |
-| PositionsOrders.tsx | ~150 | Open positions list, order history |
-| WatchlistPanel.tsx | ~100 | Multiple watchlists, add/remove stocks |
-| AlertsPanel.tsx | ~120 | Price alert creation and management |
-| NewsFeed.tsx | ~80 | Stock-related news display |
-| ResearchPanel.tsx | ~100 | Analysis and research tools |
-| AIAssistant.tsx | ~150 | Chat interface for AI trading advice |
-
-### 4. State Management and Data Hooks
-| Hook/Context | Purpose |
-|--------------|---------|
-| FinancialDataContext | Central state for stocks, holdings, portfolio, transactions |
-| useSupabaseData | Auth, portfolio CRUD, real-time subscriptions |
-| useMarketData | Stock prices, market indices, live updates |
-| useBackendData | Django backend integration (optional) |
-| useTrading | Buy/sell operations with validation |
-| useAIChat | AI assistant conversation management |
-| useUserProfile | User profile management |
-
-### 5. API Client
-- HTTP client with request caching
-- Request deduplication
-- Token-based authentication
-- Cache invalidation strategies
-- Debounce/throttle utilities
-
-### 6. Edge Functions
-| Function | Purpose |
-|----------|---------|
-| portfolio-management | Create portfolio, place orders, update holdings, get summary |
-| market-data | Fetch and update market prices |
-| ai-assistant | GPT-powered trading advisor with portfolio context |
-| ai-news-summarizer | Summarize financial news |
-
-### 7. Design System
-- **Tailwind configuration**: Custom colors (primary navy, secondary amber), fonts (Poppins, Roboto Mono), animations
-- **CSS**: Glass-card styles, light/dark theme support, mobile-responsive rules
-- **Color palette**: Deep navy (#131b26), amber (#FFC000), off-white (#F8F9FA)
+When mapping `backendStocks` to the `Stock` interface, include `currency` (default `'KES'`).
 
 ---
 
-## Integration Requirements
+## Phase 5: Deploy and Verify
 
-### Dependencies (package.json additions)
-```json
-{
-  "@supabase/supabase-js": "^2.50.2",
-  "@tanstack/react-query": "^5.56.2",
-  "recharts": "^2.12.7",
-  "lucide-react": "^0.462.0",
-  "@radix-ui/react-tabs": "^1.1.0",
-  "@radix-ui/react-select": "^2.1.1",
-  "@radix-ui/react-popover": "^1.1.1",
-  "@radix-ui/react-dialog": "^1.1.2",
-  "@radix-ui/react-sheet": "^1.0.0",
-  "sonner": "^1.5.0",
-  "class-variance-authority": "^0.7.1",
-  "tailwind-merge": "^2.5.2",
-  "tailwindcss-animate": "^1.0.7"
-}
-```
+### 5.1 Deploy fixed `market-data` edge function
 
-### Environment Variables
-```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_anon_key
-VITE_API_BASE_URL=your_backend_url (optional)
-```
-
-### Supabase Secrets (for edge functions)
-- `OPENAI_API_KEY` - For AI assistant
+### 5.2 Invoke market-data to seed initial price data
 
 ---
 
-## What You'll Need to Adapt
+## Files to Modify (11 files)
 
-1. **Authentication**: Replace Supabase auth with your app's auth system OR keep Supabase auth
-2. **AI Backend**: Currently uses OpenAI via edge function - adapt to use your app's AI gateway
-3. **Backend API**: The Django backend integration is optional - can be removed if not needed
-4. **Routing**: Integrate Trade and Portfolio routes into your app's router
-5. **Theme Provider**: Wrap components with the ThemeProvider or use your existing theme system
-6. **Bottom Navigation**: Replace or remove BottomNav component based on your app's navigation
-
----
-
-## Implementation Steps
-
-### Step 1: Set Up Database
-1. Run the SQL migration in your Supabase project
-2. Verify all tables and RLS policies are created
-3. Add sample stock data if needed
-
-### Step 2: Install Dependencies
-```bash
-npm install @supabase/supabase-js @tanstack/react-query recharts lucide-react \
-  @radix-ui/react-tabs @radix-ui/react-select @radix-ui/react-popover \
-  @radix-ui/react-dialog sonner class-variance-authority tailwind-merge \
-  tailwindcss-animate
-```
-
-### Step 3: Copy Files
-1. Create `src/contexts/` folder and add FinancialDataContext
-2. Create `src/hooks/` folder and add all data hooks
-3. Create `src/components/trading/` folder and add all trading components
-4. Create `src/pages/` folder and add Trade.tsx and Portfolio.tsx
-5. Create `src/lib/` folder and add api.ts and utils.ts
-6. Update tailwind.config.ts with HisaHub colors and fonts
-7. Merge index.css styles
-
-### Step 4: Deploy Edge Functions
-1. Copy edge function files to `supabase/functions/`
-2. Deploy using Supabase CLI or Lovable
-3. Add required secrets (OPENAI_API_KEY)
-
-### Step 5: Wire Up Routes
-```tsx
-// In your App.tsx
-import { FinancialDataProvider } from './contexts/FinancialDataContext';
-import Trade from './pages/Trade';
-import Portfolio from './pages/Portfolio';
-
-// Wrap your app with the provider
-<FinancialDataProvider>
-  <Routes>
-    <Route path="/trade" element={<Trade />} />
-    <Route path="/portfolio" element={<Portfolio />} />
-  </Routes>
-</FinancialDataProvider>
-```
-
-### Step 6: Test
-1. Verify Supabase connection
-2. Test stock data loading
-3. Test order placement (demo mode)
-4. Test AI assistant
-5. Verify mobile responsiveness
+| # | File | Changes |
+|---|------|---------|
+| 1 | `src/contexts/FinancialDataContext.tsx` | Add `currency` to Stock, add `currency`/`sector` to Holding, expand Transaction, add `ADD_FUNDS` reducer, propagate fields in SET_HOLDINGS |
+| 2 | `src/components/trading/PositionsOrders.tsx` | Fix `order_type` and `created_at` references |
+| 3 | `src/pages/Portfolio.tsx` | Fix sector/currency/amount/ex_date/pay_date references, compute dividend total, replace hardcoded metrics |
+| 4 | `src/pages/Trade.tsx` | No changes needed (will work after Stock interface update) |
+| 5 | `src/hooks/useMarketData.tsx` | Fetch 2 prices, include currency/sector in select and processed output |
+| 6 | `src/components/home/OpenPositionsCard.tsx` | Replace hardcoded positions with live holdings |
+| 7 | `src/pages/News.tsx` | Replace DUMMY_FINANCIALS with live stock data |
+| 8 | `src/components/home/MarketOverviewSection.tsx` | Add market indices section |
+| 9 | `src/components/home/AccountSummaryCard.tsx` | No changes needed (will work after ADD_FUNDS reducer) |
+| 10 | `supabase/functions/market-data/index.ts` | Add fallback price generator, add market index inserts |
+| 11 | `src/pages/Portfolio.tsx` | Compute dividend total dynamically, replace hardcoded performance % |
 
 ---
 
-## File Count Summary
+## Required User Action
 
-| Category | Files | Total Lines (approx) |
-|----------|-------|---------------------|
-| Pages | 2 | 600 |
-| Trading Components | 9 | 1,500 |
-| Hooks | 6 | 800 |
-| Context | 1 | 450 |
-| API/Utils | 2 | 400 |
-| Edge Functions | 4 | 600 |
-| Config/CSS | 3 | 300 |
-| **Total** | **27 files** | **~4,650 lines** |
+**Add `MARKETSTACK_API_KEY` to Supabase Edge Function secrets.** Currently only `LOVABLE_API_KEY` exists. The fallback generator will ensure the app works without it, but real NSE data requires this key.
 
----
-
-## Next Steps After Approval
-
-Once you approve this plan, I will create a single comprehensive markdown file (`HISAHUB_COMPLETE_EXPORT.md`) containing:
-
-1. Complete SQL migration with all tables, types, RLS policies, and indexes
-2. All TypeScript/React component source code
-3. All hooks and context providers
-4. All edge function code
-5. Tailwind and CSS configuration
-6. Step-by-step integration guide
-7. Troubleshooting section
-
-This file will be self-contained and ready to copy into your other project.
