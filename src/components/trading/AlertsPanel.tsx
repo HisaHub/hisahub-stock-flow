@@ -21,7 +21,7 @@ interface AlertsPanelProps {
 }
 
 interface Alert {
-  id: number;
+  id: string;
   symbol: string;
   type: "above" | "below";
   price: number;
@@ -32,7 +32,6 @@ interface Alert {
 
 const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
-
   const [newAlertPrice, setNewAlertPrice] = useState("");
   const [newAlertType, setNewAlertType] = useState<"above" | "below">("above");
   const [newAlertMethod, setNewAlertMethod] = useState<"push" | "sms" | "email">("push");
@@ -41,11 +40,33 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
   useEffect(() => {
     const loadAlerts = async () => {
       try {
-        const { data, error } = await supabase.from('alerts').select('*').eq('symbol', stock.symbol);
+        // Look up stock_id for this symbol
+        const { data: stockData } = await supabase
+          .from('stocks')
+          .select('id')
+          .eq('symbol', stock.symbol)
+          .single();
+
+        if (!stockData) return;
+
+        const { data, error } = await supabase
+          .from('price_alerts')
+          .select('id, stock_id, target_price, condition, is_active, created_at')
+          .eq('stock_id', stockData.id);
+
         if (error) throw error;
-        setAlerts((data || []) as Alert[]);
+
+        const mapped: Alert[] = (data || []).map((a: any) => ({
+          id: a.id,
+          symbol: stock.symbol,
+          type: a.condition as "above" | "below",
+          price: a.target_price,
+          isActive: a.is_active,
+          method: "push" as const,
+          createdAt: a.created_at ? new Date(a.created_at).toISOString().split('T')[0] : '',
+        }));
+        setAlerts(mapped);
       } catch (err) {
-        // If alerts table doesn't exist or fetch fails, keep empty list
         console.debug('Could not load alerts:', err);
       }
     };
@@ -71,7 +92,7 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
     }
 
     const newAlert: Alert = {
-      id: Date.now(),
+      id: Date.now().toString(),
       symbol: stock.symbol,
       type: newAlertType,
       price: price,
@@ -80,12 +101,43 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
       createdAt: new Date().toISOString().split('T')[0]
     };
 
-    // Try to persist to Supabase, but fall back to local state if table missing
     (async () => {
       try {
-        const { data, error } = await supabase.from('alerts').insert([{ ...newAlert }]).select();
+        // Look up stock_id
+        const { data: stockData } = await supabase
+          .from('stocks')
+          .select('id')
+          .eq('symbol', stock.symbol)
+          .single();
+
+        if (!stockData) {
+          setAlerts(prev => [...prev, newAlert]);
+          return;
+        }
+
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData?.user) {
+          setAlerts(prev => [...prev, newAlert]);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('price_alerts')
+          .insert([{
+            stock_id: stockData.id,
+            user_id: userData.user.id,
+            target_price: price,
+            condition: newAlertType,
+            is_active: true,
+          }])
+          .select();
+
         if (error) throw error;
-        setAlerts(prev => [...prev, ...(data || [newAlert])]);
+        if (data && data.length > 0) {
+          setAlerts(prev => [...prev, { ...newAlert, id: data[0].id }]);
+        } else {
+          setAlerts(prev => [...prev, newAlert]);
+        }
       } catch (err) {
         setAlerts(prev => [...prev, newAlert]);
         console.debug('Persisting alert failed, using local state', err);
@@ -96,25 +148,25 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
     toast.success(`Alert set for ${stock.symbol} ${newAlertType} KES ${price.toFixed(2)}`);
   };
 
-  const toggleAlert = (id: number) => {
+  const toggleAlert = (id: string) => {
     const updated = alerts.map(alert => alert.id === id ? { ...alert, isActive: !alert.isActive } : alert);
     setAlerts(updated);
     (async () => {
       try {
         const alert = updated.find(a => a.id === id);
         if (!alert) return;
-        await supabase.from('alerts').update({ isActive: alert.isActive }).eq('id', id);
+        await supabase.from('price_alerts').update({ is_active: alert.isActive }).eq('id', id);
       } catch (err) {
         console.debug('Failed to update alert active state', err);
       }
     })();
   };
 
-  const deleteAlert = (id: number) => {
+  const deleteAlert = (id: string) => {
     setAlerts(alerts.filter(alert => alert.id !== id));
     (async () => {
       try {
-        await supabase.from('alerts').delete().eq('id', id);
+        await supabase.from('price_alerts').delete().eq('id', id);
       } catch (err) {
         console.debug('Failed to delete alert from DB', err);
       }
@@ -140,87 +192,36 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
         </Button>
       </div>
 
-      {/* Add Alert Form */}
       {showAddForm && (
         <div className="bg-white/5 rounded-lg p-4 mb-4 space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Label className="text-off-white text-xs">Alert Type</Label>
               <div className="flex gap-2 mt-1">
-                <Button
-                  size="sm"
-                  variant={newAlertType === "above" ? "secondary" : "outline"}
-                  onClick={() => setNewAlertType("above")}
-                  className="flex-1 text-xs"
-                >
-                  Above
-                </Button>
-                <Button
-                  size="sm"
-                  variant={newAlertType === "below" ? "secondary" : "outline"}
-                  onClick={() => setNewAlertType("below")}
-                  className="flex-1 text-xs"
-                >
-                  Below
-                </Button>
+                <Button size="sm" variant={newAlertType === "above" ? "secondary" : "outline"} onClick={() => setNewAlertType("above")} className="flex-1 text-xs">Above</Button>
+                <Button size="sm" variant={newAlertType === "below" ? "secondary" : "outline"} onClick={() => setNewAlertType("below")} className="flex-1 text-xs">Below</Button>
               </div>
             </div>
-            
             <div>
               <Label className="text-off-white text-xs">Price (KES)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder={`Current: ${stock.price.toFixed(2)}`}
-                value={newAlertPrice}
-                onChange={(e) => setNewAlertPrice(e.target.value)}
-                className="bg-white/10 border-secondary/20 text-off-white text-xs mt-1"
-              />
+              <Input type="number" step="0.01" placeholder={`Current: ${stock.price.toFixed(2)}`} value={newAlertPrice} onChange={(e) => setNewAlertPrice(e.target.value)} className="bg-white/10 border-secondary/20 text-off-white text-xs mt-1" />
             </div>
           </div>
-
           <div>
             <Label className="text-off-white text-xs">Notification Method</Label>
             <div className="flex gap-2 mt-1">
-              <Button
-                size="sm"
-                variant={newAlertMethod === "push" ? "secondary" : "outline"}
-                onClick={() => setNewAlertMethod("push")}
-                className="flex-1 text-xs"
-              >
-                Push
-              </Button>
-              <Button
-                size="sm"
-                variant={newAlertMethod === "sms" ? "secondary" : "outline"}
-                onClick={() => setNewAlertMethod("sms")}
-                className="flex-1 text-xs"
-              >
-                SMS
-              </Button>
-              <Button
-                size="sm"
-                variant={newAlertMethod === "email" ? "secondary" : "outline"}
-                onClick={() => setNewAlertMethod("email")}
-                className="flex-1 text-xs"
-              >
-                Email
-              </Button>
+              <Button size="sm" variant={newAlertMethod === "push" ? "secondary" : "outline"} onClick={() => setNewAlertMethod("push")} className="flex-1 text-xs">Push</Button>
+              <Button size="sm" variant={newAlertMethod === "sms" ? "secondary" : "outline"} onClick={() => setNewAlertMethod("sms")} className="flex-1 text-xs">SMS</Button>
+              <Button size="sm" variant={newAlertMethod === "email" ? "secondary" : "outline"} onClick={() => setNewAlertMethod("email")} className="flex-1 text-xs">Email</Button>
             </div>
           </div>
-
           <div className="flex gap-2">
-            <Button size="sm" onClick={addAlert} className="flex-1 bg-green-600 hover:bg-green-700">
-              Add Alert
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setShowAddForm(false)} className="flex-1">
-              Cancel
-            </Button>
+            <Button size="sm" onClick={addAlert} className="flex-1 bg-green-600 hover:bg-green-700">Add Alert</Button>
+            <Button size="sm" variant="outline" onClick={() => setShowAddForm(false)} className="flex-1">Cancel</Button>
           </div>
         </div>
       )}
 
-      {/* Current Alerts */}
       <div className="space-y-2">
         {stockAlerts.length === 0 ? (
           <div className="text-center py-6 text-off-white/60">
@@ -233,31 +234,18 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
             <div key={alert.id} className="bg-white/5 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Badge 
-                    variant={alert.type === "above" ? "default" : "destructive"}
-                    className="text-xs"
-                  >
+                  <Badge variant={alert.type === "above" ? "default" : "destructive"} className="text-xs">
                     {alert.type === "above" ? "↗" : "↘"} {alert.type}
                   </Badge>
                   <span className="text-off-white font-semibold">KES {alert.price.toFixed(2)}</span>
                 </div>
-                
                 <div className="flex items-center gap-2">
-                  <Switch
-                    checked={alert.isActive}
-                    onCheckedChange={() => toggleAlert(alert.id)}
-                  />
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => deleteAlert(alert.id)}
-                    className="p-1"
-                  >
+                  <Switch checked={alert.isActive} onCheckedChange={() => toggleAlert(alert.id)} />
+                  <Button size="sm" variant="outline" onClick={() => deleteAlert(alert.id)} className="p-1">
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
-              
               <div className="flex justify-between items-center text-xs text-off-white/60">
                 <span>via {alert.method.toUpperCase()}</span>
                 <span>Created: {alert.createdAt}</span>
@@ -267,7 +255,6 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({ stock }) => {
         )}
       </div>
 
-      {/* Alert Settings */}
       <div className="mt-4 pt-4 border-t border-white/10">
         <p className="text-xs text-off-white/60 mb-2">Notification Settings</p>
         <div className="space-y-2">

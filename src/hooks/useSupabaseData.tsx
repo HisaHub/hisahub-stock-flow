@@ -43,7 +43,7 @@ export const useSupabaseData = () => {
       // First check if user profile exists
       let { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, first_name, last_name, role, account_status, phone_number, date_of_birth, national_id, biometric_enabled, risk_tolerance, has_completed_tour, created_at, updated_at')
         .eq('id', userId)
         .single();
 

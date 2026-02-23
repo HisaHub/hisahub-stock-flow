@@ -12,12 +12,12 @@ type Post = Database['public']['Tables']['posts']['Row'] & {
   is_liked: boolean;
 };
 
-type UserProfile = Database['public']['Tables']['profiles']['Row'];
+type SafeUserProfile = Pick<Database['public']['Tables']['profiles']['Row'], 'id' | 'first_name' | 'last_name' | 'role' | 'account_status' | 'created_at' | 'updated_at'>;
 
 export const useCommunity = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [users, setUsers] = useState<SafeUserProfile[]>([]);
   const [followedUsers, setFollowedUsers] = useState<string[]>([]);
 
   const fetchPosts = async () => {
@@ -59,7 +59,7 @@ export const useCommunity = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, first_name, last_name, role, account_status, created_at, updated_at')
         .neq('id', (await supabase.auth.getUser()).data.user?.id);
 
       if (error) throw error;

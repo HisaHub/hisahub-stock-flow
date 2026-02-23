@@ -1,10 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const inputSchema = z.object({
+  post_id: z.string().uuid(),
+  content: z.string().min(1).max(10000),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,8 +18,29 @@ serve(async (req) => {
   }
 
   try {
-    const { post_id, content } = await req.json();
+    // Auth verification
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    const userClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Input validation
+    const body = await req.json();
+    const { post_id, content } = inputSchema.parse(body);
     
+    // Use SERVICE_ROLE for DB updates (needs to update any post)
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -24,7 +51,6 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Call Lovable AI for sentiment analysis
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -44,26 +70,7 @@ Analyze trading posts and return sentiment in this EXACT JSON format (no markdow
   "sentiment_score": <number between -1.0 and 1.0>,
   "confidence": <number between 0.0 and 1.0>,
   "reasoning": "<brief explanation>"
-}
-
-Sentiment Guidelines:
-- "bullish": Positive outlook, buying recommendations, optimistic predictions
-- "bearish": Negative outlook, selling recommendations, pessimistic predictions  
-- "neutral": Mixed signals, informational posts, questions
-
-Score Scale:
-- 1.0: Extremely bullish
-- 0.5: Moderately bullish
-- 0.0: Neutral
-- -0.5: Moderately bearish
-- -1.0: Extremely bearish
-
-Consider:
-- Stock tickers mentioned ($SCOM, $EQTY, etc.)
-- Action words (buy, sell, hold, long, short)
-- Price predictions and targets
-- Market conditions and economic factors
-- Emoji sentiment (🚀 bullish, 📉 bearish)`
+}`
           },
           {
             role: 'user',
@@ -79,23 +86,10 @@ Consider:
               parameters: {
                 type: "object",
                 properties: {
-                  sentiment_label: {
-                    type: "string",
-                    enum: ["bullish", "bearish", "neutral"]
-                  },
-                  sentiment_score: {
-                    type: "number",
-                    minimum: -1.0,
-                    maximum: 1.0
-                  },
-                  confidence: {
-                    type: "number",
-                    minimum: 0.0,
-                    maximum: 1.0
-                  },
-                  reasoning: {
-                    type: "string"
-                  }
+                  sentiment_label: { type: "string", enum: ["bullish", "bearish", "neutral"] },
+                  sentiment_score: { type: "number", minimum: -1.0, maximum: 1.0 },
+                  confidence: { type: "number", minimum: 0.0, maximum: 1.0 },
+                  reasoning: { type: "string" }
                 },
                 required: ["sentiment_label", "sentiment_score", "confidence", "reasoning"],
                 additionalProperties: false
@@ -121,15 +115,12 @@ Consider:
         );
       }
       
-      const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
+      console.error('Lovable AI error:', response.status);
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('AI Response:', JSON.stringify(data, null, 2));
 
-    // Extract sentiment from tool call
     let sentiment;
     const choice = data.choices?.[0];
     
@@ -137,19 +128,15 @@ Consider:
       const toolCall = choice.message.tool_calls[0];
       sentiment = JSON.parse(toolCall.function.arguments);
     } else {
-      // Fallback: try to parse from content
-      const content = choice?.message?.content || '';
+      const msgContent = choice?.message?.content || '';
       try {
-        sentiment = JSON.parse(content);
+        sentiment = JSON.parse(msgContent);
       } catch {
         console.error('Failed to parse sentiment from AI response');
         throw new Error('Invalid AI response format');
       }
     }
 
-    console.log('Parsed sentiment:', sentiment);
-
-    // Update post with sentiment data
     const { error: updateError } = await supabaseClient
       .from('posts')
       .update({
@@ -166,20 +153,20 @@ Consider:
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        sentiment 
-      }),
+      JSON.stringify({ success: true, sentiment }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: error.errors.map(e => e.message) }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     console.error('Sentiment analysis error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: error instanceof Error ? error.stack : undefined
-      }),
+      JSON.stringify({ error: 'An internal error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

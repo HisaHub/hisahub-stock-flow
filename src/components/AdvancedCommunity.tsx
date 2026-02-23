@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Heart, MessageCircle, Share2, TrendingUp, TrendingDown, Plus, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,10 +43,6 @@ interface Post {
   tickers?: string[];
 }
 
-// Posts are loaded from Supabase `community_posts` (if available). Structure
-// mapped into the `Post` interface above. If Supabase isn't available, the
-// component will render an empty feed and allow creating local posts.
-
 const AdvancedCommunity: React.FC = () => {
   const { theme } = useTheme();
   const { state: financialState } = useFinancialData();
@@ -56,6 +51,13 @@ const AdvancedCommunity: React.FC = () => {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [replyContent, setReplyContent] = useState("");
   const [activeReplyPost, setActiveReplyPost] = useState<string | null>(null);
+
+  // Define currentUser from financial context
+  const currentUser: User = {
+    id: financialState.user?.id || 'anon',
+    username: (financialState.user as any)?.first_name || (financialState.user as any)?.username || 'You',
+    tier: 'New Member' as const,
+  };
 
   const getTierColor = (tier: User["tier"]) => {
     switch (tier) {
@@ -84,12 +86,11 @@ const AdvancedCommunity: React.FC = () => {
   const handleCreatePost = () => {
     if (!newPostContent.trim()) return;
     const tickers = extractTickers(newPostContent);
-    const currentUser = financialState.user || { id: 'anon', username: 'You', tier: 'New Member' };
 
     const newPost: Post = {
       id: Date.now().toString(),
       userId: currentUser.id,
-      username: currentUser.username || 'You',
+      username: currentUser.username,
       content: newPostContent,
       timestamp: Date.now(),
       upvotes: 0,
@@ -102,15 +103,11 @@ const AdvancedCommunity: React.FC = () => {
       replies: []
     };
 
-    // Try to persist to Supabase; otherwise use local state as fallback
     (async () => {
       try {
-        const { data, error } = await supabase.from('community_posts').insert([{
+        const { data, error } = await supabase.from('posts').insert([{
           user_id: newPost.userId,
-          username: newPost.username,
           content: newPost.content,
-          tickers: newPost.tickers,
-          created_at: new Date().toISOString()
         }]).select();
         if (!error && data && data.length > 0) {
           const created = data[0];
@@ -182,11 +179,10 @@ const AdvancedCommunity: React.FC = () => {
 
   const handleReply = (postId: string) => {
     if (!replyContent.trim()) return;
-    const currentUser = financialState.user || { id: 'anon', username: 'You' };
     const newReply: Reply = {
       id: Date.now().toString(),
       userId: currentUser.id,
-      username: currentUser.username || 'You',
+      username: currentUser.username,
       content: replyContent,
       timestamp: Date.now(),
       likes: 0,
@@ -196,13 +192,10 @@ const AdvancedCommunity: React.FC = () => {
 
     (async () => {
       try {
-        // Try to insert reply into DB if possible
-        const { data, error } = await supabase.from('community_replies').insert([{
+        const { data, error } = await supabase.from('post_comments').insert([{
           post_id: postId,
           user_id: newReply.userId,
-          username: newReply.username,
           content: newReply.content,
-          created_at: new Date().toISOString()
         }]).select();
         if (!error && data && data.length > 0) {
           const created = data[0];
@@ -225,21 +218,25 @@ const AdvancedCommunity: React.FC = () => {
   useEffect(() => {
     const loadPosts = async () => {
       try {
-        const { data } = await supabase.from('community_posts').select('id, user_id, username, content, tickers, created_at').order('created_at', { ascending: false }).limit(50);
+        const { data } = await supabase
+          .from('posts')
+          .select('id, user_id, content, created_at, likes_count, profiles!posts_user_id_fkey(first_name, last_name)')
+          .order('created_at', { ascending: false })
+          .limit(50);
         if (data) {
           const mapped: Post[] = data.map((r: any) => ({
             id: r.id?.toString() || Date.now().toString(),
             userId: r.user_id,
-            username: r.username,
+            username: r.profiles?.first_name || 'User',
             content: r.content,
             timestamp: new Date(r.created_at).getTime(),
-            upvotes: r.upvotes || 0,
-            downvotes: r.downvotes || 0,
-            likes: r.likes || 0,
+            upvotes: 0,
+            downvotes: 0,
+            likes: r.likes_count || 0,
             userHasUpvoted: false,
             userHasDownvoted: false,
             userHasLiked: false,
-            tickers: r.tickers || [],
+            tickers: extractTickers(r.content || ''),
             replies: []
           }));
           setPosts(mapped);
@@ -300,8 +297,8 @@ const AdvancedCommunity: React.FC = () => {
                   <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-off-white'}`}>
                     {post.username}
                   </span>
-                  <Badge className={`${getTierColor(MOCK_USER.tier)} text-white text-xs px-2 py-0.5`}>
-                    {MOCK_USER.tier}
+                  <Badge className={`${getTierColor(currentUser.tier)} text-white text-xs px-2 py-0.5`}>
+                    {currentUser.tier}
                   </Badge>
                 </div>
                 <span className="text-xs text-neutral">
@@ -379,7 +376,7 @@ const AdvancedCommunity: React.FC = () => {
                 <div className="flex gap-2">
                   <Avatar className="w-8 h-8">
                     <AvatarFallback className="bg-secondary text-primary text-sm">
-                      {MOCK_USER.username[0].toUpperCase()}
+                      {currentUser.username[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
@@ -441,15 +438,15 @@ const AdvancedCommunity: React.FC = () => {
             <div className="flex items-center gap-3">
               <Avatar className="w-10 h-10">
                 <AvatarFallback className="bg-secondary text-primary font-bold">
-                  {MOCK_USER.username[0].toUpperCase()}
+                  {currentUser.username[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-off-white'}`}>
-                  {MOCK_USER.username}
+                  {currentUser.username}
                 </span>
-                <Badge className={`ml-2 ${getTierColor(MOCK_USER.tier)} text-white text-xs`}>
-                  {MOCK_USER.tier}
+                <Badge className={`ml-2 ${getTierColor(currentUser.tier)} text-white text-xs`}>
+                  {currentUser.tier}
                 </Badge>
               </div>
             </div>
@@ -483,7 +480,6 @@ const AdvancedCommunity: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 };

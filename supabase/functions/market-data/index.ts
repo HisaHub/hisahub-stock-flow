@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
@@ -21,7 +20,6 @@ serve(async (req) => {
 
     const MARKETSTACK_KEY = Deno.env.get('MARKETSTACK_API_KEY') ?? '';
 
-    // Realistic Kenyan stock data with proper price movements (preferred: Marketstack)
     const kenyaStocks = [
       { symbol: 'SCOM', basePrice: 28.50, volatility: 0.03 },
       { symbol: 'EQTY', basePrice: 45.75, volatility: 0.025 },
@@ -35,7 +33,6 @@ serve(async (req) => {
       { symbol: 'NBK', basePrice: 8.45, volatility: 0.03 }
     ];
     
-    // Helper: try to fetch recent EOD data for a symbol from Marketstack
     async function fetchFromMarketstack(symbol: string) {
       if (!MARKETSTACK_KEY) return null;
       try {
@@ -60,7 +57,6 @@ serve(async (req) => {
     }
 
     for (const stockInfo of kenyaStocks) {
-      // Get or create stock
       let { data: stock } = await supabaseClient
         .from('stocks')
         .select('id')
@@ -82,14 +78,11 @@ serve(async (req) => {
       }
 
       if (stock) {
-        // Prefer Marketstack data when available. Do not simulate prices here.
         const ms = await fetchFromMarketstack(stockInfo.symbol).catch(() => null);
         if (!ms) {
-          // Skip inserting price if external data unavailable
           continue;
         }
 
-        // Insert new price data from Marketstack
         await supabaseClient
           .from('stock_prices')
           .insert({
@@ -103,20 +96,20 @@ serve(async (req) => {
             timestamp: ms.timestamp
           });
 
-        // Update current price in holdings for demo users
+        // Update current price in holdings - FIX: use ms.price instead of undefined 'price'
         const { data: holdings } = await supabaseClient
           .from('holdings')
           .select('id, quantity, average_price')
           .eq('stock_id', stock.id);
 
         if (holdings) {
+          const currentPrice = Number(ms.price.toFixed(2));
           for (const holding of holdings) {
             await supabaseClient
               .from('holdings')
               .update({ 
-                current_price: Number(price.toFixed(2)),
-                market_value: holding.quantity * price,
-                unrealized_pnl: (price - holding.average_price) * holding.quantity
+                current_price: currentPrice,
+                unrealized_pnl: (currentPrice - holding.average_price) * holding.quantity
               })
               .eq('id', holding.id);
           }
@@ -124,26 +117,15 @@ serve(async (req) => {
       }
     }
 
-    // Update market indices with realistic movements
-    const indices = [
-      { symbol: 'NSE20', name: 'NSE 20 Share Index', baseValue: 1850.50 },
-      { symbol: 'NASI', name: 'NSE All Share Index', baseValue: 125.75 },
-      { symbol: 'NSE25', name: 'NSE 25 Share Index', baseValue: 3420.80 }
-    ];
-
-    // Note: Index updates require a reliable external source. This function
-    // currently focuses on inserting stock prices from Marketstack. Index
-    // updates are skipped to avoid simulated values.
-
     return new Response(
-      JSON.stringify({ success: true, message: 'Market data updated with realistic movements' }),
+      JSON.stringify({ success: true, message: 'Market data updated' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error updating market data:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: 'An internal error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

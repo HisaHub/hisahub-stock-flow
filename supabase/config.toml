@@ -8,3 +8,15 @@ verify_jwt = false
 
 [functions.ai-news-summarizer]
 verify_jwt = false
+
+[functions.ai-assistant]
+verify_jwt = false
+
+[functions.notifications]
+verify_jwt = false
+
+[functions.portfolio-management]
+verify_jwt = false
+
+[functions.market-data]
+verify_jwt = false
