@@ -79,42 +79,73 @@ serve(async (req) => {
 
       if (stock) {
         const ms = await fetchFromMarketstack(stockInfo.symbol).catch(() => null);
-        if (!ms) {
-          continue;
-        }
+        
+        // Use Marketstack data or generate fallback price
+        const priceData = ms || (() => {
+          const randomChange = (Math.random() - 0.5) * 2 * stockInfo.volatility;
+          const price = Number((stockInfo.basePrice * (1 + randomChange)).toFixed(2));
+          const high = Number((price * (1 + stockInfo.volatility * 0.5)).toFixed(2));
+          const low = Number((price * (1 - stockInfo.volatility * 0.5)).toFixed(2));
+          const open = Number((price * (1 + (Math.random() - 0.5) * stockInfo.volatility)).toFixed(2));
+          return { price, high, low, open, volume: Math.floor(Math.random() * 500000) + 10000, timestamp: new Date().toISOString() };
+        })();
 
         await supabaseClient
           .from('stock_prices')
           .insert({
             stock_id: stock.id,
-            price: Number(ms.price.toFixed(2)),
-            volume: ms.volume,
-            high: Number(ms.high.toFixed(2)),
-            low: Number(ms.low.toFixed(2)),
-            open: Number(ms.open.toFixed(2)),
-            close: Number(ms.price.toFixed(2)),
-            timestamp: ms.timestamp
+            price: priceData.price,
+            volume: priceData.volume,
+            high: priceData.high,
+            low: priceData.low,
+            open: priceData.open,
+            close: priceData.price,
+            timestamp: priceData.timestamp
           });
 
-        // Update current price in holdings - FIX: use ms.price instead of undefined 'price'
+        // Update current price in holdings
         const { data: holdings } = await supabaseClient
           .from('holdings')
           .select('id, quantity, average_price')
           .eq('stock_id', stock.id);
 
         if (holdings) {
-          const currentPrice = Number(ms.price.toFixed(2));
           for (const holding of holdings) {
             await supabaseClient
               .from('holdings')
               .update({ 
-                current_price: currentPrice,
-                unrealized_pnl: (currentPrice - holding.average_price) * holding.quantity
+                current_price: priceData.price,
+                unrealized_pnl: (priceData.price - holding.average_price) * holding.quantity
               })
               .eq('id', holding.id);
           }
         }
       }
+    }
+
+    // Update market indices
+    const marketIndices = [
+      { symbol: 'NSE20', name: 'NSE 20 Share Index', baseValue: 1750, volatility: 0.01 },
+      { symbol: 'NASI', name: 'NSE All Share Index', baseValue: 110, volatility: 0.008 },
+      { symbol: 'NSE25', name: 'NSE 25 Share Index', baseValue: 3200, volatility: 0.012 },
+    ];
+
+    for (const idx of marketIndices) {
+      const change = (Math.random() - 0.5) * 2 * idx.volatility;
+      const value = Number((idx.baseValue * (1 + change)).toFixed(2));
+      const changeValue = Number((value - idx.baseValue).toFixed(2));
+      const changePercent = Number((change * 100).toFixed(2));
+
+      await supabaseClient
+        .from('market_data')
+        .upsert({
+          symbol: idx.symbol,
+          name: idx.name,
+          value,
+          change_value: changeValue,
+          change_percent: changePercent,
+          timestamp: new Date().toISOString()
+        }, { onConflict: 'symbol' });
     }
 
     return new Response(

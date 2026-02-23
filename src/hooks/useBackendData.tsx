@@ -15,6 +15,7 @@ export interface BackendStock {
   change: number;
   change_percent: number;
   is_active: boolean;
+  currency?: string;
 }
 
 export interface BackendOrder {

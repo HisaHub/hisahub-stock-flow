@@ -107,7 +107,7 @@ const PositionsOrders: React.FC = () => {
                         {order.type}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        {order.order_type || order.orderType || 'Market'}
+                        {order.order_type || 'Market'}
                       </Badge>
                     </div>
                   </div>
@@ -128,7 +128,7 @@ const PositionsOrders: React.FC = () => {
                     <span className="text-off-white">KES {Number(order.price).toFixed(2)}</span>
                   </div>
                 </div>
-                <p className="text-xs text-off-white/60 mt-2">{order.date || order.timestamp || order.created_at}</p>
+                <p className="text-xs text-off-white/60 mt-2">{order.date || order.created_at}</p>
               </div>
             ))
           )}

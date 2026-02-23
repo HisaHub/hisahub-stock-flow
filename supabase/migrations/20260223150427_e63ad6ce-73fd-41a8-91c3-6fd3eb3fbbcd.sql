@@ -1,0 +1,1 @@
+ALTER TABLE public.market_data ADD CONSTRAINT market_data_symbol_key UNIQUE (symbol);

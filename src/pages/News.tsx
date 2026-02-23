@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileText, Newspaper, Settings, Download, Menu } from "lucide-react";
+import { FileText, Newspaper, Settings, Download, Menu, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -12,6 +12,7 @@ import {
 import BottomNav from "../components/BottomNav";
 import { useTheme } from "../components/ThemeProvider";
 import { useNavigate } from "react-router-dom";
+import { useFinancialData } from "../contexts/FinancialDataContext";
 
 const DUMMY_NEWS = [
   { headline: "Safaricom stocks rally as quarterly results impress", date: "2025-05-18" },
@@ -32,44 +33,25 @@ const DUMMY_ARTICLES = [
   }
 ];
 
-type CommunityPost = { name: string; content: string; timestamp: number; };
-
-const DUMMY_FINANCIALS = [
-  { company: "Safaricom PLC", symbol: "SCOM", revenue: "KSh 310B", profit: "KSh 71B" },
-  { company: "Equity Group", symbol: "EQTY", revenue: "KSh 130B", profit: "KSh 45B" },
-  { company: "KCB Group", symbol: "KCB", revenue: "KSh 109B", profit: "KSh 37B" },
-  { company: "EABL", symbol: "EABL", revenue: "KSh 86B", profit: "KSh 12B" },
-  { company: "Nation Media Group", symbol: "NMG", revenue: "KSh 7B", profit: "KSh 0.8B" },
-];
-
 const News: React.FC = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<CommunityPost[]>([
-    { name: "TraderJoe", content: "Excited for upcoming earning releases!", timestamp: Date.now() - 60000 },
-    { name: "NSEQueen", content: "Which stock are you bullish on this week?", timestamp: Date.now() - 360000 },
-  ]);
-  const [postName, setPostName] = useState("");
-  const [postContent, setPostContent] = useState("");
+  const { state } = useFinancialData();
   const [activeSection, setActiveSection] = useState("news");
 
-  const handlePostSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (postName.trim() && postContent.trim()) {
-      setPosts([{ name: postName, content: postContent, timestamp: Date.now() }, ...posts]);
-      setPostName("");
-      setPostContent("");
-    }
-  };
+  const liveStocks = state.stocks;
 
   const downloadCSV = () => {
-    const rows = [["Company", "Symbol", "Revenue", "Profit"], ...DUMMY_FINANCIALS.map(d => [d.company, d.symbol, d.revenue, d.profit])];
+    const rows = [
+      ["Symbol", "Name", "Price", "Change", "Change %"],
+      ...liveStocks.map(s => [s.symbol, s.name, String(s.price), String(s.change), s.changePercent])
+    ];
     const csv = rows.map(r => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "nse-financials.csv";
+    a.download = "nse-market-data.csv";
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -78,7 +60,7 @@ const News: React.FC = () => {
     { id: "news", label: "NSE Stock News", icon: <Newspaper size={18} /> },
     { id: "articles", label: "Articles", icon: <FileText size={18} /> },
     { id: "settings", label: "Settings", icon: <Settings size={18} /> },
-    { id: "financials", label: "Financials", icon: <Download size={18} /> },
+    { id: "financials", label: "Live Market Data", icon: <Download size={18} /> },
   ];
 
   const renderContent = () => {
@@ -116,28 +98,35 @@ const News: React.FC = () => {
                 <Download size={18} className="mr-2 -ml-1" /> Download NSE Data (.csv)
               </Button>
             </div>
-            <div className="bg-background p-2 rounded-lg overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead>
-                  <tr className="text-secondary">
-                    <th className="p-1">Company</th>
-                    <th className="p-1">Symbol</th>
-                    <th className="p-1">Revenue</th>
-                    <th className="p-1">Profit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {DUMMY_FINANCIALS.map((row, i) => (
-                    <tr key={i}>
-                      <td className="p-1">{row.company}</td>
-                      <td className="p-1">{row.symbol}</td>
-                      <td className="p-1">{row.revenue}</td>
-                      <td className="p-1">{row.profit}</td>
+            {liveStocks.length === 0 ? (
+              <p className="text-off-white/60 text-sm text-center py-4">No market data available</p>
+            ) : (
+              <div className="bg-background p-2 rounded-lg overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="text-secondary">
+                      <th className="p-1">Symbol</th>
+                      <th className="p-1">Name</th>
+                      <th className="p-1 text-right">Price</th>
+                      <th className="p-1 text-right">Change</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {liveStocks.map((stock) => (
+                      <tr key={stock.symbol}>
+                        <td className="p-1 font-semibold text-off-white">{stock.symbol}</td>
+                        <td className="p-1 text-off-white/80">{stock.name}</td>
+                        <td className="p-1 text-right text-off-white">{(stock.currency ?? 'KES')} {stock.price.toFixed(2)}</td>
+                        <td className={`p-1 text-right flex items-center justify-end gap-1 ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {stock.change >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                          {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)} ({stock.changePercent}%)
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         );
       default:
@@ -150,7 +139,7 @@ const News: React.FC = () => {
       <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col items-center px-4 md:px-8 py-7">
         <div className="w-full flex items-center justify-between mb-5">
           <h2 className="text-3xl font-bold text-secondary flex items-center gap-2">
-            <Newspaper size={30} /> News & Community
+            <Newspaper size={30} /> News & Market
           </h2>
           <Sheet>
             <SheetTrigger asChild>

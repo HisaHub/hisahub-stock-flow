@@ -54,7 +54,7 @@ export const useMarketData = () => {
         `)
         .eq('is_active', true)
         .order('timestamp', { foreignTable: 'stock_prices', ascending: false })
-        .limit(1, { foreignTable: 'stock_prices' });
+        .limit(2, { foreignTable: 'stock_prices' });
 
       if (data) {
         const processedStocks = data.map(stock => ({
@@ -63,7 +63,7 @@ export const useMarketData = () => {
           volume: stock.stock_prices[0]?.volume || 0,
           high: stock.stock_prices[0]?.high || 0,
           low: stock.stock_prices[0]?.low || 0,
-          // Compute change from the two most recent price points when available
+          currency: stock.currency || 'KES',
           change: (() => {
             const recent = stock.stock_prices || [];
             const latest = recent[0]?.price;

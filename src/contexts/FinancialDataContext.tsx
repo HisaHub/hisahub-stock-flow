@@ -15,6 +15,7 @@ export interface Stock {
   low: number;
   change: number;
   changePercent: string;
+  currency: string;
 }
 
 // Enhanced Holding interface with computed properties
@@ -27,9 +28,13 @@ export interface Holding {
   current_price: number;
   market_value: number;
   unrealized_pnl: number;
+  currency: string;
+  sector: string;
   stocks?: {
     symbol: string;
     name: string;
+    sector?: string;
+    currency?: string;
   };
   // Computed properties for UI
   symbol: string;
@@ -55,11 +60,17 @@ export interface Transaction {
   id: string;
   symbol: string;
   type: string;
+  order_type?: string;
   quantity: number;
   price: number;
   total: number;
+  amount?: number;
   date: string;
+  created_at?: string;
   status: string;
+  currency?: string;
+  ex_date?: string;
+  pay_date?: string;
 }
 
 interface PortfolioData {
@@ -165,6 +176,8 @@ function financialDataReducer(state: FinancialDataState, action: any): Financial
           ...holding,
           symbol: holding.stocks?.symbol || holding.symbol || '',
           name: holding.stocks?.name || holding.name || '',
+          sector: holding.stocks?.sector || holding.sector || 'Other',
+          currency: holding.stocks?.currency || holding.currency || 'KES',
           value: marketValue,
           avgPrice,
           currentPrice,
@@ -185,6 +198,15 @@ function financialDataReducer(state: FinancialDataState, action: any): Financial
       return {
         ...state,
         portfolioData: { ...state.portfolioData, ...action.payload },
+        lastUpdated: Date.now()
+      };
+    case 'ADD_FUNDS':
+      return {
+        ...state,
+        accountData: {
+          ...state.accountData,
+          balance: state.accountData.balance + action.payload
+        },
         lastUpdated: Date.now()
       };
     default:
@@ -223,7 +245,8 @@ export const FinancialDataProvider: React.FC<{ children: ReactNode }> = ({ child
         high: stock.high,
         low: stock.low,
         change: stock.change,
-        changePercent: stock.change_percent.toFixed(2)
+        changePercent: stock.change_percent.toFixed(2),
+        currency: stock.currency || 'KES'
       }));
     }
     return supabaseStocks;
