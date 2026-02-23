@@ -40,7 +40,7 @@ const Portfolio: React.FC = () => {
   // Compute allocation from holdings grouped by sector when available
   const allocationMap: Record<string, { value: number; color?: string }> = {};
   holdings.forEach(h => {
-    const sector = (h.stocks && h.stocks.sector) || (h.sector) || 'Others';
+    const sector = h.sector || (h.stocks && h.stocks.sector) || 'Others';
     if (!allocationMap[sector]) allocationMap[sector] = { value: 0, color: undefined };
     allocationMap[sector].value += Number(h.value || 0);
   });
@@ -159,15 +159,15 @@ const Portfolio: React.FC = () => {
                 <div className="font-semibold text-off-white text-lg">{holding.symbol}</div>
                 <div className="text-xs text-neutral">{holding.name}</div>
                 <div className="text-xs text-off-white/60 mt-1">
-                  {holding.quantity} shares @ {holding.currency ?? holding.stocks?.currency ?? portfolioCurrency} {Number(holding.avgPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {holding.quantity} shares @ {holding.currency ?? portfolioCurrency} {Number(holding.avgPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               </div>
               <div className="text-right">
                 <div className="font-bold text-lg text-off-white">
-                  {holding.currency ?? holding.stocks?.currency ?? portfolioCurrency} {Number(holding.value || 0).toLocaleString()}
+                  {holding.currency ?? portfolioCurrency} {Number(holding.value || 0).toLocaleString()}
                 </div>
                 <div className="text-sm text-off-white/60">
-                  {holding.currency ?? holding.stocks?.currency ?? portfolioCurrency} {Number(holding.currentPrice || 0).toFixed(2)}
+                  {holding.currency ?? portfolioCurrency} {Number(holding.currentPrice || 0).toFixed(2)}
                 </div>
               </div>
             </div>
@@ -176,7 +176,7 @@ const Portfolio: React.FC = () => {
               <div className={`flex items-center gap-1 ${holding.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {holding.profitLoss >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                 <span className="font-semibold text-sm">
-                  {holding.profitLoss >= 0 ? '+' : ''}{holding.currency ?? holding.stocks?.currency ?? portfolioCurrency} {Math.abs(Number(holding.profitLoss) || 0).toFixed(2)}
+                  {holding.profitLoss >= 0 ? '+' : ''}{holding.currency ?? portfolioCurrency} {Math.abs(Number(holding.profitLoss) || 0).toFixed(2)}
                 </span>
                 <span className="text-xs">
                   ({holding.profitLossPercent >= 0 ? '+' : ''}{holding.profitLossPercent.toFixed(2)}%)
@@ -296,7 +296,7 @@ const Portfolio: React.FC = () => {
     <div className="space-y-4">
       <div className="glass-card p-4">
         <h3 className="font-semibold text-off-white mb-2">Total Dividend Income</h3>
-        <div className="text-2xl font-bold text-green-400 mb-2">{portfolioCurrency} 530.00</div>
+        <div className="text-2xl font-bold text-green-400 mb-2">{portfolioCurrency} {dividends.reduce((sum, d) => sum + d.amount, 0).toFixed(2)}</div>
         <div className="text-xs text-off-white/60">This year</div>
       </div>
       
