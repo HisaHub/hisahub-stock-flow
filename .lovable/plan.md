@@ -1,159 +1,165 @@
 
 
-# Comprehensive Fix Plan: Build Errors + Live Data Integration
+# Comprehensive Fix Plan: Live Data Integration + Remaining Mock Data Removal
 
-## Problem Summary
+## Current State Assessment
 
-The app has **21 TypeScript build errors** across 3 files, plus multiple components still using hardcoded mock data instead of live Supabase data. The `MARKETSTACK_API_KEY` secret also needs to be added to Supabase (only `LOVABLE_API_KEY` exists currently).
+### What's Working
+- **Database has live data**: 10 NSE stocks with 3-4 price records each, 3 market indices (NSE20, NASI, NSE25) present in `market_data` table
+- **`useMarketData.tsx`**: Correctly fetches 2 most recent prices for change calculation
+- **`MarketOverviewSection`**: Displays live stocks and market indices from context
+- **`OpenPositionsCard`**: Uses live `state.holdings` from context
+- **`AccountSummaryCard`**: Uses live context data with working `ADD_FUNDS` reducer
+- **`PositionsOrders`**: Uses live context data, no mock arrays
+- **`TradingChart`**: Fetches OHLC data directly from `stock_prices` table in Supabase
+- **Interfaces**: `Stock`, `Holding`, `Transaction` all updated with `currency`, `sector`, `order_type`, `created_at`
 
----
+### Critical Issues Found
 
-## Phase 1: Fix TypeScript Build Errors
+#### Issue 1: `useBackendData.tsx` hitting localhost:8000 (Django) on every page load
+The console shows 3 `ERR_CONNECTION_REFUSED` errors on every page load because `useBackendData.tsx` tries to connect to `http://localhost:8000` (Django backend that doesn't exist in production). This:
+- Floods the console with errors
+- Sets `loading: true` for ~2-3 seconds while requests timeout
+- Sets `error` state which propagates to the context
+- The `FinancialDataContext` prioritizes backend data over Supabase data, so when backend returns empty arrays, stocks may briefly show as empty
 
-### 1.1 Fix `FinancialDataContext.tsx` -- Update interfaces to match DB schema
+This is the **root cause** of data not flowing properly. The context checks `if (backendStocks.length > 0)` first, and only falls back to Supabase stocks when backend returns nothing. But the loading/error state from the failed Django requests delays everything.
 
-The root cause of most errors is that the `Stock`, `Holding`, and `Transaction` interfaces are missing fields that exist in the database or are used by components.
+#### Issue 2: Remaining mock data in 3 files
+| File | Mock Data |
+|------|-----------|
+| `ResearchPanel.tsx` | Hardcoded `analystRatings`, `fundamentals`, `recentNews` arrays |
+| `NewsFeed.tsx` | `mockNews` array used as initial state for news tab |
+| `News.tsx` | `DUMMY_NEWS` and `DUMMY_ARTICLES` arrays |
 
-**Changes:**
-- Add `currency` to `Stock` interface (exists in `stocks` table)
-- Add `currency` and `sector` to `Holding` interface
-- Expand `stocks` optional type to include `sector` and `currency`
-- Update `Transaction` interface to include `amount`, `order_type`, `created_at`, and `currency` (all exist in DB schema)
-- Add `ADD_FUNDS` reducer case so `AccountSummaryCard` deposit/withdraw buttons work
+#### Issue 3: TradingChart indicator placeholders
+RSI, MACD, SMA, and Bollinger Bands are all set to placeholder values (`rsi: 50`, `macdLine: 0`, `sma: price`). The comment says "will be computed client-side if needed" but no computation happens.
 
-### 1.2 Fix `PositionsOrders.tsx` -- Use correct Transaction fields
+#### Issue 4: Portfolio performance hardcoded
+- `performanceData` array has hardcoded Jan-May values (95000, 98000, 105000, 112000)
+- Performance metrics section shows hardcoded "+30.8%", "+18.2%", "+5.4%", "1.34"
+- `weeklyChangePercent: 2.5` and `monthlyChangePercent: 8.2` are hardcoded TODOs in context
 
-**4 errors** referencing `order_type`, `orderType`, `timestamp`, `created_at` which don't exist on `Transaction`.
+#### Issue 5: MARKETSTACK_API_KEY not in secrets
+Only `LOVABLE_API_KEY` is in Supabase secrets. The market-data edge function already has a fallback price generator, so it works without the key, but prices are simulated rather than real. The fallback is functioning correctly (data exists in DB).
 
-**Changes:**
-- Replace `order.order_type || order.orderType` with `order.order_type` (now added to interface)
-- Replace `order.timestamp || order.created_at` with `order.created_at` (now added to interface)
-
-### 1.3 Fix `Portfolio.tsx` -- Use correct field paths
-
-**17 errors** referencing `sector`, `currency`, `amount`, `ex_date`, `pay_date` on wrong types.
-
-**Changes:**
-- Line 43: Change `h.stocks.sector` and `h.sector` to use the new `sector` field on Holding
-- Lines 57-59: Replace `tx.amount` with `tx.total` (which exists), remove `tx.ex_date` and `tx.pay_date` (don't exist in DB)
-- Lines 162-283: Replace all `holding.currency ?? holding.stocks?.currency` and `tx.currency` with the new fields from the updated interfaces
-
-### 1.4 Fix `Trade.tsx` -- Use currency from Stock
-
-**2 errors** referencing `stock.currency`.
-
-**Changes:**
-- Lines 68, 85: `stock.currency` will work after adding `currency` to the `Stock` interface
-
----
-
-## Phase 2: Fix Market Data Edge Function + Add Fallback
-
-### 2.1 Fix `supabase/functions/market-data/index.ts`
-
-The previous security fix already corrected the `price` variable bug. Now add a **fallback price generator** so the app shows data even when the Marketstack API key is missing or the API fails:
-
-- When `fetchFromMarketstack` returns null, generate a realistic price using the stock's `basePrice` and `volatility` with a random walk
-- Also insert market index data (NSE20, NASI, NSE25) into the `market_data` table
-- Deploy the updated function
-
-### 2.2 Fix `useMarketData.tsx` -- Fetch 2 prices for change calculation
-
-Currently fetches only 1 `stock_prices` record per stock but tries to compute change from 2 -- always returns 0.
-
-**Changes:**
-- Change `.limit(1, { foreignTable: 'stock_prices' })` to `.limit(2, { foreignTable: 'stock_prices' })`
-- Include `currency` and `sector` from the `stocks` table in the select query
-- This enables real change/changePercent calculations
+#### Issue 6: Sparse historical data
+Each stock has only 3-4 price records. The TradingChart requests up to 730 records for the 1Y view. Most timeframes will show very sparse charts.
 
 ---
 
-## Phase 3: Replace Mock Data with Live Data
+## Implementation Plan (8 files)
 
-### 3.1 `OpenPositionsCard.tsx` -- Replace hardcoded positions
+### Phase 1: Fix the Critical Data Flow Blocker
 
-Currently has 3 hardcoded positions (SCOM, EQTY, KCB). Replace with live `state.holdings` from `FinancialDataContext`.
+**File 1: `src/hooks/useBackendData.tsx`**
 
-**Changes:**
-- Import and use `useFinancialData`
-- Replace `positions` array with `state.holdings` mapped to the display format
-- Show "No open positions" empty state when holdings array is empty
+The Django backend (`localhost:8000`) does not exist in production. This hook should gracefully skip when no backend URL is configured, rather than erroring out on every page load.
 
-### 3.2 `News.tsx` -- Replace DUMMY data with live data
+Changes:
+- Add a guard at the top of `fetchData`: if `VITE_API_BASE_URL` is `localhost` or not set, skip all fetches and immediately set `loading: false`
+- This eliminates 3 failed network requests and the associated error state on every page load
+- The `FinancialDataContext` will then immediately use Supabase data instead of waiting for Django timeouts
 
-Currently uses `DUMMY_NEWS`, `DUMMY_ARTICLES`, `DUMMY_FINANCIALS` arrays.
+### Phase 2: Compute Real Technical Indicators for TradingChart
 
-**Changes:**
-- Import `useFinancialData` context
-- Replace `DUMMY_FINANCIALS` with `state.stocks` mapped to show symbol, name, price, and change
-- Update CSV download to export live stock data
-- Keep `DUMMY_NEWS` and `DUMMY_ARTICLES` as static content (no news table exists in DB)
+**File 2: `src/components/trading/TradingChart.tsx`**
 
-### 3.3 `MarketOverviewSection.tsx` -- Add market indices
+Currently RSI=50, MACD=0, SMA=price for all data points. Add real client-side computation:
 
-Currently only shows stocks. Add a section for market indices (NSE20, NASI, NSE25) from `state.marketIndices`.
+Changes:
+- After fetching price data from Supabase, compute actual indicators:
+  - **SMA(20)**: Simple Moving Average over 20 periods
+  - **RSI(14)**: Relative Strength Index using standard formula
+  - **MACD(12,26,9)**: MACD line, signal line, and histogram
+  - **Bollinger Bands(20,2)**: Upper/lower bands using SMA + 2 standard deviations
+- Extract indicator computation into a helper function `computeIndicators(data)` that processes the raw OHLC array
+- Update the "Real-time data simulation" label at the bottom to "Live Supabase data" since charts now use real data
 
-**Changes:**
-- Display `state.marketIndices` in a separate row below stocks
-- Show index name, value, change, and change percent
+### Phase 3: Replace Remaining Mock Data
 
-### 3.4 `Portfolio.tsx` -- Remove hardcoded performance values
+**File 3: `src/components/trading/NewsFeed.tsx`**
 
-**Changes:**
-- Replace hardcoded dividend total `KES 530.00` with computed sum from dividend transactions
-- Replace hardcoded performance metrics (Total Return 30.8%, etc.) with computed values based on portfolio data, or show "N/A"
-- Keep `performanceData` chart array as-is (last value already uses live `portfolioData.totalValue`)
+Changes:
+- Remove the `mockNews` array entirely
+- Initialize `newsItems` as empty array
+- Attempt to load recent posts from `posts` table filtered by stock symbol mention in content
+- Show "No news available" empty state when no data exists
+- Keep the AI summary feature as-is (it already calls the edge function)
+
+**File 4: `src/components/trading/ResearchPanel.tsx`**
+
+Changes:
+- Fetch stock-specific data from the `stocks` table (`market_cap`, `shares_outstanding`, etc.) to populate fundamentals
+- Show "N/A" or "--" for metrics not available in the database
+- Replace hardcoded `recentNews` with posts from `posts` table mentioning the stock symbol
+- Replace hardcoded `analystRatings` with either computed values or "Data unavailable" state
+- Keep the AI analysis feature as-is
+
+**File 5: `src/pages/News.tsx`**
+
+Changes:
+- Replace `DUMMY_NEWS` with recent posts from `posts` table fetched via Supabase
+- Keep `DUMMY_ARTICLES` as static educational content (no news/articles table exists)
+- Add loading state while fetching posts
+
+### Phase 4: Fix Portfolio Hardcoded Values
+
+**File 6: `src/pages/Portfolio.tsx`**
+
+Changes:
+- Replace hardcoded `performanceData` array with dynamically computed values based on current portfolio value, or show "Insufficient data" if no historical records
+- Replace hardcoded performance metrics (+30.8%, +18.2%, +5.4%, 1.34) with computed values from context data or "N/A"
+- The dividend section is already computing from live transactions -- no change needed
+
+**File 7: `src/contexts/FinancialDataContext.tsx`**
+
+Changes:
+- Remove hardcoded `weeklyChangePercent: 2.5` and `monthlyChangePercent: 8.2`
+- Set both to `0` with a comment that historical data is needed for real computation
+- This ensures the Portfolio overview doesn't show fake weekly/monthly percentages
+
+### Phase 5: Seed More Historical Price Data
+
+**File 8: `supabase/functions/market-data/index.ts`**
+
+Currently each invocation inserts 1 price record per stock. To build chart history faster:
+
+Changes:
+- Add a `seed_history` mode that can be triggered with a request body parameter `{ "seed": true, "days": 90 }`
+- When seed mode is active, generate 90 days of historical OHLC data using the random walk algorithm, inserting one record per day per stock
+- This populates the `stock_prices` table with enough data for meaningful charts across all timeframes
+- Normal invocations continue to insert a single current price as before
 
 ---
 
-## Phase 4: Propagate Live Data Through Data Layer
-
-### 4.1 `FinancialDataContext.tsx` -- Enhanced SET_HOLDINGS transform
-
-When transforming holdings, propagate `sector` and `currency` from the joined `stocks` data:
-
-```
-sector: holding.stocks?.sector || 'Other',
-currency: holding.stocks?.currency || 'KES',
-```
-
-### 4.2 `useMarketData.tsx` -- Include new fields in processed stocks
-
-Add `currency` and `sector` to the processed stock objects so they flow through the entire app.
-
-### 4.3 `FinancialDataContext.tsx` -- Update stock mapping
-
-When mapping `backendStocks` to the `Stock` interface, include `currency` (default `'KES'`).
-
----
-
-## Phase 5: Deploy and Verify
-
-### 5.1 Deploy fixed `market-data` edge function
-
-### 5.2 Invoke market-data to seed initial price data
-
----
-
-## Files to Modify (11 files)
+## Files Summary
 
 | # | File | Changes |
 |---|------|---------|
-| 1 | `src/contexts/FinancialDataContext.tsx` | Add `currency` to Stock, add `currency`/`sector` to Holding, expand Transaction, add `ADD_FUNDS` reducer, propagate fields in SET_HOLDINGS |
-| 2 | `src/components/trading/PositionsOrders.tsx` | Fix `order_type` and `created_at` references |
-| 3 | `src/pages/Portfolio.tsx` | Fix sector/currency/amount/ex_date/pay_date references, compute dividend total, replace hardcoded metrics |
-| 4 | `src/pages/Trade.tsx` | No changes needed (will work after Stock interface update) |
-| 5 | `src/hooks/useMarketData.tsx` | Fetch 2 prices, include currency/sector in select and processed output |
-| 6 | `src/components/home/OpenPositionsCard.tsx` | Replace hardcoded positions with live holdings |
-| 7 | `src/pages/News.tsx` | Replace DUMMY_FINANCIALS with live stock data |
-| 8 | `src/components/home/MarketOverviewSection.tsx` | Add market indices section |
-| 9 | `src/components/home/AccountSummaryCard.tsx` | No changes needed (will work after ADD_FUNDS reducer) |
-| 10 | `supabase/functions/market-data/index.ts` | Add fallback price generator, add market index inserts |
-| 11 | `src/pages/Portfolio.tsx` | Compute dividend total dynamically, replace hardcoded performance % |
+| 1 | `src/hooks/useBackendData.tsx` | Skip Django calls when backend URL is localhost or unset |
+| 2 | `src/components/trading/TradingChart.tsx` | Compute real RSI, MACD, SMA, Bollinger from OHLC data |
+| 3 | `src/components/trading/NewsFeed.tsx` | Remove `mockNews`, use empty initial state, load from `posts` |
+| 4 | `src/components/trading/ResearchPanel.tsx` | Replace hardcoded fundamentals/news with live data or N/A |
+| 5 | `src/pages/News.tsx` | Replace `DUMMY_NEWS` with live `posts` table data |
+| 6 | `src/pages/Portfolio.tsx` | Remove hardcoded performance metrics |
+| 7 | `src/contexts/FinancialDataContext.tsx` | Remove hardcoded weekly/monthly change percentages |
+| 8 | `supabase/functions/market-data/index.ts` | Add `seed_history` mode for chart data backfill |
 
 ---
 
-## Required User Action
+## Post-Implementation: Seed Historical Data
 
-**Add `MARKETSTACK_API_KEY` to Supabase Edge Function secrets.** Currently only `LOVABLE_API_KEY` exists. The fallback generator will ensure the app works without it, but real NSE data requires this key.
+After deployment, invoke the edge function once with seed mode to populate 90 days of chart history:
+```
+supabase.functions.invoke('market-data', { body: { seed: true, days: 90 } })
+```
+
+This gives the TradingChart enough data points for all timeframes (1D through 1Y).
+
+---
+
+## Note on MARKETSTACK_API_KEY
+
+The secrets scan shows only `LOVABLE_API_KEY` exists. The market-data edge function's fallback price generator is working correctly (DB has data). If you have added the key through a different mechanism or plan to add it, the function will automatically use real Marketstack data when available. The app will work fully with or without it.
 
