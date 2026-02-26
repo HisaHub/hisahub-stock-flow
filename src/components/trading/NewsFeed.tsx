@@ -39,50 +39,8 @@ interface CommunityPost {
   verified: boolean;
 }
 
-const mockNews: NewsItem[] = [
-  {
-    id: 1,
-    title: "Safaricom Reports Strong Q3 Results",
-    summary: "M-Pesa revenue up 15% YoY, subscriber growth continues at 8.2%",
-    source: "Business Daily",
-    timestamp: "2 hours ago",
-    sentiment: "positive",
-    likes: 42,
-    comments: 18,
-    category: "earnings"
-  },
-  {
-    id: 2,
-    title: "Analyst Upgrades SCOM to Buy",
-    summary: "Standard Investment Bank raises target price to KES 28.00",
-    source: "Capital Markets",
-    timestamp: "4 hours ago",
-    sentiment: "positive",
-    likes: 28,
-    comments: 12,
-    category: "analyst"
-  },
-  {
-    id: 3,
-    title: "NSE Trading Update",
-    summary: "Mixed trading session with telecommunications leading gains",
-    source: "NSE News",
-    timestamp: "6 hours ago",
-    sentiment: "neutral",
-    likes: 15,
-    comments: 7,
-    category: "market"
-  }
-];
-
-const NewsFeed: React.FC<NewsFeedProps> = ({ stock }) => {
-  const [activeTab, setActiveTab] = useState<"news" | "community" | "ai">("news");
-  const [sentimentFilter, setSentimentFilter] = useState<string>("all");
-  const [aiSummary, setAiSummary] = useState<string>('');
-  const [generatingSummary, setGeneratingSummary] = useState(false);
-  const { toast } = useToast();
-
-  const [newsItems, setNewsItems] = React.useState<NewsItem[]>(mockNews);
+// This block intentionally left empty — component declaration moved above
+  const [newsItems, setNewsItems] = React.useState<NewsItem[]>([]);
   const [communityPosts, setCommunityPosts] = React.useState<CommunityPost[]>([]);
 
   useEffect(() => {
