@@ -24,9 +24,87 @@ interface TradingChartProps {
 
 const timeframes = ['1D', '1W', '1M', '3M', '1Y'];
 
-// TradingChart now exclusively uses historical OHLC data from Supabase.
-// No mock data generator is included — when no historical rows exist the
-// chart will show a "No data" state and prompt for a refresh.
+// Technical indicator computation helpers
+function computeSMA(closes: number[], period: number): (number | null)[] {
+  return closes.map((_, i) => {
+    if (i < period - 1) return null;
+    const slice = closes.slice(i - period + 1, i + 1);
+    return slice.reduce((a, b) => a + b, 0) / period;
+  });
+}
+
+function computeRSI(closes: number[], period = 14): (number | null)[] {
+  const rsi: (number | null)[] = new Array(closes.length).fill(null);
+  if (closes.length < period + 1) return rsi;
+  let avgGain = 0, avgLoss = 0;
+  for (let i = 1; i <= period; i++) {
+    const diff = closes[i] - closes[i - 1];
+    if (diff >= 0) avgGain += diff; else avgLoss -= diff;
+  }
+  avgGain /= period; avgLoss /= period;
+  rsi[period] = avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss);
+  for (let i = period + 1; i < closes.length; i++) {
+    const diff = closes[i] - closes[i - 1];
+    avgGain = (avgGain * (period - 1) + (diff > 0 ? diff : 0)) / period;
+    avgLoss = (avgLoss * (period - 1) + (diff < 0 ? -diff : 0)) / period;
+    rsi[i] = avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss);
+  }
+  return rsi;
+}
+
+function computeEMA(closes: number[], period: number): (number | null)[] {
+  const ema: (number | null)[] = new Array(closes.length).fill(null);
+  if (closes.length < period) return ema;
+  let sum = 0;
+  for (let i = 0; i < period; i++) sum += closes[i];
+  ema[period - 1] = sum / period;
+  const k = 2 / (period + 1);
+  for (let i = period; i < closes.length; i++) {
+    ema[i] = closes[i] * k + (ema[i - 1] as number) * (1 - k);
+  }
+  return ema;
+}
+
+function computeMACD(closes: number[]): { macdLine: (number | null)[], signalLine: (number | null)[], histogram: (number | null)[] } {
+  const ema12 = computeEMA(closes, 12);
+  const ema26 = computeEMA(closes, 26);
+  const macdLine: (number | null)[] = closes.map((_, i) =>
+    ema12[i] !== null && ema26[i] !== null ? (ema12[i] as number) - (ema26[i] as number) : null
+  );
+  // Signal line = EMA(9) of MACD values
+  const macdValues = macdLine.filter(v => v !== null) as number[];
+  const signalRaw = computeEMA(macdValues, 9);
+  const signalLine: (number | null)[] = new Array(closes.length).fill(null);
+  const histogram: (number | null)[] = new Array(closes.length).fill(null);
+  let si = 0;
+  for (let i = 0; i < closes.length; i++) {
+    if (macdLine[i] !== null) {
+      signalLine[i] = signalRaw[si] ?? null;
+      histogram[i] = signalLine[i] !== null ? (macdLine[i] as number) - (signalLine[i] as number) : null;
+      si++;
+    }
+  }
+  return { macdLine, signalLine, histogram };
+}
+
+function computeBollinger(closes: number[], period = 20, mult = 2): { upper: (number | null)[], lower: (number | null)[] } {
+  const sma = computeSMA(closes, period);
+  return {
+    upper: closes.map((_, i) => {
+      if (sma[i] === null) return null;
+      const slice = closes.slice(i - period + 1, i + 1);
+      const std = Math.sqrt(slice.reduce((s, v) => s + (v - (sma[i] as number)) ** 2, 0) / period);
+      return (sma[i] as number) + mult * std;
+    }),
+    lower: closes.map((_, i) => {
+      if (sma[i] === null) return null;
+      const slice = closes.slice(i - period + 1, i + 1);
+      const std = Math.sqrt(slice.reduce((s, v) => s + (v - (sma[i] as number)) ** 2, 0) / period);
+      return (sma[i] as number) - mult * std;
+    })
+  };
+}
+
 
 const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('1D');
@@ -87,28 +165,32 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
             .limit(limit);
 
           if (!pricesErr && prices && prices.length > 0) {
-            recentData = prices.map((p: any) => ({
+            const closes = prices.map((p: any) => Number(p.close ?? p.price ?? 0));
+            const smaValues = computeSMA(closes, 20);
+            const rsiValues = computeRSI(closes, 14);
+            const macdResult = computeMACD(closes);
+            const bollingerResult = computeBollinger(closes, 20, 2);
+
+            recentData = prices.map((p: any, i: number) => ({
               time: p.timestamp ? new Date(p.timestamp).toLocaleString() : '',
-              price: Number(p.close ?? p.price ?? 0),
+              price: closes[i],
               open: Number(p.open ?? p.price ?? 0),
               high: Number(p.high ?? p.price ?? 0),
               low: Number(p.low ?? p.price ?? 0),
-              close: Number(p.close ?? p.price ?? 0),
+              close: closes[i],
               volume: Number(p.volume ?? 0),
-              // placeholders for indicators; will be computed client-side if needed
-              rsi: 50,
-              macdLine: 0,
-              signalLine: 0,
-              histogram: 0,
-              sma: Number(p.close ?? p.price ?? 0),
-              upperBand: Number(p.close ?? p.price ?? 0) + 2,
-              lowerBand: Number(p.close ?? p.price ?? 0) - 2,
-              fill: (p.close ?? p.price ?? 0) >= (p.open ?? p.price ?? 0) ? '#22C55E' : '#EF4444'
+              rsi: rsiValues[i] ?? 50,
+              macdLine: macdResult.macdLine[i] ?? 0,
+              signalLine: macdResult.signalLine[i] ?? 0,
+              histogram: macdResult.histogram[i] ?? 0,
+              sma: smaValues[i] ?? closes[i],
+              upperBand: bollingerResult.upper[i] ?? closes[i] + 2,
+              lowerBand: bollingerResult.lower[i] ?? closes[i] - 2,
+              fill: closes[i] >= Number(p.open ?? p.price ?? 0) ? '#22C55E' : '#EF4444'
             }));
           }
         }
 
-        // Use fetched data when available. Do NOT fall back to generated mock data.
         const newData = recentData && recentData.length > 0 ? recentData : [];
         setChartData(newData);
 
@@ -534,7 +616,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol }) => {
       {/* Chart Controls */}
       <div className="flex justify-between items-center mt-4 text-xs text-off-white/60">
         <div className="flex items-center gap-4 flex-wrap">
-          <span>Real-time data simulation</span>
+          <span>Live Supabase data</span>
           {activeIndicators.length > 0 && (
             <span className="hidden sm:inline">
               Active: {activeIndicators.join(', ').toUpperCase()}
