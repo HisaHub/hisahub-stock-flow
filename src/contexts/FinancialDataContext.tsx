@@ -349,8 +349,8 @@ export const FinancialDataProvider: React.FC<{ children: ReactNode }> = ({ child
             totalValue,
             dailyChange: totalPnL,
             dailyChangePercent,
-            weeklyChangePercent: 2.5, // TODO: Calculate from historical data
-            monthlyChangePercent: 8.2, // TODO: Calculate from historical data
+            weeklyChangePercent: 0,
+            monthlyChangePercent: 0,
           }
         });
 
